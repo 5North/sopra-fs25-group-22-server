@@ -32,6 +32,7 @@ public class UserServiceTest {
     testUser.setId(1L);
     testUser.setName("testName");
     testUser.setUsername("testUsername");
+    testUser.setPassword("testPassword");
 
     // when -> any object is being save in the userRepository -> return the dummy
     // testUser
@@ -81,5 +82,53 @@ public class UserServiceTest {
     // is thrown
     assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
   }
+
+    @Test
+    public void loginUser_validCredentials_success() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+        String previousToken = testUser.getToken();
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+        // call userService method
+        userService.loginUser(testUser.getUsername(), testUser.getPassword());
+
+        assertEquals(UserStatus.ONLINE, testUser.getStatus());
+        assertNotEquals(testUser.getToken(), previousToken);
+    }
+
+    @Test
+    public void loginUser_notValidCredentials_throwsException() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+        // then -> attempt to login with invalid credentials -> check that an error
+        // is thrown
+        assertThrows(
+                ResponseStatusException.class, () -> userService
+                        .loginUser("not_correct_username", "not_correct_password")
+        );
+    }
+
+    @Test
+    public void loginUser_notValidPassword_throwsException() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+        // then -> attempt login with invalid password -> check that an error
+        // is thrown
+        assertThrows(
+                ResponseStatusException.class, () -> userService
+                        .loginUser(testUser.getUsername(), "not_correct_password")
+        );
+    }
 
 }

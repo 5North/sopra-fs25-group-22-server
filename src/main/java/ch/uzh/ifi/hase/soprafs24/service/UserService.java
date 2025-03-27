@@ -52,6 +52,18 @@ public class UserService {
     return newUser;
   }
 
+  public String loginUser (String username, String password) {
+      User userByUsername = userRepository.findByUsername(username);
+      if (userByUsername == null) {
+          throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid username or password");
+      } else if (!userByUsername.getPassword().equals(password)) {
+          throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid password");
+      }
+      userByUsername.setStatus(UserStatus.ONLINE);
+      userByUsername.setToken(UUID.randomUUID().toString());
+      return userByUsername.getToken();
+  }
+
   /**
    * This is a helper method that will check the uniqueness criteria of the
    * username and the name

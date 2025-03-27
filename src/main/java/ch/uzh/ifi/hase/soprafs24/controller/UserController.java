@@ -5,8 +5,11 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,4 +57,22 @@ public class UserController {
     // convert internal representation of user back to API
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestBody String username, String password) {
+
+        // login the user, if exception is thrown return response with the exception's msg and http status
+        try {
+            String token = userService.loginUser(username, password);
+
+            // append token to response header using ResponseEntity
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.set("Token",
+                    token);
+
+            return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
+        } catch (ResponseStatusException e) {
+            return new ResponseEntity<>(e.getMessage(), e.getStatus());
+        }
+    }
 }

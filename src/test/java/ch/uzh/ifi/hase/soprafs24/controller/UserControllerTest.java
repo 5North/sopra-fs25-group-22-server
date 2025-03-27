@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * UserControllerTest
@@ -97,6 +97,55 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.username", is(user.getUsername())))
         .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
   }
+
+    @Test
+    public void loginUser_validInput_userLoggedIn() throws Exception {
+        // given
+        JSONObject payload = new JSONObject();
+        payload.put("username", "john_doe");
+        payload.put("password", "correct-horse-battery-staple");
+
+        String token = "hdbhdd7-dfjdhs923-wddhejkh3";
+
+        given(userService.loginUser(Mockito.any(), Mockito.any())).willReturn(token);
+
+        // when/then -> do the request + validate the result
+        MockHttpServletRequestBuilder postRequest = post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload.toString());
+
+        // then
+        mockMvc.perform(postRequest)
+                .andExpect(status().isOk())
+                .andExpect(header().string("Token", "hdbhdd7-dfjdhs923-wddhejkh3"));
+    }
+
+    @Test
+    public void loginUser_notValidInput_userNotLoggedIn() throws Exception {
+        // given
+        JSONObject payload = new JSONObject();
+        payload.put("username", "john_doe");
+        payload.put("password", "correct-horse-battery-staple");
+
+        String token = "hdbhdd7-dfjdhs923-wddhejkh3";
+
+        given(userService.loginUser(Mockito.any(), Mockito.any()))
+                .willThrow(
+                        new ResponseStatusException(
+                                HttpStatus.FORBIDDEN, "Invalid username or password"
+                        )
+                );
+
+        // when/then -> do the request + validate the result
+        MockHttpServletRequestBuilder postRequest = post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload.toString());
+
+        // then
+        mockMvc.perform(postRequest)
+                .andExpect(status().isForbidden())
+                .andExpect(content().string("403 FORBIDDEN \"Invalid username or password\""));
+        }
 
   /**
    * Helper Method to convert userPostDTO into a JSON string such that the input
