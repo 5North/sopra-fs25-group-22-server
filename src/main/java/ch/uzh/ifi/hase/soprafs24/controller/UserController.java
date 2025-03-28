@@ -75,4 +75,13 @@ public class UserController {
             return new ResponseEntity<>(e.getMessage(), e.getStatus());
         }
     }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void logoutUser(@RequestHeader String token) {
+        User authUser = userService.authorizeUser(token);
+        userService.logoutUser(authUser);
+    }
+
 }
