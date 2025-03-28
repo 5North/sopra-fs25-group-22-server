@@ -45,36 +45,34 @@ public class UserController {
     return userGetDTOs;
   }
 
-  @PostMapping("/users")
-  @ResponseStatus(HttpStatus.CREATED)
-  @ResponseBody
-  public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
-    // convert API user to internal representation
-    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+  @PostMapping("/login")
+  public ResponseEntity<String> loginUser(@RequestBody String username, String password) {
 
-    // create user
-    User createdUser = userService.createUser(userInput);
-    // convert internal representation of user back to API
-    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+    // login the user, if exception is thrown return response with the exception's
+    // msg and http status
+    try {
+      String token = userService.loginUser(username, password);
+
+      // append token to response header using ResponseEntity
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.set("Token",
+          token);
+
+      return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
+    } catch (ResponseStatusException e) {
+      return new ResponseEntity<>(e.getMessage(), e.getStatus());
+    }
   }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody String username, String password) {
-
-        // login the user, if exception is thrown return response with the exception's msg and http status
-        try {
-            String token = userService.loginUser(username, password);
-
-            // append token to response header using ResponseEntity
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.set("Token",
-                    token);
-
-            return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
-        } catch (ResponseStatusException e) {
-            return new ResponseEntity<>(e.getMessage(), e.getStatus());
-        }
-    }
+  @PostMapping("/users")
+  public ResponseEntity<UserGetDTO> registerUser(@RequestBody UserPostDTO userPostDTO) {
+    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+    User createdUser = userService.createUser(userInput);
+    HttpHeaders responseHeaders = new HttpHeaders();
+    responseHeaders.set("Token", createdUser.getToken());
+    UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+    return new ResponseEntity<>(userGetDTO, responseHeaders, HttpStatus.CREATED);
+  }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
