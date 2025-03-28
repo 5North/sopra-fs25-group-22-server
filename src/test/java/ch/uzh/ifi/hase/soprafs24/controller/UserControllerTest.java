@@ -75,7 +75,6 @@ public class UserControllerTest {
         // given
         User user = new User();
         user.setId(1L);
-        user.setName("Test User");
         user.setUsername("testUsername");
         user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
         user.setStatus(UserStatus.ONLINE);
@@ -97,7 +96,6 @@ public class UserControllerTest {
         // given
         User user = new User();
         user.setId(1L);
-        user.setName("Test User");
         user.setUsername("testUsername");
         user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
         user.setStatus(UserStatus.ONLINE);

@@ -46,7 +46,6 @@ public class UserRepositoryIntegrationTest {
     public void findByToken_success() {
         // given
         User user = new User();
-        user.setName("Firstname Lastname");
         user.setUsername("firstname@lastname");
         user.setPassword("password");
         user.setStatus(UserStatus.OFFLINE);
@@ -60,7 +59,6 @@ public class UserRepositoryIntegrationTest {
 
         // then
         assertNotNull(found.getId());
-        assertEquals(found.getName(), user.getName());
         assertEquals(found.getUsername(), user.getUsername());
         assertEquals(found.getPassword(), user.getPassword());
         assertEquals(found.getToken(), user.getToken());
@@ -71,7 +69,6 @@ public class UserRepositoryIntegrationTest {
     public void findByToken_returnsNull() {
         // given
         User user = new User();
-        user.setName("Firstname Lastname");
         user.setUsername("firstname@lastname");
         user.setPassword("password");
         user.setStatus(UserStatus.OFFLINE);
