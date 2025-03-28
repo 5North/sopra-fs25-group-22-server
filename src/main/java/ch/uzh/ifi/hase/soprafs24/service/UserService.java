@@ -64,6 +64,18 @@ public class UserService {
       return userByUsername.getToken();
   }
 
+  public void logoutUser(User authUser) {
+      authUser.setStatus(UserStatus.OFFLINE);
+  }
+
+  public User authorizeUser(String token) throws ResponseStatusException {
+      User userByToken = userRepository.findByToken(token);
+      if (userByToken == null || userByToken.getStatus() != UserStatus.ONLINE) {
+          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+      }
+      return userByToken;
+  }
+
   /**
    * This is a helper method that will check the uniqueness criteria of the
    * username and the name
