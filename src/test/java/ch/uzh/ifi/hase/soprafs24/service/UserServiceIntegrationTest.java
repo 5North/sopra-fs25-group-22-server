@@ -48,9 +48,9 @@ public class UserServiceIntegrationTest {
     User createdUser = userService.createUser(testUser);
 
     // then:
-    assertNotNull(createdUser.getId(), "L'ID deve essere generato");
+    assertNotNull(createdUser.getId(), "The id of the user was not created");
     assertEquals("testUsername", createdUser.getUsername());
-    assertNotNull(createdUser.getToken(), "Il token deve essere generato");
+    assertNotNull(createdUser.getToken(), "The token of the user was not created");
     assertEquals(UserStatus.ONLINE, createdUser.getStatus());
     assertEquals(0, createdUser.getWinCount());
     assertEquals(0, createdUser.getLossCount());
