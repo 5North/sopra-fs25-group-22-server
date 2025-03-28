@@ -60,8 +60,7 @@ public class UserService {
     newUser.setStatus(UserStatus.ONLINE);
     newUser.setWinCount(0);
     newUser.setLossCount(0);
-    newUser.setId(1L);
-    return newUser;
+    return userRepository.save(newUser);
   }
 
 }
