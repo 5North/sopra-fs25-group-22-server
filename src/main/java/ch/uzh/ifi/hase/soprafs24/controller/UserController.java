@@ -45,34 +45,31 @@ public class UserController {
     return userGetDTOs;
   }
 
+  @PostMapping("/login")
+  public ResponseEntity<String> loginUser(@RequestBody String username, String password) {
+
+    // login the user, if exception is thrown return response with the exception's
+    // msg and http status
+    try {
+      String token = userService.loginUser(username, password);
+
+      // append token to response header using ResponseEntity
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.set("Token",
+          token);
+
+      return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
+    } catch (ResponseStatusException e) {
+      return new ResponseEntity<>(e.getMessage(), e.getStatus());
+    }
+  }
+
   @PostMapping("/users")
   @ResponseStatus(HttpStatus.CREATED)
-  @ResponseBody
-  public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
-    // convert API user to internal representation
+  public UserGetDTO registerUser(@RequestBody UserPostDTO userPostDTO) {
     User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-
-    // create user
     User createdUser = userService.createUser(userInput);
-    // convert internal representation of user back to API
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody String username, String password) {
-
-        // login the user, if exception is thrown return response with the exception's msg and http status
-        try {
-            String token = userService.loginUser(username, password);
-
-            // append token to response header using ResponseEntity
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.set("Token",
-                    token);
-
-            return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
-        } catch (ResponseStatusException e) {
-            return new ResponseEntity<>(e.getMessage(), e.getStatus());
-        }
-    }
 }
