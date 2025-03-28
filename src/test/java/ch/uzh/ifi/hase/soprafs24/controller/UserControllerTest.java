@@ -175,8 +175,6 @@ public class UserControllerTest {
                 payload.put("username", "john_doe");
                 payload.put("password", "correct-horse-battery-staple");
 
-                String token = "hdbhdd7-dfjdhs923-wddhejkh3";
-
                 given(userService.loginUser(Mockito.any(), Mockito.any()))
                                 .willThrow(
                                                 new ResponseStatusException(
