@@ -151,6 +151,38 @@ public class UserControllerTest {
                                 .andExpect(content().string("403 FORBIDDEN \"Invalid username or password\""));
         }
 
+        // # 8
+        @Test
+        public void createUser_validInput_returnsTokenInHeader() throws Exception {
+                User user = new User();
+                user.setId(1L);
+                user.setUsername("testUsername");
+                user.setPassword("testPassword");
+                user.setToken("generated-session-token");
+                user.setStatus(UserStatus.ONLINE);
+                user.setWinCount(0);
+                user.setLossCount(0);
+
+                UserPostDTO userPostDTO = new UserPostDTO();
+                userPostDTO.setUsername("testUsername");
+                userPostDTO.setPassword("testPassword");
+
+                given(userService.createUser(Mockito.any())).willReturn(user);
+
+                MockHttpServletRequestBuilder postRequest = post("/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(userPostDTO));
+
+                mockMvc.perform(postRequest)
+                                .andExpect(status().isCreated())
+                                .andExpect(header().string("Token", "generated-session-token"))
+                                .andExpect(jsonPath("$.id", is(user.getId().intValue())))
+                                .andExpect(jsonPath("$.username", is(user.getUsername())))
+                                .andExpect(jsonPath("$.status", is(user.getStatus().toString())))
+                                .andExpect(jsonPath("$.winCount", is(user.getWinCount())))
+                                .andExpect(jsonPath("$.lossCount", is(user.getLossCount())));
+        }
+
         /**
          * Helper Method to convert userPostDTO into a JSON string such that the input
          * can be processed

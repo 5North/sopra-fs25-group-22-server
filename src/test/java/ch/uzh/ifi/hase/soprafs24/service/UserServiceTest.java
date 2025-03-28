@@ -139,23 +139,16 @@ public class UserServiceTest {
   // # 7
   @Test
   public void createUser_existingUser_throwsException() {
-    // Arrange: Simula che esista già un utente con username "testUsername".
-    // Non aggiungiamo ulteriori campi come token o winCount, in quanto non sono
-    // necessari per questo test.
     Mockito.when(userRepository.findByUsername("testUsername")).thenReturn(testUser);
 
-    // Creiamo un nuovo utente con lo stesso username, ma con i soli campi minimi.
     User duplicateUser = new User();
     duplicateUser.setUsername("testUsername");
     duplicateUser.setPassword("anotherPassword");
 
-    // Act & Assert: L'invocazione di createUser deve lanciare una
-    // ResponseStatusException.
     ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
       userService.createUser(duplicateUser);
     });
 
-    // Verifica che lo status sia 409 (CONFLICT) e il messaggio sia quello atteso.
     assertEquals(409, exception.getStatus().value());
     assertEquals("User creation failed because username already exists", exception.getReason());
   }
