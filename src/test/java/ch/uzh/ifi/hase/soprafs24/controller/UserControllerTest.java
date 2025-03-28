@@ -146,6 +146,50 @@ public class UserControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("403 FORBIDDEN \"Invalid username or password\""));
         }
+    @Test
+    public void logout_User_validAuth_userLoggedOut() throws Exception {
+        // given
+        User user = new User();
+        user.setId(1L);
+        user.setName("Test User");
+        user.setUsername("testUsername");
+        user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
+        user.setStatus(UserStatus.ONLINE);
+
+        given(userService.authorizeUser("hdbhdd7-dfjdhs923-wddhejkh3")).willReturn(user);
+
+        // when/then -> do the request + validate the result
+        MockHttpServletRequestBuilder postRequest = post("/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Token", "hdbhdd7-dfjdhs923-wddhejkh3");
+
+        // then
+        mockMvc.perform(postRequest)
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void logout_User_notValidAuth_userNotLoggedOut() throws Exception {
+        // given
+        User user = new User();
+        user.setId(1L);
+        user.setName("Test User");
+        user.setUsername("testUsername");
+        user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
+        user.setStatus(UserStatus.ONLINE);
+
+        given(userService.authorizeUser(""))
+                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token"));
+
+        // when/then -> do the request + validate the result
+        MockHttpServletRequestBuilder postRequest = post("/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Token", "");
+
+        // then
+        mockMvc.perform(postRequest)
+                .andExpect(status().isUnauthorized());
+    }
 
   /**
    * Helper Method to convert userPostDTO into a JSON string such that the input
