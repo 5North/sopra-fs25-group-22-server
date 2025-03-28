@@ -34,47 +34,48 @@ public class UserServiceIntegrationTest {
     userRepository.deleteAll();
   }
 
-  // @Test
-  // public void createUser_validInputs_success() {
-  // // given
-  // assertNull(userRepository.findByUsername("testUsername"));
+  // # 1
+  @Test
+  public void createUser_validInputs_success() {
+    // given:
+    assertNull(userRepository.findByUsername("testUsername"));
 
-  // User testUser = new User();
-  // testUser.setName("testName");
-  // testUser.setUsername("testUsername");
-  // testUser.setPassword("testPassword");
+    User testUser = new User();
+    testUser.setUsername("testUsername");
+    testUser.setPassword("testPassword");
 
-  // // when
-  // User createdUser = userService.createUser(testUser);
+    // when:
+    User createdUser = userService.createUser(testUser);
 
-  // // then
-  // assertEquals(testUser.getId(), createdUser.getId());
-  // assertEquals(testUser.getName(), createdUser.getName());
-  // assertEquals(testUser.getUsername(), createdUser.getUsername());
-  // assertNotNull(createdUser.getToken());
-  // assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
-  // }
+    // then:
+    assertNotNull(createdUser.getId(), "The id of the user was not created");
+    assertEquals("testUsername", createdUser.getUsername());
+    assertNotNull(createdUser.getToken(), "The token of the user was not created");
+    assertEquals(UserStatus.ONLINE, createdUser.getStatus());
+    assertEquals(0, createdUser.getWinCount());
+    assertEquals(0, createdUser.getLossCount());
+  }
 
-  // @Test
-  // public void createUser_duplicateUsername_throwsException() {
-  // assertNull(userRepository.findByUsername("testUsername"));
+  // # 1
+  @Test
+  public void createUser_duplicateUsername_throwsException() {
+    // given:
+    User testUser = new User();
+    testUser.setUsername("testUsername");
+    testUser.setPassword("testPassword");
+    User createdUser = userService.createUser(testUser);
+    assertNotNull(createdUser);
 
-  // User testUser = new User();
-  // testUser.setName("testName");
-  // testUser.setUsername("testUsername");
-  // testUser.setPassword("testPassword");
-  // User createdUser = userService.createUser(testUser);
+    // when:
+    User duplicateUser = new User();
+    duplicateUser.setUsername("testUsername");
+    duplicateUser.setPassword("anotherPassword");
 
-  // // attempt to create second user with same username
-  // User testUser2 = new User();
-
-  // // change the name but forget about the username
-  // testUser2.setName("testName2");
-  // testUser2.setUsername("testUsername");
-  // testUser2.setPassword("testPassword2");
-
-  // // check that an error is thrown
-  // assertThrows(ResponseStatusException.class, () ->
-  // userService.createUser(testUser2));
-  // }
+    // then:
+    ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+      userService.createUser(duplicateUser);
+    });
+    assertEquals(409, exception.getStatus().value());
+    assertEquals("User creation failed because username already exists", exception.getReason());
+  }
 }

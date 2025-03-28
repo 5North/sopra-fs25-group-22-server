@@ -52,12 +52,15 @@ public class UserService {
   }
 
   public User createUser(User newUser) {
-    newUser.setId(1L);
-    newUser.setToken("placeholder-token");
+    if (userRepository.findByUsername(newUser.getUsername()) != null) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "User creation failed because username already exists");
+    }
+    String token = UUID.randomUUID().toString();
+    newUser.setToken(token);
     newUser.setStatus(UserStatus.ONLINE);
     newUser.setWinCount(0);
     newUser.setLossCount(0);
-    return newUser;
+    return userRepository.save(newUser);
   }
 
 }

@@ -65,11 +65,13 @@ public class UserController {
   }
 
   @PostMapping("/users")
-  @ResponseStatus(HttpStatus.CREATED)
-  public UserGetDTO registerUser(@RequestBody UserPostDTO userPostDTO) {
+  public ResponseEntity<UserGetDTO> registerUser(@RequestBody UserPostDTO userPostDTO) {
     User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
     User createdUser = userService.createUser(userInput);
-    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+    HttpHeaders responseHeaders = new HttpHeaders();
+    responseHeaders.set("Token", createdUser.getToken());
+    UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+    return new ResponseEntity<>(userGetDTO, responseHeaders, HttpStatus.CREATED);
   }
 
 }
