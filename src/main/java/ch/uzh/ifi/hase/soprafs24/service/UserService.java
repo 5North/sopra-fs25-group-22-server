@@ -51,16 +51,28 @@ public class UserService {
     return userByUsername.getToken();
   }
 
-  public User createUser(User newUser) {
-    if (userRepository.findByUsername(newUser.getUsername()) != null) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "User creation failed because username already exists");
+    public void logoutUser(User authUser) {
+        authUser.setStatus(UserStatus.OFFLINE);
     }
-    String token = UUID.randomUUID().toString();
-    newUser.setToken(token);
-    newUser.setStatus(UserStatus.ONLINE);
-    newUser.setWinCount(0);
-    newUser.setLossCount(0);
-    return userRepository.save(newUser);
-  }
+
+    public User authorizeUser(String token) throws ResponseStatusException {
+        User userByToken = userRepository.findByToken(token);
+        if (userByToken == null || userByToken.getStatus() != UserStatus.ONLINE) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
+        return userByToken;
+    }
+
+    public User createUser(User newUser) {
+        if (userRepository.findByUsername(newUser.getUsername()) != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User creation failed because username already exists");
+        }
+        String token = UUID.randomUUID().toString();
+        newUser.setToken(token);
+        newUser.setStatus(UserStatus.ONLINE);
+        newUser.setWinCount(0);
+        newUser.setLossCount(0);
+        return userRepository.save(newUser);
+    }
 
 }

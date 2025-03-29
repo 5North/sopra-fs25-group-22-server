@@ -130,4 +130,66 @@ public class UserServiceTest {
     assertEquals(0, createdUser.getLossCount());
   }
 
+    @Test
+    public void authorizeUser_ValidAuth_success() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+        testUser.setStatus(UserStatus.ONLINE);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
+
+        // call userService method
+        User authUser = userService.authorizeUser("a valid token");
+        assertNotNull(authUser);
+    }
+
+    @Test
+    public void authorizeUser_NotValidToken_throwsException() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(null);
+
+
+        // then -> attempt logout with invalid token -> check that an error
+        // is thrown
+        assertThrows(
+                ResponseStatusException.class, () -> userService
+                        .authorizeUser("not a valid token")
+        );
+    }
+
+    @Test
+    public void authorizeUser_InvalidatedSessionToken_throwsException() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+        testUser.setStatus(UserStatus.OFFLINE);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
+
+
+        // then -> attempt logout with invalid token -> check that an error
+        // is thrown
+        assertThrows(
+                ResponseStatusException.class, () -> userService
+                        .authorizeUser("a valid token")
+        );
+    }
+
+    @Test
+    public void logoutUser_success() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
+
+        // call userService method
+        userService.logoutUser(testUser);
+        assertEquals(UserStatus.OFFLINE, testUser.getStatus());
+    }
+
 }
