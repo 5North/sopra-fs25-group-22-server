@@ -53,7 +53,7 @@ public class UserServiceTest {
     Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
 
     // call userService method
-    userService.loginUser(testUser.getUsername(), testUser.getPassword());
+    userService.loginUser(testUser);
 
     assertEquals(UserStatus.ONLINE, testUser.getStatus());
     assertNotEquals(testUser.getToken(), previousToken);
@@ -62,17 +62,18 @@ public class UserServiceTest {
   // # 19
   @Test
   public void loginUser_notValidCredentials_throwsException() {
-    // given -> a first user has already been created
+
+    // given -> a user who tries to log in with wrong credentials
     userService.createUser(testUser);
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(null);
 
-    // then -> attempt to login with invalid credentials -> check that an error
+    // then -> attempt to log in with invalid credentials -> check that an error
     // is thrown
     assertThrows(
         ResponseStatusException.class, () -> userService
-            .loginUser("not_correct_username", "not_correct_password"));
+            .loginUser(testUser));
   }
 
   // # 19
@@ -81,6 +82,11 @@ public class UserServiceTest {
     // given -> a first user has already been created
     userService.createUser(testUser);
 
+    // given an userInput with the same username but the wrong password
+    User userInput = new User();
+    userInput.setUsername("testUsername");
+    userInput.setPassword("another-password");
+
     // when -> setup additional mocks for UserRepository
     Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
 
@@ -88,7 +94,7 @@ public class UserServiceTest {
     // is thrown
     assertThrows(
         ResponseStatusException.class, () -> userService
-            .loginUser(testUser.getUsername(), "not_correct_password"));
+            .loginUser(userInput));
   }
 
   // # 7

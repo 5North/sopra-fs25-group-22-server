@@ -26,31 +26,30 @@ import java.util.UUID;
 @Transactional
 public class UserService {
 
-    private final Logger log = LoggerFactory.getLogger(UserService.class);
+  private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    @Autowired
-    public UserService(@Qualifier("userRepository") UserRepository userRepository) {
-        this.userRepository = userRepository;
+  @Autowired
+  public UserService(@Qualifier("userRepository") UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
+
+  public List<User> getUsers() {
+    return this.userRepository.findAll();
+  }
+
+  public String loginUser(User userInput) {
+    User userByUsername = userRepository.findByUsername(userInput.getUsername());
+    if (userByUsername == null) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid username or password");
+    } else if (!userByUsername.getPassword().equals(userInput.getPassword())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid password");
     }
-
-    public List<User> getUsers() {
-        return this.userRepository.findAll();
-    }
-
-    public String loginUser(String username, String password) {
-        User userByUsername = userRepository.findByUsername(username);
-        if (userByUsername == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid username or password");
-        }
-        else if (!userByUsername.getPassword().equals(password)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid password");
-        }
-        userByUsername.setStatus(UserStatus.ONLINE);
-        userByUsername.setToken(UUID.randomUUID().toString());
-        return userByUsername.getToken();
-    }
+    userByUsername.setStatus(UserStatus.ONLINE);
+    userByUsername.setToken(UUID.randomUUID().toString());
+    return userByUsername.getToken();
+  }
 
     public void logoutUser(User authUser) {
         authUser.setStatus(UserStatus.OFFLINE);

@@ -6,7 +6,6 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,42 +147,60 @@ public class UserControllerTest {
         @Test
         public void loginUser_validInput_userLoggedIn() throws Exception {
                 // given
-                JSONObject payload = new JSONObject();
-                payload.put("username", "john_doe");
-                payload.put("password", "correct-horse-battery-staple");
+                User user = new User();
+                user.setId(1L);
+                user.setUsername("john_doe");
+                user.setPassword("correct-horse-battery-staple");
+                user.setToken("generated-session-token");
+                user.setStatus(UserStatus.ONLINE);
+                user.setWinCount(0);
+                user.setLossCount(0);
 
-                String token = "hdbhdd7-dfjdhs923-wddhejkh3";
+                UserPostDTO userPostDTO = new UserPostDTO();
+                userPostDTO.setUsername("john_doe");
+                userPostDTO.setPassword("correct-horse-battery-staple");
 
-                given(userService.loginUser(Mockito.any(), Mockito.any())).willReturn(token);
+                given(userService.loginUser(Mockito.any())).willReturn(user.getToken());
 
                 // when/then -> do the request + validate the result
                 MockHttpServletRequestBuilder postRequest = post("/login")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(payload.toString());
+                                .content(asJsonString(userPostDTO));
 
                 // then
                 mockMvc.perform(postRequest)
                                 .andExpect(status().isOk())
-                                .andExpect(header().string("Token", "hdbhdd7-dfjdhs923-wddhejkh3"));
+                                .andExpect(header().string("Token", "generated-session-token"));
         }
 
         // # 19
         @Test
         public void loginUser_notValidInput_userNotLoggedIn() throws Exception {
                 // given
-                JSONObject payload = new JSONObject();
-                payload.put("username", "john_doe");
-                payload.put("password", "correct-horse-battery-staple");
+                User user = new User();
+                user.setId(1L);
+                user.setUsername("john_doe");
+                user.setPassword("correct-horse-battery-staple");
+                user.setToken("generated-session-token");
+                user.setStatus(UserStatus.ONLINE);
+                user.setWinCount(0);
+                user.setLossCount(0);
 
-                given(userService.loginUser(Mockito.any(), Mockito.any()))
+                UserPostDTO userPostDTO = new UserPostDTO();
+                userPostDTO.setUsername("john_doe");
+                userPostDTO.setPassword("correct-horse-battery-staple");
+
+                given(userService.loginUser(Mockito.any()))
                                 .willThrow(
-                                                new ResponseStatusException(
-                                                                HttpStatus.FORBIDDEN, "Invalid username or password"));
+                                            new ResponseStatusException(
+                                                    HttpStatus.FORBIDDEN, "Invalid username or password"
+                                            )
+                                );
 
                 // when/then -> do the request + validate the result
                 MockHttpServletRequestBuilder postRequest = post("/login")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(payload.toString());
+                                .content(asJsonString(userPostDTO));
 
                 // then
                 mockMvc.perform(postRequest)
