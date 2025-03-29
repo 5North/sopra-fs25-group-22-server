@@ -46,12 +46,15 @@ public class UserController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<String> loginUser(@RequestBody String username, String password) {
+  public ResponseEntity<String> loginUser(@RequestBody UserPostDTO userPostDTO) {
+
+    // convert API user to internal representation
+    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
     // login the user, if exception is thrown return response with the exception's
     // msg and http status
     try {
-      String token = userService.loginUser(username, password);
+      String token = userService.loginUser(userInput);
 
       // append token to response header using ResponseEntity
       HttpHeaders responseHeaders = new HttpHeaders();

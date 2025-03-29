@@ -39,11 +39,11 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
-  public String loginUser(String username, String password) {
-    User userByUsername = userRepository.findByUsername(username);
+  public String loginUser(User userInput) {
+    User userByUsername = userRepository.findByUsername(userInput.getUsername());
     if (userByUsername == null) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid username or password");
-    } else if (!userByUsername.getPassword().equals(password)) {
+    } else if (!userByUsername.getPassword().equals(userInput.getPassword())) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid password");
     }
     userByUsername.setStatus(UserStatus.ONLINE);
