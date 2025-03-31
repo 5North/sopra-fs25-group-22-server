@@ -11,13 +11,14 @@ public class Deck {
         cards = new ArrayList<>();
         for (Suit suit : Suit.values()) {
             for (int value = 1; value <= 10; value++) {
-                cards.add(new Card(suit, value));
+                cards.add(CardFactory.getCard(suit, value));
             }
         }
         do {
             shuffle();
         } while (!checkCorrectness());
     }
+
 
     public void shuffle() {
         Collections.shuffle(cards);
@@ -33,6 +34,7 @@ public class Deck {
         }
         return sum > 10;
     }
+
 
     public List<Card> getCards() {
         return Collections.unmodifiableList(cards);
