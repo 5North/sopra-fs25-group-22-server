@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -10,15 +12,25 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")
-                .setAllowedOrigins("*");
+    @Bean
+    public WebSocketAuth wsAuth() {
+        return new WebSocketAuth();
     }
 
     @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("*")
+                // adds interceptor for authentication
+                .addInterceptors(wsAuth());
+    }
+
+    // sets up message routing
+    @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue");
+                // set client pinging every xxxxx ms and expect response every xxxxx ms, else disconnect.
+                //.setHeartbeatValue(new long[]{20000, 30000});
         registry.setApplicationDestinationPrefixes("/app");
     }
 }
