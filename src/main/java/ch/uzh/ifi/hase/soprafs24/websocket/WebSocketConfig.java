@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
-import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
