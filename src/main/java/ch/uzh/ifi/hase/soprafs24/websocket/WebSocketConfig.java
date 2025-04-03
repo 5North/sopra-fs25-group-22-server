@@ -18,7 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")
+        registry.addEndpoint("/lobby")
                 .setAllowedOrigins("*")
                 // adds interceptor for authentication
                 .addInterceptors(wsAuth());
