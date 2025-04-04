@@ -38,7 +38,8 @@ public class LobbyService {
         this.userService = userService;
     }
 
-    public Lobby createLobby(User user){
+    // TODO consider if lobby already exists check
+    public Lobby createLobby(User user) {
         Lobby newLobby = new Lobby();
         newLobby.setLobbyId(generateId());
         user.setLobby(newLobby);
@@ -49,7 +50,20 @@ public class LobbyService {
     public void joinLobby(long lobbyId, long userId) throws NotFoundException {
         checkIfLobbyExists(lobbyId);
         userService.checkIfUserExists(userId);
+
+        // check if lobby is already full
+        if (lobbyIsFull(lobbyId)) {
+            String msg = "The lobby is already full";
+            throw new IllegalStateException(msg);
+        }
+
         Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
+
+        // check if user is already in the lobby
+        if (lobby.getUsers().contains(userId)) {
+            String msg = "The user is already in the lobby";
+            throw new IllegalStateException(msg);
+        }
         lobby.addUsers(userId);
         this.lobbyIsFull(lobbyId);
     }
