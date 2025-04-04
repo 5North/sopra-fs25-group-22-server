@@ -60,7 +60,8 @@ public class LobbyServiceIntegrationTest {
 
         // then:
         assertNotNull(createdLobby.getLobbyId(), "The id of the lobby was not created");
+        assertEquals(createdLobby.getLobbyId(), testUser.getLobby().getLobbyId(), "The correct db association was not created");
+        assertEquals(createdLobby.getUser().getId(),testUser.getId(), "The correct db association was not created");
     }
 
-    //TODO test for database relation between lobby and user
 }
