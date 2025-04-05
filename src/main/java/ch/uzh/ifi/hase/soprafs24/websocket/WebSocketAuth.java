@@ -35,7 +35,16 @@ public class WebSocketAuth implements HandshakeInterceptor {
         }
 
         User authUser = userService.authorizeUser(token);
-        return authUser != null;
+
+        if (authUser != null) {
+            // Save the user id as a session attribute, in order to retrieve it later
+            attributes.put("userId", authUser.getId());
+            return true;
+        } else {
+            //TODO delete
+            //response.setStatusCode(HttpStatus.UNAUTHORIZED);
+            return false;
+        }
     }
 
     @Override

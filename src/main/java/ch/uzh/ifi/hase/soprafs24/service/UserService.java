@@ -77,11 +77,12 @@ public class UserService {
     }
 
     // TODO eventually refactor better to avoid duplicate code
-    public void checkIfUserExists(long userId) throws NotFoundException {
+    public User checkIfUserExists(long userId) throws NotFoundException {
       if(userRepository.findById(userId) == null) {
           String msg = "User with id " + userId + " does not exist";
           throw new NotFoundException(msg);
       }
+      return userRepository.findById(userId);
     }
 
 }
