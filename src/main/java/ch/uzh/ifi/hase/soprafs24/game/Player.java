@@ -14,7 +14,6 @@ public class Player {
 
     public Player(Long userId, List<Card> initialHand) {
         this.userId = userId;
-        // Copy the initial hand to ensure encapsulation.
         this.hand = new ArrayList<>(initialHand);
         this.treasure = new ArrayList<>();
         this.scopaCount = 0;
