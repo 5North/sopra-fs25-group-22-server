@@ -23,17 +23,25 @@ public class PlayerTest {
     }
 
     @Test
-    public void testGetUserId() {
+    public void testPlayerUserIdLong() {
+        Long userId = 123L;
         List<Card> initialHand = createInitialHand();
-        String userId = "user123";
         Player player = new Player(userId, initialHand);
-        assertEquals(userId, player.getUserId(), "The user ID should match the one provided");
+        assertEquals(userId, player.getUserId(), "The user ID (Long) should match the one provided.");
+    }
+
+    @Test
+    public void testPlayerUserIdNotEqual() {
+        Long userId = 123L;
+        List<Card> initialHand = createInitialHand();
+        Player player = new Player(userId, initialHand);
+        assertNotEquals(456L, player.getUserId(), "The user ID should not match a different Long value.");
     }
 
     @Test
     public void testGetHand() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("user456", initialHand);
+        Player player = new Player(123L, initialHand);
         List<Card> hand = player.getHand();
         assertEquals(9, hand.size(), "The initial hand should contain 9 cards");
         for (Card card : initialHand) {
@@ -44,7 +52,7 @@ public class PlayerTest {
     @Test
     public void testPickPlayedCardSuccess() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("user789", initialHand);
+        Player player = new Player(123L, initialHand);
         Card cardToPlay = CardFactory.getCard(Suit.COPPE, 5);
         Card playedCard = player.pickPlayedCard(cardToPlay);
         assertEquals(cardToPlay, playedCard, "The played card should be the one picked from the hand");
@@ -55,7 +63,7 @@ public class PlayerTest {
     @Test
     public void testPickPlayedCardNotInHand() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("user987", initialHand);
+        Player player = new Player(234L, initialHand);
 
         // Use a card from a different suit (assuming Suit.BASTONI is different from
         // Suit.COPPE)
@@ -73,7 +81,7 @@ public class PlayerTest {
     @Test
     public void testGetHandUnmodifiable() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("user321", initialHand);
+        Player player = new Player(234L, initialHand);
         List<Card> hand = player.getHand();
 
         assertThrows(UnsupportedOperationException.class, () -> {
@@ -84,7 +92,7 @@ public class PlayerTest {
     @Test
     public void testGetHandAfterPlayingSomeCards() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("userAI", initialHand);
+        Player player = new Player(234L, initialHand);
         for (int i = 1; i <= 7; i++) {
             Card cardToPlay = CardFactory.getCard(Suit.COPPE, i);
             player.pickPlayedCard(cardToPlay);
@@ -99,7 +107,7 @@ public class PlayerTest {
     @Test
     public void testInitialTreasureIsEmpty() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("userTreasure", initialHand);
+        Player player = new Player(345L, initialHand);
 
         assertTrue(player.getTreasure().isEmpty(), "Treasure should initially be empty");
         assertEquals(0, player.getScopaCount(), "Initial scopa count should be 0");
@@ -108,7 +116,7 @@ public class PlayerTest {
     @Test
     public void testCollectCardsWithoutScopa() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("userCollect", initialHand);
+        Player player = new Player(234L, initialHand);
 
         // Prepare a list of cards to collect.
         List<Card> collectedCards = new ArrayList<>();
@@ -127,7 +135,7 @@ public class PlayerTest {
     @Test
     public void testCollectCardsWithScopa() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("userScopa", initialHand);
+        Player player = new Player(545L, initialHand);
 
         // Prepare a list of cards to collect.
         List<Card> collectedCards = new ArrayList<>();
@@ -145,7 +153,7 @@ public class PlayerTest {
     @Test
     public void testMultipleCollectCardsCalls() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("userMulti", initialHand);
+        Player player = new Player(333L, initialHand);
 
         // First collection: without scopa.
         List<Card> collectedCards1 = new ArrayList<>();
@@ -174,7 +182,7 @@ public class PlayerTest {
     @Test
     public void testGetTreasureUnmodifiable() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("userUnmod", initialHand);
+        Player player = new Player(555L, initialHand);
 
         // Collect some cards to have non-empty treasure.
         List<Card> collectedCards = new ArrayList<>();
@@ -192,7 +200,7 @@ public class PlayerTest {
     @Test
     public void testInitialScopaCountIsZero() {
         List<Card> initialHand = createInitialHand();
-        Player player = new Player("userScopaTest", initialHand);
+        Player player = new Player(666L, initialHand);
         assertEquals(0, player.getScopaCount(), "Initial scopa count should be 0");
     }
 }

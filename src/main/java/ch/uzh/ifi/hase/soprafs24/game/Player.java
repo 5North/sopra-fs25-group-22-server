@@ -7,12 +7,12 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 
 public class Player {
 
-    private final String userId;
+    private final Long userId;
     private final List<Card> hand;
     private final List<Card> treasure;
     private int scopaCount;
 
-    public Player(String userId, List<Card> initialHand) {
+    public Player(Long userId, List<Card> initialHand) {
         this.userId = userId;
         // Copy the initial hand to ensure encapsulation.
         this.hand = new ArrayList<>(initialHand);
@@ -51,7 +51,7 @@ public class Player {
         return Collections.unmodifiableList(hand);
     }
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 }
