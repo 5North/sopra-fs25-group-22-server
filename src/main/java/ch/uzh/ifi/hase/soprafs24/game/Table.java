@@ -63,4 +63,8 @@ public class Table {
             cardsOnTable.add(card);
         }
     }
+
+    public boolean isEmpty() {
+        return cardsOnTable.isEmpty();
+    }
 }

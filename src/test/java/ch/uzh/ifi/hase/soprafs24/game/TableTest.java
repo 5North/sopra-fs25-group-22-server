@@ -341,4 +341,44 @@ public class TableTest {
         assertEquals(1, capturingCandidates, "Only one capturing candidate (a 3) should remain on the table.");
     }
 
+    @Test
+    public void testCaptureUntilEmpty() {
+        // Inizializziamo il tavolo con 4 carte tutte di valore 7 e seme COPPE.
+        List<Integer> sevens = List.of(7, 7, 7, 7);
+        List<Card> initialCards = createCardsFromValues(sevens, Suit.COPPE);
+        Table table = new Table(initialCards);
+
+        // Il giocatore gioca una carta di valore 7 (può essere dello stesso seme, in
+        // questo esempio COPPE).
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
+
+        // Finché il tavolo non è vuoto, simuliamo la cattura:
+        while (!table.isEmpty()) {
+            // Calcoliamo le opzioni di cattura per il playedCard.
+            List<List<Card>> options = table.getCaptureOptions(playedCard);
+            // Se non esistono opzioni (caso in cui nessuna cattura sia possibile), usiamo
+            // addCard (ma qui non succederà)
+            if (options.isEmpty()) {
+                table.addCard(playedCard);
+                break;
+            } else {
+                // Poiché tutte le carte sul tavolo sono 7, getCaptureOptions restituirà opzioni
+                // singole (una per ciascun 7).
+                // Simuliamo la scelta: selezioniamo la prima opzione.
+                List<Card> selectedOption = options.get(0);
+                table.applyCaptureOption(selectedOption);
+            }
+        }
+
+        // Alla fine, il tavolo deve essere vuoto.
+        assertTrue(table.isEmpty(), "After capturing repeatedly, the table should be empty (scopa done).");
+    }
+
+    @Test
+    public void testIsEmptyWhenTableIsNotEmpty() {
+        List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
+        Table table = new Table(initialCards);
+        assertFalse(table.isEmpty(), "isEmpty() should return false when the table contains cards.");
+    }
+
 }
