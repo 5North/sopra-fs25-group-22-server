@@ -3,7 +3,9 @@ package ch.uzh.ifi.hase.soprafs24.game;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.Test;
@@ -110,4 +112,233 @@ public class TableTest {
         List<Card> tableCards = table.getCards();
         assertTrue(tableCards.isEmpty(), "getCards should return an empty list when the internal list is cleared.");
     }
+
+    private List<Card> createCardsFromValues(List<Integer> values, Suit suit) {
+        List<Card> cards = new ArrayList<>();
+        for (Integer value : values) {
+            cards.add(CardFactory.getCard(suit, value));
+        }
+        return cards;
+    }
+
+    private Map<Integer, Integer> getValueFrequency(List<Card> cards) {
+        Map<Integer, Integer> freq = new HashMap<>();
+        for (Card card : cards) {
+            freq.put(card.getValue(), freq.getOrDefault(card.getValue(), 0) + 1);
+        }
+        return freq;
+    }
+
+    @Test
+    public void testGetCaptureOptionsDeterministicSingleOption() {
+        // Table: [7, 3, 4, 2]
+        List<Card> initialCards = createCardsFromValues(List.of(7, 3, 4, 2), Suit.COPPE);
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+
+        assertFalse(options.isEmpty(), "Expected at least one capture option.");
+        for (List<Card> option : options) {
+            assertEquals(1, option.size(), "Expected a single-card option when a matching card exists.");
+            Card c = option.get(0);
+            assertEquals(7, c.getValue(), "The single card option must have value 7.");
+            assertEquals(Suit.COPPE, c.getSuit(), "The card suit should be COPPE.");
+        }
+    }
+
+    @Test
+    public void testGetCaptureOptionsNonDeterministic() {
+        // Table: [3, 4, 2, 2]
+        List<Card> initialCards = createCardsFromValues(List.of(3, 4, 2, 2), Suit.COPPE);
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+        assertEquals(2, options.size(), "Expected two capture options for played card 7 with table [3,4,2,2].");
+
+        boolean foundOption1 = false;
+        boolean foundOption2 = false;
+
+        for (List<Card> option : options) {
+            int sum = option.stream().mapToInt(Card::getValue).sum();
+            assertEquals(7, sum, "Each capture option must sum to 7.");
+
+            Map<Integer, Integer> freq = getValueFrequency(option);
+            if (freq.size() == 2 && freq.getOrDefault(3, 0) == 1 && freq.getOrDefault(4, 0) == 1) {
+                foundOption1 = true;
+            } else if (freq.size() == 2 && freq.getOrDefault(3, 0) == 1 && freq.getOrDefault(2, 0) == 2) {
+                foundOption2 = true;
+            }
+        }
+        assertTrue(foundOption1, "Expected option [3,4] not found.");
+        assertTrue(foundOption2, "Expected option [3,2,2] not found.");
+    }
+
+    @Test
+    public void testGetCaptureOptionsNoCapture() {
+        List<Card> initialCards = createCardsFromValues(List.of(2, 3, 5, 6), Suit.COPPE);
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 4);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+        assertTrue(options.isEmpty(),
+                "Expected no capture options when no combination sums to the played card's value.");
+    }
+
+    @Test
+    public void testApplyCaptureOptionDeterministic() {
+        // Tavolo: [7, 3, 4, 2]
+        List<Card> initialCards = createCardsFromValues(List.of(7, 3, 4, 2), Suit.COPPE);
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+        assertFalse(options.isEmpty(), "Expected capture options for played card 7.");
+        List<Card> selectedOption = options.get(0);
+        table.applyCaptureOption(selectedOption);
+        List<Card> remaining = table.getCards();
+
+        for (Card captured : selectedOption) {
+            assertFalse(remaining.contains(captured), "The captured card should have been removed from the table.");
+        }
+        assertEquals(3, remaining.size(), "Table should have 3 cards remaining after applying capture option.");
+    }
+
+    @Test
+    public void testApplyCaptureOptionNonDeterministic() {
+        List<Card> initialCards = createCardsFromValues(List.of(3, 4, 2, 2), Suit.COPPE);
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+        assertEquals(2, options.size(), "Expected two capture options.");
+
+        List<Card> selectedOption = options.get(0);
+        table.applyCaptureOption(selectedOption);
+        List<Card> remaining = table.getCards();
+
+        for (Card captured : selectedOption) {
+            assertFalse(remaining.contains(captured), "The captured card should have been removed from the table.");
+        }
+        assertEquals(4 - selectedOption.size(), remaining.size(), "Remaining cards count is incorrect after capture.");
+    }
+
+    @Test
+    public void testAddCardAfterNoCapture() {
+        // Table: [2, 3, 5, 6]
+        List<Card> initialCards = createCardsFromValues(List.of(2, 3, 5, 6), Suit.COPPE);
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 4);
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+        assertTrue(options.isEmpty(), "No capture options should be available.");
+
+        table.addCard(playedCard);
+        List<Card> updated = table.getCards();
+        assertEquals(5, updated.size(), "Table should have 5 cards after adding the played card.");
+        assertTrue(updated.contains(playedCard), "Table should contain the played card after addCard.");
+    }
+
+    @Test
+    public void testFullCaptureProcess() {
+        // Table: [7, 3, 4, 2]
+        List<Card> initialCards = createCardsFromValues(List.of(7, 3, 4, 2), Suit.COPPE);
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+        assertFalse(options.isEmpty(), "Capture options should not be empty.");
+        for (List<Card> option : options) {
+            assertEquals(1, option.size(), "Expected a single-card capture option.");
+            assertEquals(7, option.get(0).getValue(), "The card in the capture option should have value 7.");
+        }
+        List<Card> selectedOption = options.get(0);
+        table.applyCaptureOption(selectedOption);
+
+        List<Card> remaining = table.getCards();
+        for (Card captured : selectedOption) {
+            assertFalse(remaining.contains(captured), "Captured card should be removed from the table.");
+        }
+        assertEquals(3, remaining.size(), "Table should have 3 cards remaining after full capture process.");
+    }
+
+    @Test
+    public void testGetCaptureOptionsWithTwo6AndTwo3() {
+        // Table: [3, 3, 6, 6]
+        List<Card> initialCards = new ArrayList<>();
+        initialCards.add(CardFactory.getCard(Suit.COPPE, 3));
+        initialCards.add(CardFactory.getCard(Suit.COPPE, 3));
+        initialCards.add(CardFactory.getCard(Suit.COPPE, 6));
+        initialCards.add(CardFactory.getCard(Suit.COPPE, 6));
+
+        Table table = new Table(initialCards);
+        Card playedCard = CardFactory.getCard(Suit.COPPE, 6);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+
+        assertEquals(2, options.size(), "Expected exactly 2 capture options (each a single 6).");
+        for (List<Card> option : options) {
+            assertEquals(1, option.size(), "Each capture option should contain exactly one card.");
+            Card optionCard = option.get(0);
+            assertEquals(6, optionCard.getValue(), "Each capture option must have a card with value 6.");
+            assertEquals(Suit.COPPE, optionCard.getSuit(), "The card should have suit COPPE.");
+        }
+    }
+
+    @Test
+    public void testCaptureOptionsWithMixedAndApplyChosenOption() {
+        Card card1 = CardFactory.getCard(Suit.DENARI, 3);
+        Card card2 = CardFactory.getCard(Suit.DENARI, 4);
+        Card card3 = CardFactory.getCard(Suit.COPPE, 3);
+        Card card4 = CardFactory.getCard(Suit.DENARI, 10);
+        List<Card> initialCards = new ArrayList<>();
+        initialCards.add(card1);
+        initialCards.add(card2);
+        initialCards.add(card3);
+        initialCards.add(card4);
+
+        Table table = new Table(initialCards);
+
+        Card playedCard = CardFactory.getCard(Suit.DENARI, 7);
+
+        List<List<Card>> options = table.getCaptureOptions(playedCard);
+
+        assertEquals(2, options.size(), "Expected exactly 2 capture options for played card 7.");
+
+        boolean foundOption1 = false;
+        boolean foundOption2 = false;
+        for (List<Card> option : options) {
+            int sum = option.stream().mapToInt(Card::getValue).sum();
+            assertEquals(7, sum, "Each capture option must sum to 7.");
+            if (option.contains(card1) && option.contains(card2) && option.size() == 2) {
+                foundOption1 = true;
+            }
+            if (option.contains(card3) && option.contains(card2) && option.size() == 2) {
+                foundOption2 = true;
+            }
+        }
+        assertTrue(foundOption1, "Expected capture option [3 of DENARI, 4 of DENARI] not found.");
+        assertTrue(foundOption2, "Expected capture option [3 of COPPE, 4 of DENARI] not found.");
+
+        List<Card> selectedOption = null;
+        for (List<Card> option : options) {
+            if (option.contains(card1) && option.contains(card2)) {
+                selectedOption = option;
+                break;
+            }
+        }
+        assertNotNull(selectedOption, "Capture option [3 of DENARI, 4 of DENARI] must be found.");
+
+        table.applyCaptureOption(selectedOption);
+        List<Card> remaining = table.getCards();
+
+        assertFalse(remaining.contains(card1), "3 of DENARI should have been captured.");
+        assertFalse(remaining.contains(card2), "4 of DENARI should have been captured.");
+
+        assertTrue(remaining.contains(card3), "3 of COPPE should remain on the table.");
+
+        long capturingCandidates = remaining.stream().filter(c -> c.getValue() < 7).count();
+        assertEquals(1, capturingCandidates, "Only one capturing candidate (a 3) should remain on the table.");
+    }
+
 }
