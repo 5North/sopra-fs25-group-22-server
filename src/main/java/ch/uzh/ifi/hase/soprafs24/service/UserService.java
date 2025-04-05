@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +74,14 @@ public class UserService {
         newUser.setWinCount(0);
         newUser.setLossCount(0);
         return userRepository.save(newUser);
+    }
+
+    // TODO eventually refactor better to avoid duplicate code
+    public void checkIfUserExists(long userId) throws NotFoundException {
+      if(userRepository.findById(userId) == null) {
+          String msg = "User with id " + userId + " does not exist";
+          throw new NotFoundException(msg);
+      }
     }
 
 }

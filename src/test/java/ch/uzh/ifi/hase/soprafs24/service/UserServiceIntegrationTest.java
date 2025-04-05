@@ -54,6 +54,7 @@ public class UserServiceIntegrationTest {
     assertEquals(UserStatus.ONLINE, createdUser.getStatus());
     assertEquals(0, createdUser.getWinCount());
     assertEquals(0, createdUser.getLossCount());
+    assertNull(createdUser.getLobby(), "The lobby is not null created");
   }
 
   // # 1

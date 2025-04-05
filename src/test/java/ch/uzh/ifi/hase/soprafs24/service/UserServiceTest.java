@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -190,6 +191,30 @@ public class UserServiceTest {
         // call userService method
         userService.logoutUser(testUser);
         assertEquals(UserStatus.OFFLINE, testUser.getStatus());
+    }
+
+    @Test
+    public void checkIfUserExists_success() throws NotFoundException {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(testUser);
+
+        assertDoesNotThrow(() -> userService.checkIfUserExists(testUser.getId()));
+
+    }
+
+    @Test
+    public void checkIfUserExists_throwsException() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(null);
+
+        assertThrows(
+                NotFoundException.class, () -> userService.checkIfUserExists(1L));
     }
 
 }

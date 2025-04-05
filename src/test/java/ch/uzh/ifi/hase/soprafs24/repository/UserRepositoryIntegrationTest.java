@@ -83,4 +83,46 @@ public class UserRepositoryIntegrationTest {
         // then
         assertNull(found);
     }
+    @Test
+    public void findById_success() {
+        // given
+        User user = new User();
+        user.setUsername("firstname@lastname");
+        user.setPassword("password");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setToken("1");
+
+        entityManager.persist(user);
+        entityManager.flush();
+
+        // when
+        User found = userRepository.findById(user.getId().longValue());
+
+        // then
+        assertNotNull(found.getId());
+        assertEquals(found.getId(), user.getId());
+        assertEquals(found.getUsername(), user.getUsername());
+        assertEquals(found.getPassword(), user.getPassword());
+        assertEquals(found.getToken(), user.getToken());
+        assertEquals(found.getStatus(), user.getStatus());
+    }
+
+    @Test
+    public void findById_returnsNull() {
+        // given
+        User user = new User();
+        user.setUsername("firstname@lastname");
+        user.setPassword("password");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setToken("1");
+
+        entityManager.persist(user);
+        entityManager.flush();
+
+        // when
+        User found = userRepository.findById(user.getId() + 1L);
+
+        // then
+        assertNull(found);
+    }
 }
