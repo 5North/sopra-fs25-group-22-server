@@ -9,11 +9,18 @@ public class Player {
 
     private final String userId;
     private final List<Card> hand;
+    private final List<Card> treasure;
+    private int scopaCount;
 
     public Player(String userId, List<Card> initialHand) {
         this.userId = userId;
+        // Copy the initial hand to ensure encapsulation.
         this.hand = new ArrayList<>(initialHand);
+        this.treasure = new ArrayList<>();
+        this.scopaCount = 0;
     }
+
+    // Setters
 
     public Card pickPlayedCard(Card playedCard) {
         if (!hand.contains(playedCard)) {
@@ -21,6 +28,23 @@ public class Player {
         }
         hand.remove(playedCard);
         return playedCard;
+    }
+
+    public void collectCards(List<Card> cards, boolean scopa) {
+        treasure.addAll(cards);
+        if (scopa) {
+            scopaCount++;
+        }
+    }
+
+    // Getters
+
+    public List<Card> getTreasure() {
+        return Collections.unmodifiableList(treasure);
+    }
+
+    public int getScopaCount() {
+        return scopaCount;
     }
 
     public List<Card> getHand() {
