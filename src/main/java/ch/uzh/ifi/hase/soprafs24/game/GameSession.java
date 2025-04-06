@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.game;
 
 import java.util.ArrayList;
 import java.util.List;
+import ch.uzh.ifi.hase.soprafs24.game.result.Result;
 
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.Deck;
@@ -144,6 +145,8 @@ public class GameSession {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
     }
 
+    // finish game, clear table
+
     public void finishGame() {
         if (!table.isEmpty() && lastGetterIndex != -1) {
             Player lastGetter = players.get(lastGetterIndex);
@@ -152,4 +155,11 @@ public class GameSession {
             lastGetter.collectCards(remainingCards, false);
         }
     }
+
+    // Calculate result
+
+    public Result calculateResult() {
+        return new Result(this.gameId, this.players);
+    }
+
 }

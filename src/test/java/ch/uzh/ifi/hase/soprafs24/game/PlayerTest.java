@@ -13,7 +13,6 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
 public class PlayerTest {
 
-    // Utility method to create an initial hand of 9 cards.
     private List<Card> createInitialHand() {
         List<Card> initialHand = new ArrayList<>();
         for (int i = 1; i <= 9; i++) {
@@ -65,8 +64,6 @@ public class PlayerTest {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(234L, initialHand);
 
-        // Use a card from a different suit (assuming Suit.BASTONI is different from
-        // Suit.COPPE)
         Card cardNotInHand = CardFactory.getCard(Suit.BASTONI, 5);
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             player.pickPlayedCard(cardNotInHand);
@@ -102,8 +99,6 @@ public class PlayerTest {
         assertEquals(2, remainingHand.size(), "After playing 7 cards, the remaining hand should contain 2 cards");
     }
 
-    // --- Tests for collectCards functionality ---
-
     @Test
     public void testInitialTreasureIsEmpty() {
         List<Card> initialHand = createInitialHand();
@@ -118,17 +113,13 @@ public class PlayerTest {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(234L, initialHand);
 
-        // Prepare a list of cards to collect.
         List<Card> collectedCards = new ArrayList<>();
         collectedCards.add(CardFactory.getCard(Suit.COPPE, 3));
         collectedCards.add(CardFactory.getCard(Suit.COPPE, 7));
 
-        // Call collectCards with scopa flag set to false.
         player.collectCards(collectedCards, false);
 
-        // Verify that the treasure contains the collected cards.
         assertEquals(2, player.getTreasure().size(), "Treasure should contain the collected cards");
-        // Verify that scopaCount remains 0.
         assertEquals(0, player.getScopaCount(), "Scopa count should not have increased when scopa flag is false");
     }
 
@@ -137,15 +128,12 @@ public class PlayerTest {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(545L, initialHand);
 
-        // Prepare a list of cards to collect.
         List<Card> collectedCards = new ArrayList<>();
         collectedCards.add(CardFactory.getCard(Suit.COPPE, 4));
         collectedCards.add(CardFactory.getCard(Suit.COPPE, 8));
 
-        // Call collectCards with scopa flag set to true.
         player.collectCards(collectedCards, true);
 
-        // Verify that the treasure is updated and scopaCount is incremented.
         assertEquals(2, player.getTreasure().size(), "Treasure should contain the collected cards");
         assertEquals(1, player.getScopaCount(), "Scopa count should increase by 1 when scopa flag is true");
     }
@@ -155,27 +143,22 @@ public class PlayerTest {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(333L, initialHand);
 
-        // First collection: without scopa.
         List<Card> collectedCards1 = new ArrayList<>();
         collectedCards1.add(CardFactory.getCard(Suit.COPPE, 2));
         collectedCards1.add(CardFactory.getCard(Suit.COPPE, 6));
         player.collectCards(collectedCards1, false);
 
-        // Second collection: with scopa.
         List<Card> collectedCards2 = new ArrayList<>();
         collectedCards2.add(CardFactory.getCard(Suit.COPPE, 9));
         player.collectCards(collectedCards2, true);
 
-        // Third collection: with scopa.
         List<Card> collectedCards3 = new ArrayList<>();
         collectedCards3.add(CardFactory.getCard(Suit.COPPE, 1));
         collectedCards3.add(CardFactory.getCard(Suit.COPPE, 3));
         player.collectCards(collectedCards3, true);
 
-        // Total collected cards should be 2 + 1 + 2 = 5.
         assertEquals(5, player.getTreasure().size(),
                 "Treasure should contain all collected cards after multiple calls");
-        // Scopa count should be 2 (from the two collections with scopa true).
         assertEquals(2, player.getScopaCount(), "Scopa count should correctly reflect the number of scopa events");
     }
 
@@ -184,14 +167,11 @@ public class PlayerTest {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(555L, initialHand);
 
-        // Collect some cards to have non-empty treasure.
         List<Card> collectedCards = new ArrayList<>();
         collectedCards.add(CardFactory.getCard(Suit.COPPE, 5));
         player.collectCards(collectedCards, false);
 
         List<Card> treasure = player.getTreasure();
-        // Attempting to modify the returned treasure list should throw an
-        // UnsupportedOperationException.
         assertThrows(UnsupportedOperationException.class, () -> {
             treasure.add(CardFactory.getCard(Suit.COPPE, 10));
         }, "The treasure list should be unmodifiable");

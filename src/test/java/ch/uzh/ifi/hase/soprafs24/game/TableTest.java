@@ -16,7 +16,6 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
 public class TableTest {
 
-    // Utility method to create a list of cards with the given count and suit.
     private List<Card> createCards(int count, Suit suit) {
         List<Card> cards = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
@@ -27,11 +26,9 @@ public class TableTest {
 
     @Test
     public void testTableInstantiationWithFourCards() {
-        // Create a list of exactly 4 cards.
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
 
-        // Get the cards from the table and verify that they are the same.
         List<Card> tableCards = table.getCards();
         assertEquals(4, tableCards.size(), "Table should contain exactly 4 cards.");
         for (Card card : initialCards) {
@@ -41,21 +38,18 @@ public class TableTest {
 
     @Test
     public void testTableInstantiationWithInvalidNumberOfCards() {
-        // Create a list with less than 4 cards.
         List<Card> lessThanFour = createCards(3, Suit.COPPE);
         Exception exception1 = assertThrows(IllegalArgumentException.class, () -> {
             new Table(lessThanFour);
         }, "Instantiating a Table with less than 4 cards should throw an exception.");
         assertEquals("Initial cards list must contain exactly 4 cards.", exception1.getMessage());
 
-        // Create a list with more than 4 cards.
         List<Card> moreThanFour = createCards(5, Suit.COPPE);
         Exception exception2 = assertThrows(IllegalArgumentException.class, () -> {
             new Table(moreThanFour);
         }, "Instantiating a Table with more than 4 cards should throw an exception.");
         assertEquals("Initial cards list must contain exactly 4 cards.", exception2.getMessage());
 
-        // Test passing null.
         Exception exception3 = assertThrows(IllegalArgumentException.class, () -> {
             new Table(null);
         }, "Instantiating a Table with null should throw an exception.");
@@ -68,7 +62,6 @@ public class TableTest {
         Table table = new Table(initialCards);
         List<Card> tableCards = table.getCards();
 
-        // Attempt to modify the list returned by getCards should throw an exception.
         assertThrows(UnsupportedOperationException.class, () -> {
             tableCards.add(CardFactory.getCard(Suit.DENARI, 7));
         }, "The list returned by getCards should be unmodifiable.");
@@ -76,21 +69,17 @@ public class TableTest {
 
     @Test
     public void testTableInternalStateNotAffectedByExternalListModification() {
-        // Create an initial list of 4 cards.
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
 
-        // Modify the original list.
         initialCards.clear();
 
-        // The table's internal list should remain unchanged.
         List<Card> tableCards = table.getCards();
         assertEquals(4, tableCards.size(), "Modifying the original list should not affect the Table's internal state.");
     }
 
     @Test
     public void testGetCardsReturnsCorrectSize() {
-        // Create a table with exactly 4 cards.
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
         List<Card> tableCards = table.getCards();
@@ -188,7 +177,7 @@ public class TableTest {
 
     @Test
     public void testApplyCaptureOptionDeterministic() {
-        // Tavolo: [7, 3, 4, 2]
+        // Table: [7, 3, 4, 2]
         List<Card> initialCards = createCardsFromValues(List.of(7, 3, 4, 2), Suit.COPPE);
         Table table = new Table(initialCards);
         Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
@@ -343,34 +332,25 @@ public class TableTest {
 
     @Test
     public void testCaptureUntilEmpty() {
-        // Inizializziamo il tavolo con 4 carte tutte di valore 7 e seme COPPE.
         List<Integer> sevens = List.of(7, 7, 7, 7);
         List<Card> initialCards = createCardsFromValues(sevens, Suit.COPPE);
         Table table = new Table(initialCards);
 
-        // Il giocatore gioca una carta di valore 7 (può essere dello stesso seme, in
-        // questo esempio COPPE).
         Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
 
-        // Finché il tavolo non è vuoto, simuliamo la cattura:
         while (!table.isEmpty()) {
-            // Calcoliamo le opzioni di cattura per il playedCard.
             List<List<Card>> options = table.getCaptureOptions(playedCard);
-            // Se non esistono opzioni (caso in cui nessuna cattura sia possibile), usiamo
-            // addCard (ma qui non succederà)
+
             if (options.isEmpty()) {
                 table.addCard(playedCard);
                 break;
             } else {
-                // Poiché tutte le carte sul tavolo sono 7, getCaptureOptions restituirà opzioni
-                // singole (una per ciascun 7).
-                // Simuliamo la scelta: selezioniamo la prima opzione.
+
                 List<Card> selectedOption = options.get(0);
                 table.applyCaptureOption(selectedOption);
             }
         }
 
-        // Alla fine, il tavolo deve essere vuoto.
         assertTrue(table.isEmpty(), "After capturing repeatedly, the table should be empty (scopa done).");
     }
 
