@@ -38,6 +38,34 @@
 | **/user/queue/reply**      | **SUBSCRIBE**   | --                                                                                                   | --             | Subscribe to private channel for receiving personal notifications (capture options, AI hints, etc.) |
 | **/user/queue/reply**      | **UNSUBSCRIBE** | --                                                                                                   | --             | Unsubscribe from the private channel                                                                |
 
+### STOMP notifications
+
+#### Broadcast to all users in a lobby
+
+When a new user join or leave a lobby the following notification will be broadcast to all the subscribers of 
+`topic/lobby/{lobbyId}`.
+
+        {
+         "user": username,
+         "status": status
+        }
+
+`status` can be either `subscribed`, `unsubscribed` or `disconnected`.
+Keep in mind that `disconnected` does refer to a disconnection event of the STOMP protocol, and not to a disconnection 
+of the Web Socket session.
+
+#### Sent to a specific user
+
+The user who tries to join will receive back the following notification: 
+
+        {
+         "join": success,
+         "msg": msg
+        }
+
+`success` is a boolean value, while `msg` is a short message describing the success or the reason of failure of the 
+action.
+
 ## Getting started with Spring Boot
 -   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
 -   Guides: http://spring.io/guides
