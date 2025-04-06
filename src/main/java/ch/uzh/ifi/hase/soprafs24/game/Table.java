@@ -67,4 +67,8 @@ public class Table {
     public boolean isEmpty() {
         return cardsOnTable.isEmpty();
     }
+
+    public void clearTable() {
+        cardsOnTable.clear();
+    }
 }

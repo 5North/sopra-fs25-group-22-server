@@ -381,4 +381,14 @@ public class TableTest {
         assertFalse(table.isEmpty(), "isEmpty() should return false when the table contains cards.");
     }
 
+    @Test
+    public void testClearTable() {
+        List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
+        Table table = new Table(initialCards);
+        assertEquals(4, table.getCards().size(), "Table should initially contain 4 cards.");
+
+        table.clearTable();
+        assertTrue(table.getCards().isEmpty(), "After clearTable(), the table should be empty.");
+    }
+
 }
