@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class WebSocketService {
@@ -21,28 +23,40 @@ public class WebSocketService {
         this.userRepository = userRepository;
     }
 
-    // send message to specific user
-    /* public void sendMessage(String username, String message) {
-    //    messagingTemplate.convertAndSendToUser(username, "/queue/reply", message);
-    } */
-
     // broadcast lobby join/leave msgs to lobby users
     public void broadCastLobbyNotifications(Long userId, Long lobbyId, String status){
-        String message = formatLobbyNotificationSimpMessage(status, userId);
+        Map<String, String> message = formatLobbyNotificationSimpMessage(userId, status);
         SimpMessagingTemplate messagingTemplate = this.messagingTemplate;
 
         // broadcast notification to right lobby
         messagingTemplate.convertAndSend("/topic/lobby/" + lobbyId, message);
     }
 
-    public String formatLobbyNotificationSimpMessage(String status, long userId) {
-        User user = userRepository.findById(userId);
-        String msg = switch (status) {
-            case "subscribed" -> "has joined the lobby";
-            case "unsubscribed", "disconnected" -> "has left the lobby";
-            default -> "";
-        };
-        return "The user" + user.getUsername() + msg;
+    // sent join notification back to specific user
+    public void lobbyNotifications(Long userId, String msg, boolean success ){
+        Map<String, String> message = formatLobbyNotificationSimpMessage(msg, success);
+        SimpMessagingTemplate messagingTemplate = this.messagingTemplate;
+
+        // send notification to user
+        messagingTemplate.convertAndSendToUser(Long.toString(userId),"/queue/reply", message);
+
+    }
+
+    // method for formatting broadcast lobby notifications
+    public Map<String, String> formatLobbyNotificationSimpMessage(Long userId, String status) {
+        User user = userRepository.findById(userId.longValue());
+        Map<String, String> message = new HashMap<>();
+                message.put("user", user.getUsername());
+                message.put("status", status);
+        return message;
+    }
+
+    // method overload for  formatting lobbyNotification
+    public Map<String, String> formatLobbyNotificationSimpMessage(String msg, boolean success) {
+        Map<String, String> message = new HashMap<>();
+                message.put("success", String.valueOf(success));
+                message.put("msg", msg);
+        return message;
     }
 
 

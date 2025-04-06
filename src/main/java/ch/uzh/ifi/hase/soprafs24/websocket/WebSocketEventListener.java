@@ -16,6 +16,7 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 
 import java.net.URISyntaxException;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @Component
@@ -45,6 +46,7 @@ public class WebSocketEventListener {
 
 
         //TODO ev refactor into ws service
+
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
         User user = userService.checkIfUserExists((Long) userIdAttr);
@@ -54,13 +56,24 @@ public class WebSocketEventListener {
             lobbyId = webSocketService.getLobbyId(simpDestination);
         }
 
+        String msg = "Lobby joined successfully";
+        boolean success = true;
+
         // join lobby
-        lobbyService.joinLobby(lobbyId, userId);
+        try {
+            lobbyService.joinLobby(lobbyId, userId);
 
-        // broadcast msg to lobby
-        webSocketService.broadCastLobbyNotifications(userId, lobbyId, "subscribed");
-
+            // broadcast msg to lobby
+            webSocketService.broadCastLobbyNotifications(userId, lobbyId, "subscribed");
         }
+        catch (NotFoundException | IllegalStateException e) {
+            msg = e.getMessage();
+            success = false;
+        }
+
+        // notify user
+        webSocketService.lobbyNotifications(userId, msg, success);
+    }
 
     @EventListener
     public void handleUnsubscribeEvent(SessionUnsubscribeEvent event) throws URISyntaxException, NotFoundException {
@@ -83,11 +96,22 @@ public class WebSocketEventListener {
             lobbyId = webSocketService.getLobbyId(simpDestination);
         }
 
-        // leave lobby
-        lobbyService.leaveLobby(lobbyId, userId);
+        String msg = "Lobby left successfully";
+        boolean success = true;
 
-        // broadcast msg to lobby
-        webSocketService.broadCastLobbyNotifications(userId, lobbyId, "unsubscribed");
+        // leave lobby
+        try {
+            lobbyService.leaveLobby(lobbyId, userId);
+
+            // broadcast msg to lobby
+            webSocketService.broadCastLobbyNotifications(userId, lobbyId, "unsubscribed");
+        } catch (NotFoundException  | IllegalStateException e) {
+             msg = e.getMessage();
+             success = false;
+        }
+
+        // notify user
+        webSocketService.lobbyNotifications(userId, msg, success);
 
     }
 
@@ -111,11 +135,22 @@ public class WebSocketEventListener {
             lobbyId = webSocketService.getLobbyId(simpDestination);
         }
 
-        // leave lobby
-        lobbyService.leaveLobby(lobbyId, userId);
+        String msg = "Lobby left successfully";
+        boolean success = true;
 
-        // broadcast msg to lobby
-        webSocketService.broadCastLobbyNotifications(userId, lobbyId, "disconnected");
+        // leave lobby
+        try {
+            lobbyService.leaveLobby(lobbyId, userId);
+
+            // broadcast msg to lobby
+            webSocketService.broadCastLobbyNotifications(userId, lobbyId, "disconnected");
+        } catch (NotFoundException | NoSuchElementException e) {
+            success = false;
+            msg = e.getMessage();
+        }
+
+        // notify user
+        webSocketService.lobbyNotifications(userId, msg, success);
 
     }
 }
