@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.game;
 import java.util.ArrayList;
 import java.util.List;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
+import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.Deck;
@@ -156,10 +157,12 @@ public class GameSession {
         }
     }
 
-    // Calculate result
+    // Calculate result and update user stats
 
     public Result calculateResult() {
-        return new Result(this.gameId, this.players);
+        Result result = new Result(this.gameId, this.players);
+        GameStatisticsUtil.updateUserStatistics(result);
+        return result;
     }
 
 }
