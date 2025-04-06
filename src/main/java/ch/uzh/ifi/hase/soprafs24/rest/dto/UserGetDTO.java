@@ -9,6 +9,7 @@ public class UserGetDTO {
   private UserStatus status;
   private Integer winCount;
   private Integer lossCount;
+  private Integer tieCount;
 
   public Long getId() {
     return id;
@@ -48,5 +49,13 @@ public class UserGetDTO {
 
   public void setLossCount(Integer lossCount) {
     this.lossCount = lossCount;
+  }
+
+  public Integer getTieCount() {
+    return tieCount;
+  }
+
+  public void setTieCount(Integer tieCount) {
+    this.tieCount = tieCount;
   }
 }

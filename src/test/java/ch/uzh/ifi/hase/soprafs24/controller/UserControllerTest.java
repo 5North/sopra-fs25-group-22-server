@@ -51,9 +51,9 @@ public class UserControllerTest {
                 user.setStatus(UserStatus.OFFLINE);
                 user.setWinCount(0);
                 user.setLossCount(0);
+                user.setTieCount(0);
 
                 List<User> allUsers = Collections.singletonList(user);
-
                 given(userService.getUsers()).willReturn(allUsers);
 
                 // when
@@ -67,50 +67,52 @@ public class UserControllerTest {
                                 .andExpect(jsonPath("$[0].username", is(user.getUsername())))
                                 .andExpect(jsonPath("$[0].status", is(user.getStatus().toString())))
                                 .andExpect(jsonPath("$[0].winCount", is(user.getWinCount())))
-                                .andExpect(jsonPath("$[0].lossCount", is(user.getLossCount())));
+                                .andExpect(jsonPath("$[0].lossCount", is(user.getLossCount())))
+                                .andExpect(jsonPath("$[0].tieCount", is(user.getTieCount())));
         }
-    @Test
-    public void logout_User_validAuth_userLoggedOut() throws Exception {
-        // given
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("testUsername");
-        user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
-        user.setStatus(UserStatus.ONLINE);
 
-        given(userService.authorizeUser("hdbhdd7-dfjdhs923-wddhejkh3")).willReturn(user);
+        @Test
+        public void logout_User_validAuth_userLoggedOut() throws Exception {
+                // given
+                User user = new User();
+                user.setId(1L);
+                user.setUsername("testUsername");
+                user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
+                user.setStatus(UserStatus.ONLINE);
 
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder postRequest = post("/logout")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Token", "hdbhdd7-dfjdhs923-wddhejkh3");
+                given(userService.authorizeUser("hdbhdd7-dfjdhs923-wddhejkh3")).willReturn(user);
 
-        // then
-        mockMvc.perform(postRequest)
-                .andExpect(status().isNoContent());
-    }
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder postRequest = post("/logout")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Token", "hdbhdd7-dfjdhs923-wddhejkh3");
 
-    @Test
-    public void logout_User_notValidAuth_userNotLoggedOut() throws Exception {
-        // given
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("testUsername");
-        user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
-        user.setStatus(UserStatus.ONLINE);
+                // then
+                mockMvc.perform(postRequest)
+                                .andExpect(status().isNoContent());
+        }
 
-        given(userService.authorizeUser(""))
-                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token"));
+        @Test
+        public void logout_User_notValidAuth_userNotLoggedOut() throws Exception {
+                // given
+                User user = new User();
+                user.setId(1L);
+                user.setUsername("testUsername");
+                user.setToken("hdbhdd7-dfjdhs923-wddhejkh3");
+                user.setStatus(UserStatus.ONLINE);
 
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder postRequest = post("/logout")
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Token", "");
+                given(userService.authorizeUser(""))
+                                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token"));
 
-        // then
-        mockMvc.perform(postRequest)
-                .andExpect(status().isUnauthorized());
-    }
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder postRequest = post("/logout")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Token", "");
+
+                // then
+                mockMvc.perform(postRequest)
+                                .andExpect(status().isUnauthorized());
+        }
 
         // # 6
         @Test
@@ -119,10 +121,11 @@ public class UserControllerTest {
                 user.setId(1L);
                 user.setUsername("testUsername");
                 user.setPassword("testPassword");
-                user.setToken("placeholder-token");
+                user.setToken("generated-token");
                 user.setStatus(UserStatus.ONLINE);
                 user.setWinCount(0);
                 user.setLossCount(0);
+                user.setTieCount(0);
 
                 UserPostDTO userPostDTO = new UserPostDTO();
                 userPostDTO.setUsername("testUsername");
@@ -136,11 +139,13 @@ public class UserControllerTest {
 
                 mockMvc.perform(postRequest)
                                 .andExpect(status().isCreated())
+                                .andExpect(header().string("Token", "generated-token"))
                                 .andExpect(jsonPath("$.id", is(user.getId().intValue())))
                                 .andExpect(jsonPath("$.username", is(user.getUsername())))
                                 .andExpect(jsonPath("$.status", is(user.getStatus().toString())))
                                 .andExpect(jsonPath("$.winCount", is(user.getWinCount())))
-                                .andExpect(jsonPath("$.lossCount", is(user.getLossCount())));
+                                .andExpect(jsonPath("$.lossCount", is(user.getLossCount())))
+                                .andExpect(jsonPath("$.tieCount", is(user.getTieCount())));
         }
 
         // # 18
@@ -192,10 +197,8 @@ public class UserControllerTest {
 
                 given(userService.loginUser(Mockito.any()))
                                 .willThrow(
-                                            new ResponseStatusException(
-                                                    HttpStatus.FORBIDDEN, "Invalid username or password"
-                                            )
-                                );
+                                                new ResponseStatusException(
+                                                                HttpStatus.FORBIDDEN, "Invalid username or password"));
 
                 // when/then -> do the request + validate the result
                 MockHttpServletRequestBuilder postRequest = post("/login")
@@ -219,6 +222,7 @@ public class UserControllerTest {
                 user.setStatus(UserStatus.ONLINE);
                 user.setWinCount(0);
                 user.setLossCount(0);
+                user.setTieCount(0);
 
                 UserPostDTO userPostDTO = new UserPostDTO();
                 userPostDTO.setUsername("testUsername");
@@ -237,7 +241,8 @@ public class UserControllerTest {
                                 .andExpect(jsonPath("$.username", is(user.getUsername())))
                                 .andExpect(jsonPath("$.status", is(user.getStatus().toString())))
                                 .andExpect(jsonPath("$.winCount", is(user.getWinCount())))
-                                .andExpect(jsonPath("$.lossCount", is(user.getLossCount())));
+                                .andExpect(jsonPath("$.lossCount", is(user.getLossCount())))
+                                .andExpect(jsonPath("$.tieCount", is(user.getLossCount())));
         }
 
         /**
