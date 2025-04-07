@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -10,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -202,5 +205,31 @@ public class UserServiceTest {
     assertEquals(1, testUser.getLossCount(), "Loss count should be incremented to 1.");
     assertEquals(1, testUser.getTieCount(), "Tie count should be incremented to 1.");
   }
+
+    @Test
+    public void checkIfUserExists_success() throws NotFoundException {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+        Optional<User> optionalUser = Optional.of(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalUser);
+
+
+        assertDoesNotThrow(() -> userService.checkIfUserExists(testUser.getId()));
+
+    }
+
+    @Test
+    public void checkIfUserExists_throwsException() {
+        // given -> a first user has already been created
+        userService.createUser(testUser);
+
+        // when -> setup additional mocks for UserRepository
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(null);
+
+        assertThrows(
+                NotFoundException.class, () -> userService.checkIfUserExists(1L));
+    }
 
 }

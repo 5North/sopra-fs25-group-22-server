@@ -78,7 +78,7 @@ public class GameSession {
 
     /**
      * Processes a single turn.
-     * 
+     *
      * The flow is:
      * 1. The current player plays the card (removing it from their hand).
      * 2. The Table is queried for capture options for the played card.

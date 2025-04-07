@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 
 public class UserGetDTO {
 
@@ -9,6 +10,7 @@ public class UserGetDTO {
   private UserStatus status;
   private Integer winCount;
   private Integer lossCount;
+  private Lobby lobby;
   private Integer tieCount;
 
   public Long getId() {
@@ -50,6 +52,10 @@ public class UserGetDTO {
   public void setLossCount(Integer lossCount) {
     this.lossCount = lossCount;
   }
+
+  public Lobby getLobby() {return lobby;}
+
+  public void setLobby(Lobby lobby) {this.lobby = lobby;}
 
   public Integer getTieCount() {
     return tieCount;

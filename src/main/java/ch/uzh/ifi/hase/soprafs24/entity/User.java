@@ -33,6 +33,10 @@ public class User implements Serializable {
   @Column(nullable = false)
   private Integer lossCount = 0;
 
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "lobby_id")
+  private Lobby lobby;
+
   @Column(nullable = false)
   private Integer tieCount = 0;
 
@@ -91,6 +95,10 @@ public class User implements Serializable {
   public void setLossCount(Integer lossCount) {
     this.lossCount = lossCount;
   }
+
+  public void setLobby(Lobby lobby) {this.lobby = lobby;}
+
+  public Lobby getLobby() {return lobby;}
 
   public Integer getTieCount() {
     return tieCount;

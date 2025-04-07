@@ -2,10 +2,13 @@ package ch.uzh.ifi.hase.soprafs24.repository;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,5 +85,48 @@ public class UserRepositoryIntegrationTest {
 
         // then
         assertNull(found);
+    }
+    @Test
+    public void findById_success() throws NotFoundException {
+        // given
+        User user = new User();
+        user.setUsername("firstname@lastname");
+        user.setPassword("password");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setToken("1");
+
+        entityManager.persist(user);
+        entityManager.flush();
+
+        // when
+        Optional<User> found = userRepository.findById(user.getId());
+        User userFound = found.get();
+
+        // then
+        assertNotNull(userFound.getId());
+        assertEquals(userFound.getId(), user.getId());
+        assertEquals(userFound.getUsername(), user.getUsername());
+        assertEquals(userFound.getPassword(), user.getPassword());
+        assertEquals(userFound.getToken(), user.getToken());
+        assertEquals(userFound.getStatus(), user.getStatus());
+    }
+
+    @Test
+    public void findById_returnsNull() throws NotFoundException {
+        // given
+        User user = new User();
+        user.setUsername("firstname@lastname");
+        user.setPassword("password");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setToken("1");
+
+        entityManager.persist(user);
+        entityManager.flush();
+
+        // when
+        Optional<User> found = userRepository.findById(user.getId() + 1L);
+
+        // then
+        assertFalse(found.isPresent());
     }
 }

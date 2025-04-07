@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPostResponseDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import org.mapstruct.*;
@@ -29,6 +31,7 @@ public interface DTOMapper {
   @Mapping(target = "status", ignore = true)
   @Mapping(target = "winCount", ignore = true)
   @Mapping(target = "lossCount", ignore = true)
+  @Mapping(target = "lobby", ignore = true)
   @Mapping(target = "tieCount", ignore = true)
   User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
@@ -37,6 +40,10 @@ public interface DTOMapper {
   @Mapping(source = "status", target = "status")
   @Mapping(source = "winCount", target = "winCount")
   @Mapping(source = "lossCount", target = "lossCount")
+  @Mapping(target = "lobby", ignore = true)
   @Mapping(source = "tieCount", target = "tieCount")
   UserGetDTO convertEntityToUserGetDTO(User user);
+
+  @Mapping(source="lobbyId", target = "lobbyId")
+  LobbyPostResponseDTO convertEntityToLobbyPostResponseDTO(Lobby lobby);
 }

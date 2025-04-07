@@ -19,17 +19,13 @@
 | **/users/{userId}**    | **PUT**    | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
 | **/lobbies**           | **POST**   | Token &lt;string&gt;                                              | Header; Body       | 201         | Lobby(*) (includes lobbyId, PIN, roomName, players) | Body          | Create new lobby; persist via LobbyRepository ensuring unique PIN |
 | **/lobbies**           | **POST**   | Token &lt;string&gt;                                              | Header; Body       | 401         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user is not authenticated           |
-| **/lobbies/{lobbyId}** | **GET**    | lobbyId &lt;long&gt;; Upgrade, Connection &lt;string&gt;          | Path; Header       | 101         | Upgrade, Connection &lt;string&gt;                  | Header        | Upgrade connection to WebSocket when entering lobby               |
-| **/lobbies/{lobbyId}** | **GET**    | lobbyId &lt;long&gt;; Upgrade, Connection &lt;string&gt;          | Path; Header       | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for lobby                                 |
-| **/lobbies/{lobbyId}** | **GET**    | lobbyId &lt;long&gt;; Upgrade, Connection &lt;string&gt;          | Path; Header       | 404         | Error: reason &lt;string&gt;                        | Body          | Lobby with lobbyId not found                                      |
-| **/lobbies/{lobbyId}** | **GET**    | lobbyId &lt;long&gt;; Upgrade, Connection &lt;string&gt;          | Path; Header       | 409         | Error: reason &lt;string&gt;                        | Body          | Lobby is already full                                             |
-| **/lobbies/{lobbyId}** | **DELETE** | Token &lt;string&gt;; lobbyId &lt;long&gt;                        | Header; Path       | 200         | Message: "Lobby exited successfully" &lt;string&gt; | Body          | Exit lobby (remove user from lobby)                               |
+
 
 ## WebSocket Specs
 
 | Mapping                    | Method          | Parameter(s)                                                                                         | Parameter Type | Description                                                                                         |
 |----------------------------|-----------------|------------------------------------------------------------------------------------------------------|----------------|-----------------------------------------------------------------------------------------------------|
-| **/lobby**                 | **CONNECT**     | --                                                                                                   | --             | Upgrade connection to WebSocket for lobby operations                                                |
+| **/lobby**                 | **CONNECT**     | Token &lt;string&gt;                                                                                 | Header         | Upgrade connection to WebSocket for lobby operations                                                |
 | **/lobby**                 | **DISCONNECT**  | --                                                                                                   | --             | Terminates the WebSocket connection                                                                 |
 | **/topic/lobby/{lobbyId}** | **SUBSCRIBE**   | lobbyId &lt;string&gt;                                                                               | Path           | Subscribe to real-time lobby updates (player joins/leaves, notifications)                           |
 | **/topic/lobby/{lobbyId}** | **UNSUBSCRIBE** | lobbyId &lt;string&gt;                                                                               | Path           | Unsubscribe from lobby updates                                                                      |
@@ -41,6 +37,34 @@
 | **/game/{gameId}/results** | **SUBSCRIBE**   | gameId &lt;string&gt;                                                                                | Path           | Subscribe to final game results broadcast when the match ends                                       |
 | **/user/queue/reply**      | **SUBSCRIBE**   | --                                                                                                   | --             | Subscribe to private channel for receiving personal notifications (capture options, AI hints, etc.) |
 | **/user/queue/reply**      | **UNSUBSCRIBE** | --                                                                                                   | --             | Unsubscribe from the private channel                                                                |
+
+### STOMP notifications
+
+#### Broadcast to all users in a lobby
+
+When a new user join or leave a lobby the following notification will be broadcast to all the subscribers of 
+`topic/lobby/{lobbyId}`.
+
+        {
+         "user": username,
+         "status": status
+        }
+
+`status` can be either `subscribed`, `unsubscribed` or `disconnected`.
+Keep in mind that `disconnected` does refer to a disconnection event of the STOMP protocol, and not to a disconnection 
+of the Web Socket session.
+
+#### Sent to a specific user
+
+The user who tries to join will receive back the following notification: 
+
+        {
+         "join": success,
+         "msg": msg
+        }
+
+`success` is a boolean value, while `msg` is a short message describing the success or the reason of failure of the 
+action.
 
 ## Getting started with Spring Boot
 -   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
