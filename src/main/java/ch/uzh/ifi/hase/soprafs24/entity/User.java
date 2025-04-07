@@ -37,6 +37,9 @@ public class User implements Serializable {
   @JoinColumn(name = "lobby_id")
   private Lobby lobby;
 
+  @Column(nullable = false)
+  private Integer tieCount = 0;
+
   public Long getId() {
     return id;
   }
@@ -96,4 +99,24 @@ public class User implements Serializable {
   public void setLobby(Lobby lobby) {this.lobby = lobby;}
 
   public Lobby getLobby() {return lobby;}
+
+  public Integer getTieCount() {
+    return tieCount;
+  }
+
+  public void setTieCount(Integer tieCount) {
+    this.tieCount = tieCount;
+  }
+
+  public void incrementWinCount() {
+    this.winCount++;
+  }
+
+  public void incrementLossCount() {
+    this.lossCount++;
+  }
+
+  public void incrementTieCount() {
+    this.tieCount++;
+  }
 }

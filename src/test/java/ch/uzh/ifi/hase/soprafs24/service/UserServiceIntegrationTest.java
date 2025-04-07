@@ -55,6 +55,7 @@ public class UserServiceIntegrationTest {
     assertEquals(0, createdUser.getWinCount());
     assertEquals(0, createdUser.getLossCount());
     assertNull(createdUser.getLobby(), "The lobby is not null created");
+    assertEquals(0, createdUser.getTieCount());
   }
 
   // # 1

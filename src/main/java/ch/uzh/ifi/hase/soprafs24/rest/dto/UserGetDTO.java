@@ -11,6 +11,7 @@ public class UserGetDTO {
   private Integer winCount;
   private Integer lossCount;
   private Lobby lobby;
+  private Integer tieCount;
 
   public Long getId() {
     return id;
@@ -55,4 +56,12 @@ public class UserGetDTO {
   public Lobby getLobby() {return lobby;}
 
   public void setLobby(Lobby lobby) {this.lobby = lobby;}
+
+  public Integer getTieCount() {
+    return tieCount;
+  }
+
+  public void setTieCount(Integer tieCount) {
+    this.tieCount = tieCount;
+  }
 }
