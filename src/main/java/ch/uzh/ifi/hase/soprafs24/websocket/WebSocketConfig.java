@@ -22,6 +22,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOrigins("*")
                 //TODO ev add socks.js
 
+                // Set custom handshake handler to set UserId as the name of the session Principal
+                .setHandshakeHandler(new CustomHandshakeHandler())
+
                 // adds interceptor for authentication
                 .addInterceptors(wsAuth());
     }
