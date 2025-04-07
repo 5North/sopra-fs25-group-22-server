@@ -54,7 +54,7 @@ public class WebSocketEventListener {
 
             // broadcast msg to lobby
             UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
-            webSocketService.broadCastLobbyNotifications(userId, DTO);
+            webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
         }
         catch (NotFoundException | IllegalStateException e) {
             msg = e.getMessage();
@@ -85,7 +85,7 @@ public class WebSocketEventListener {
 
             // broadcast msg to lobby
             UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
-            webSocketService.broadCastLobbyNotifications(userId, DTO);
+            webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
         } catch (NotFoundException  | IllegalStateException e) {
              msg = e.getMessage();
              success = false;
@@ -117,7 +117,7 @@ public class WebSocketEventListener {
 
             // broadcast msg to lobby
             UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
-            webSocketService.broadCastLobbyNotifications(userId, DTO);
+            webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
 
         } catch (NotFoundException | NoSuchElementException e) {
             success = false;
