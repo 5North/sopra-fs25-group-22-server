@@ -96,7 +96,7 @@ public class LobbyService {
         Random random = new Random();
         long randomId;
         do {
-            randomId = random.nextInt(9000) + 1000;
+            randomId = random.nextInt(9999) + 1000;
         } while (lobbyRepository.findByLobbyId(randomId) != null);
         return randomId;
     }
