@@ -21,7 +21,7 @@ public class Lobby implements Serializable {
     @ElementCollection
     private List<Long> users = new ArrayList<>();
 
-    @Embedded()
+    @Transient
     private GameSession gameSession;
 
     public void setLobbyId(Long lobbyId) {this.lobbyId = lobbyId;}
@@ -34,9 +34,9 @@ public class Lobby implements Serializable {
 
     public List<Long> getUsers() {return users;}
 
-    public void addUsers(long userId) {users.add(userId);}
+    public void addUsers(Long userId) {users.add(userId);}
 
-    public boolean removeUsers(long userId) {return users.remove(userId);}
+    public boolean removeUsers(Long userId) {return users.remove(userId);}
 
     public GameSession getGameSession() {return gameSession;}
 
