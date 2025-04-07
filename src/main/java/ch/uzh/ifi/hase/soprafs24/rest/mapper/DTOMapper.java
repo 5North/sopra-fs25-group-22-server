@@ -29,6 +29,7 @@ public interface DTOMapper {
   @Mapping(target = "status", ignore = true)
   @Mapping(target = "winCount", ignore = true)
   @Mapping(target = "lossCount", ignore = true)
+  @Mapping(target = "tieCount", ignore = true)
   User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
   @Mapping(source = "id", target = "id")
@@ -36,5 +37,6 @@ public interface DTOMapper {
   @Mapping(source = "status", target = "status")
   @Mapping(source = "winCount", target = "winCount")
   @Mapping(source = "lossCount", target = "lossCount")
+  @Mapping(source = "tieCount", target = "tieCount")
   UserGetDTO convertEntityToUserGetDTO(User user);
 }

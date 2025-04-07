@@ -33,6 +33,9 @@ public class User implements Serializable {
   @Column(nullable = false)
   private Integer lossCount = 0;
 
+  @Column(nullable = false)
+  private Integer tieCount = 0;
+
   public Long getId() {
     return id;
   }
@@ -87,5 +90,25 @@ public class User implements Serializable {
 
   public void setLossCount(Integer lossCount) {
     this.lossCount = lossCount;
+  }
+
+  public Integer getTieCount() {
+    return tieCount;
+  }
+
+  public void setTieCount(Integer tieCount) {
+    this.tieCount = tieCount;
+  }
+
+  public void incrementWinCount() {
+    this.winCount++;
+  }
+
+  public void incrementLossCount() {
+    this.lossCount++;
+  }
+
+  public void incrementTieCount() {
+    this.tieCount++;
   }
 }

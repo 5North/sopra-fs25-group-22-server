@@ -19,22 +19,17 @@ public class Deck {
         } while (!checkCorrectness());
     }
 
-
     public void shuffle() {
         Collections.shuffle(cards);
     }
 
     public boolean checkCorrectness() {
-        if (cards.size() < 4) {
-            return false;
-        }
         int sum = 0;
         for (int i = 0; i < 4; i++) {
             sum += cards.get(i).getValue();
         }
         return sum > 10;
     }
-
 
     public List<Card> getCards() {
         return Collections.unmodifiableList(cards);
