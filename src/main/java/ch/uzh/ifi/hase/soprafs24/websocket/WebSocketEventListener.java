@@ -35,7 +35,7 @@ public class WebSocketEventListener {
     }
 
     @EventListener
-    public void handleSubscribeEvent(SessionSubscribeEvent event) throws URISyntaxException, NotFoundException {
+    public void handleSubscribeEvent(SessionSubscribeEvent event) throws URISyntaxException {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
         lobbyId = getLobbyId(event);
@@ -67,7 +67,7 @@ public class WebSocketEventListener {
     }
 
     @EventListener
-    public void handleUnsubscribeEvent(SessionUnsubscribeEvent event) throws URISyntaxException, NotFoundException {
+    public void handleUnsubscribeEvent(SessionUnsubscribeEvent event) throws URISyntaxException {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
         lobbyId = getLobbyId(event);
@@ -98,7 +98,7 @@ public class WebSocketEventListener {
     }
 
     @EventListener
-    public void handleDisconnectEvent(SessionDisconnectEvent event) throws URISyntaxException, NotFoundException {
+    public void handleDisconnectEvent(SessionDisconnectEvent event) throws URISyntaxException {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
         lobbyId = getLobbyId(event);
