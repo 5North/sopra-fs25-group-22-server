@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
@@ -108,6 +109,8 @@ public class LobbyServiceTest {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
 
+        Optional<User> optionaluser = Optional.of(testUser);
+
         ArrayList<Long> users = new ArrayList<>();
         users.add(1L);
         users.add(2L);
@@ -115,7 +118,7 @@ public class LobbyServiceTest {
 
         // when -> setup additional mocks for LobbyRepository
         Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
-        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(testUser);
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionaluser);
 
 
         lobbyService.joinLobby(testLobby.getLobbyId(), 3L);
@@ -200,7 +203,7 @@ public class LobbyServiceTest {
 
     @Test
     public void generateId_success()  {
-        long id = lobbyService.generateId();
+        Long id = lobbyService.generateId();
         assertNotNull(id);
     }
 

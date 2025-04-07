@@ -326,7 +326,7 @@ public class TableTest {
 
         assertTrue(remaining.contains(card3), "3 of COPPE should remain on the table.");
 
-        long capturingCandidates = remaining.stream().filter(c -> c.getValue() < 7).count();
+        Long capturingCandidates = remaining.stream().filter(c -> c.getValue() < 7).count();
         assertEquals(1, capturingCandidates, "Only one capturing candidate (a 3) should remain on the table.");
     }
 

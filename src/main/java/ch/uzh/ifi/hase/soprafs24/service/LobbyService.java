@@ -48,7 +48,7 @@ public class LobbyService {
     }
 
     //TODO cleanup
-    public void joinLobby(long lobbyId, long userId) throws NotFoundException {
+    public void joinLobby(Long lobbyId, Long userId) throws NotFoundException {
         checkIfLobbyExists(lobbyId);
         userService.checkIfUserExists(userId);
 
@@ -69,7 +69,7 @@ public class LobbyService {
         //lobbyIsFull(lobbyId);
     }
 
-    public void leaveLobby(long lobbyId, long userId) throws NotFoundException {
+    public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {
         checkIfLobbyExists(lobbyId);
         userService.checkIfUserExists(userId);
         Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
@@ -79,12 +79,12 @@ public class LobbyService {
         }
     }
 
-    public boolean lobbyIsFull(long lobbyId) {
+    public boolean lobbyIsFull(Long lobbyId) {
         Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
         return lobby.getUsers().size() >= 4;
     }
 
-    public void checkIfLobbyExists(long lobbyId) throws NotFoundException {
+    public void checkIfLobbyExists(Long lobbyId) throws NotFoundException {
         if (lobbyRepository.findByLobbyId(lobbyId) == null) {
             String msg = "No lobby with id " + lobbyId + " found";
             throw new NotFoundException(msg);
@@ -92,11 +92,11 @@ public class LobbyService {
 
     }
 
-    public long generateId() {
+    public Long generateId() {
         Random random = new Random();
-        long randomId;
+        Long randomId;
         do {
-            randomId = random.nextInt(9999) + 1000;
+            randomId = (long) (random.nextInt(9999) + 1000);
         } while (lobbyRepository.findByLobbyId(randomId) != null);
         return randomId;
     }

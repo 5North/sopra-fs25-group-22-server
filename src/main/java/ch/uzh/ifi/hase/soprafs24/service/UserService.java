@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -83,7 +84,8 @@ public class UserService {
           String msg = "User with id " + userId + " does not exist";
           throw new NotFoundException(msg);
       }
-      return userRepository.findById(userId);
+      return userRepository.findById(userId)
+              .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
 }

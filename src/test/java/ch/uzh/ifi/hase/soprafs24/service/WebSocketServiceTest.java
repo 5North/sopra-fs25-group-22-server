@@ -31,7 +31,7 @@ public class WebSocketServiceTest {
     @Test
     public void ConvertToDTOForBroadcastSuccess() throws NotFoundException {
         // given
-        long userId = 1L;
+        Long userId = 1L;
         User user = new User();
         user.setUsername("johnDoe");
         user.setId(userId);

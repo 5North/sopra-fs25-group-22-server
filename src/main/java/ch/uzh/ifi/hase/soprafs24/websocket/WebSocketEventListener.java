@@ -42,7 +42,7 @@ public class WebSocketEventListener {
 
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-        long userId = (Long) userIdAttr;
+        Long userId = (Long) userIdAttr;
 
 
         String msg = "Lobby joined successfully";
@@ -74,7 +74,7 @@ public class WebSocketEventListener {
 
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-        long userId = (Long) userIdAttr;
+        Long userId = (Long) userIdAttr;
 
         String msg = "Lobby left successfully";
         boolean success = true;
@@ -105,7 +105,7 @@ public class WebSocketEventListener {
 
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-        long userId = (Long) userIdAttr;
+        Long userId = (Long) userIdAttr;
 
 
         String msg = "Lobby left successfully";

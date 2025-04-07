@@ -2,10 +2,13 @@ package ch.uzh.ifi.hase.soprafs24.repository;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,7 +87,7 @@ public class UserRepositoryIntegrationTest {
         assertNull(found);
     }
     @Test
-    public void findById_success() {
+    public void findById_success() throws NotFoundException {
         // given
         User user = new User();
         user.setUsername("firstname@lastname");
@@ -96,19 +99,20 @@ public class UserRepositoryIntegrationTest {
         entityManager.flush();
 
         // when
-        User found = userRepository.findById(user.getId().longValue());
+        Optional<User> found = userRepository.findById(user.getId());
+        User userFound = found.get();
 
         // then
-        assertNotNull(found.getId());
-        assertEquals(found.getId(), user.getId());
-        assertEquals(found.getUsername(), user.getUsername());
-        assertEquals(found.getPassword(), user.getPassword());
-        assertEquals(found.getToken(), user.getToken());
-        assertEquals(found.getStatus(), user.getStatus());
+        assertNotNull(userFound.getId());
+        assertEquals(userFound.getId(), user.getId());
+        assertEquals(userFound.getUsername(), user.getUsername());
+        assertEquals(userFound.getPassword(), user.getPassword());
+        assertEquals(userFound.getToken(), user.getToken());
+        assertEquals(userFound.getStatus(), user.getStatus());
     }
 
     @Test
-    public void findById_returnsNull() {
+    public void findById_returnsNull() throws NotFoundException {
         // given
         User user = new User();
         user.setUsername("firstname@lastname");
@@ -120,9 +124,9 @@ public class UserRepositoryIntegrationTest {
         entityManager.flush();
 
         // when
-        User found = userRepository.findById(user.getId() + 1L);
+        Optional<User> found = userRepository.findById(user.getId() + 1L);
 
         // then
-        assertNull(found);
+        assertFalse(found.isPresent());
     }
 }

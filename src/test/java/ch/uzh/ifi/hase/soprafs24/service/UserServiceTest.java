@@ -12,6 +12,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTest {
@@ -208,9 +210,11 @@ public class UserServiceTest {
     public void checkIfUserExists_success() throws NotFoundException {
         // given -> a first user has already been created
         userService.createUser(testUser);
+        Optional<User> optionalUser = Optional.of(testUser);
 
         // when -> setup additional mocks for UserRepository
-        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(testUser);
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalUser);
+
 
         assertDoesNotThrow(() -> userService.checkIfUserExists(testUser.getId()));
 
