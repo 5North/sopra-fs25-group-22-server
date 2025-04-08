@@ -47,7 +47,7 @@ public class WebSocketEventListenerIntegrationTest {
         // given
         Map<String, Object> sessionAttributes = new HashMap<>();
         sessionAttributes.put("userId", 15L);
-        String destination = "topic/lobby/200";
+        String destination = "/topic/lobby/2000";
         Message<byte[]> message = createMessage(destination, sessionAttributes);
         SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
@@ -68,7 +68,7 @@ public class WebSocketEventListenerIntegrationTest {
         eventListener.handleSubscribeEvent(event);
 
         // Verify with spybean that the methods in webSocketService are called
-        verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(200L), eq(LobbyDTO));
+        verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(2000L), eq(LobbyDTO));
         verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(15L), eq(UserDTO));
     }
 
@@ -78,7 +78,7 @@ public class WebSocketEventListenerIntegrationTest {
         // given
         Map<String, Object> sessionAttributes = new HashMap<>();
         sessionAttributes.put("userId", 15L);
-        String destination = "topic/lobby/200";
+        String destination = "topic/lobby/2000";
         Message<byte[]> message = createMessage(destination, sessionAttributes);
         SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
@@ -99,7 +99,7 @@ public class WebSocketEventListenerIntegrationTest {
         eventListener.handleSubscribeEvent(event);
 
         // Verify with spybean that the methods in webSocketService are called
-        verify(webSocketService, never()).broadCastLobbyNotifications(eq(200L), eq(LobbyDTO));
+        verify(webSocketService, never()).broadCastLobbyNotifications(eq(2000L), eq(LobbyDTO));
         verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(15L), eq(UserDTO));
     }
 
