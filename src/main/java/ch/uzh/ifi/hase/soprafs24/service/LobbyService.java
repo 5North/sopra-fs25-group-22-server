@@ -97,7 +97,7 @@ public class LobbyService {
     public Long generateId() {
         Long randomId;
         do {
-            randomId = (long) (random.nextInt(9999) + 1000);
+            randomId = (long) (random.nextInt(9000) + 1000);
         } while (lobbyRepository.findByLobbyId(randomId) != null);
         return randomId;
     }
