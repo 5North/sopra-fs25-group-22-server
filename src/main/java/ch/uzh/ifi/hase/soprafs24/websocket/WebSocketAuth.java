@@ -30,7 +30,7 @@ public class WebSocketAuth implements HandshakeInterceptor {
         try {
             UriComponents uriComponents = UriComponentsBuilder.fromUri(request.getURI()).build();
             MultiValueMap<String, String> params = uriComponents.getQueryParams();
-             token = params.getFirst("token");
+             token = params.getFirst("Token");
         }
         catch (NullPointerException e) {
             // return 400 if no token header was present
