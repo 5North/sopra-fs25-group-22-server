@@ -31,11 +31,13 @@ public class LobbyService {
 
     private final LobbyRepository lobbyRepository;
     private final UserService userService;
+    private final Random random;
 
     @Autowired
     public LobbyService(@Qualifier("lobbyRepository") LobbyRepository lobbyRepository, UserService userService) {
         this.lobbyRepository = lobbyRepository;
         this.userService = userService;
+        this.random = new Random();
     }
 
     // TODO consider if user already has lobby check
@@ -93,7 +95,6 @@ public class LobbyService {
     }
 
     public Long generateId() {
-        Random random = new Random();
         Long randomId;
         do {
             randomId = (long) (random.nextInt(9999) + 1000);
