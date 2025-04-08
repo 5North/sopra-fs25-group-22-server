@@ -47,7 +47,7 @@ public class WebSocketEventListenerIntegrationTest {
         // given
         Map<String, Object> sessionAttributes = new HashMap<>();
         sessionAttributes.put("userId", 15L);
-        String destination = "/topic/lobby/200";
+        String destination = "topic/lobby/200";
         Message<byte[]> message = createMessage(destination, sessionAttributes);
         SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
@@ -78,7 +78,7 @@ public class WebSocketEventListenerIntegrationTest {
         // given
         Map<String, Object> sessionAttributes = new HashMap<>();
         sessionAttributes.put("userId", 15L);
-        String destination = "/topic/lobby/200";
+        String destination = "topic/lobby/200";
         Message<byte[]> message = createMessage(destination, sessionAttributes);
         SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 

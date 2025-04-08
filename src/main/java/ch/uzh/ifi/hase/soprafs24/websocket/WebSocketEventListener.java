@@ -137,7 +137,7 @@ public class WebSocketEventListener {
                         .getHeaders()
                         .get("simpDestination"))
                 .toString();
-        if (simpDestination.startsWith("/topic/lobby/")) {
+        if (simpDestination.startsWith("topic/lobby/")) {
             lobbyId = getLobbyIdFromDestination(simpDestination);
         }
         return lobbyId;
