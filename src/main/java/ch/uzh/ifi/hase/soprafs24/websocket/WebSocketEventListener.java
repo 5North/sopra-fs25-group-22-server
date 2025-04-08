@@ -1,10 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
 
-import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
-import javassist.NotFoundException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -14,12 +15,11 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
+import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
+import javassist.NotFoundException;
 
 @Component
 public class WebSocketEventListener {
@@ -137,7 +137,7 @@ public class WebSocketEventListener {
                         .getHeaders()
                         .get("simpDestination"))
                 .toString();
-        if (simpDestination.startsWith("topic/lobby/")) {
+        if (simpDestination.startsWith("/topic/lobby/")) {
             lobbyId = getLobbyIdFromDestination(simpDestination);
         }
         return lobbyId;
@@ -145,11 +145,9 @@ public class WebSocketEventListener {
 
     // extract lobbyId from destination uri
     private Long getLobbyIdFromDestination(String simpDestination) throws URISyntaxException {
-
         URI uri = new URI(simpDestination);
         String path = uri.getPath();
-
-        String[] segments = path.split("/");
-        return Long.parseLong((segments[segments.length - 1]));
+        String lobby = path.substring(path.length() - 4);
+        return Long.valueOf(lobby);
     }
 }

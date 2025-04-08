@@ -1,7 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
-import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
@@ -12,7 +12,8 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Map;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
 
 
 public class WebSocketAuth implements HandshakeInterceptor {
@@ -30,7 +31,7 @@ public class WebSocketAuth implements HandshakeInterceptor {
         try {
             UriComponents uriComponents = UriComponentsBuilder.fromUri(request.getURI()).build();
             MultiValueMap<String, String> params = uriComponents.getQueryParams();
-             token = params.getFirst("Token");
+             token = params.getFirst("token");
         }
         catch (NullPointerException e) {
             // return 400 if no token header was present
