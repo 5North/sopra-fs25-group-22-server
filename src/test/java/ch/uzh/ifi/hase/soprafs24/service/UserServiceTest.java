@@ -224,9 +224,10 @@ public class UserServiceTest {
     public void checkIfUserExists_throwsException() {
         // given -> a first user has already been created
         userService.createUser(testUser);
+        Optional<User> optionalEmptyUser = Optional.empty();
 
         // when -> setup additional mocks for UserRepository
-        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(null);
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalEmptyUser);
 
         assertThrows(
                 NotFoundException.class, () -> userService.checkIfUserExists(1L));

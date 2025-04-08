@@ -80,12 +80,13 @@ public class UserService {
 
     // TODO eventually refactor better to avoid duplicate code
     public User checkIfUserExists(long userId) throws NotFoundException {
-      if(userRepository.findById(userId) == null) {
+      User user = userRepository.findById(userId).orElse(null);
+
+      if(user == null) {
           String msg = "User with id " + userId + " does not exist";
           throw new NotFoundException(msg);
       }
-      return userRepository.findById(userId)
-              .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+      return user;
     }
 
 }
