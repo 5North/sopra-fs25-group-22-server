@@ -371,4 +371,28 @@ public class TableTest {
         assertTrue(table.getCards().isEmpty(), "After clearTable(), the table should be empty.");
     }
 
+    @Test
+    public void testApplyCaptureOptionWithNull() {
+        List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
+        Table table = new Table(initialCards);
+
+        assertEquals(4, table.getCards().size(), "Table should start with 4 cards.");
+
+        table.applyCaptureOption(null);
+
+        assertEquals(4, table.getCards().size(), "Table should remain unchanged when capture option is null.");
+    }
+
+    @Test
+    public void testAddCardWithNull() {
+        List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
+        Table table = new Table(initialCards);
+
+        assertEquals(4, table.getCards().size(), "Table should start with 4 cards.");
+
+        table.addCard(null);
+
+        assertEquals(4, table.getCards().size(), "Table should remain unchanged when adding a null card.");
+    }
+
 }

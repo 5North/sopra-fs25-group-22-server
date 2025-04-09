@@ -118,4 +118,34 @@ public class GameStatisticsUtilTest {
 
         Mockito.verify(userRepository, Mockito.times(4)).save(Mockito.any(User.class));
     }
+
+    @Test
+    public void testUpdateUserStatistics_UserNotFound() {
+        Player p1 = createDummyPlayer(1L);
+        Player p2 = createDummyPlayer(2L);
+        Player p3 = createDummyPlayer(3L);
+        Player p4 = createDummyPlayer(4L);
+        List<Player> players = Arrays.asList(p1, p2, p3, p4);
+
+        Result result = new Result(300L, players);
+        result.getTeam1().setOutcome(Outcome.WON);
+        result.getTeam2().setOutcome(Outcome.WON);
+
+        User user2 = createDummyUser(2L);
+        User user3 = createDummyUser(3L);
+        User user4 = createDummyUser(4L);
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(user2));
+        Mockito.when(userRepository.findById(3L)).thenReturn(Optional.of(user3));
+        Mockito.when(userRepository.findById(4L)).thenReturn(Optional.of(user4));
+
+        GameStatisticsUtil.updateUserStatistics(result);
+
+        Mockito.verify(userRepository, Mockito.times(3)).save(Mockito.any(User.class));
+
+        assertEquals(1, user2.getWinCount(), "User2 winCount should be incremented.");
+        assertEquals(1, user3.getWinCount(), "User3 winCount should be incremented.");
+        assertEquals(1, user4.getWinCount(), "User4 winCount should be incremented.");
+    }
 }
