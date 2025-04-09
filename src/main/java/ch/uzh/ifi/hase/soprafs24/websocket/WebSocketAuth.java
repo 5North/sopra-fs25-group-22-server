@@ -2,6 +2,8 @@ package ch.uzh.ifi.hase.soprafs24.websocket;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
@@ -18,6 +20,8 @@ import ch.uzh.ifi.hase.soprafs24.service.UserService;
 
 public class WebSocketAuth implements HandshakeInterceptor {
 
+    private final Logger log = LoggerFactory.getLogger(WebSocketAuth.class);
+
     @Autowired
     private UserService userService;
 
@@ -26,6 +30,9 @@ public class WebSocketAuth implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
 
+        System.out.println("====================BEFORE HANDSHAKE========================");
+        System.out.println("Request: " + request.getURI());
+        System.out.println("===================================================");
         // Extract and validate authentication token
         String token;
         try {
