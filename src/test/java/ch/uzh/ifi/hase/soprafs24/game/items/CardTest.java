@@ -64,4 +64,21 @@ public class CardTest {
         assertFalse(card1.equals((Object) "Not a card"), "A card should not be equal to an object of a different type");
     }
 
+    @Test
+    public void testEqualsBranches() {
+        Card card = CardFactory.getCard(Suit.DENARI, 5);
+
+        assertTrue(card.equals(card), "A card should equal itself (reflexivity).");
+
+        assertFalse(card.equals("Not a Card"), "A card should not equal an object of a different type.");
+
+        Card sameCard = CardFactory.getCard(Suit.DENARI, 5);
+        Card differentValue = CardFactory.getCard(Suit.DENARI, 7);
+        Card differentSuit = CardFactory.getCard(Suit.COPPE, 5);
+
+        assertTrue(card.equals(sameCard), "Cards with the same suit and value should be equal.");
+        assertFalse(card.equals(differentValue), "Cards with different values should not be equal.");
+        assertFalse(card.equals(differentSuit), "Cards with different suits should not be equal.");
+    }
+
 }

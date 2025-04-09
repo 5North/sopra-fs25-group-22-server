@@ -363,4 +363,74 @@ public class ResultTest {
                 "Total should equal the sum of fixed category points and scopa (expected " + expectedTotal + ").");
     }
 
+    @Test
+    public void testPrimieraCalculation_DefaultBranchUsingReflection() {
+        Card invalidCard = CardFactory.getCard(Suit.BASTONI, 1);
+        int originalValue = invalidCard.getValue();
+        Field valueField = null;
+
+        try {
+            valueField = invalidCard.getClass().getDeclaredField("value");
+            valueField.setAccessible(true);
+            valueField.setInt(invalidCard, 11);
+        } catch (Exception e) {
+            fail("Unable to set the card value to 11 via reflection: " + e.getMessage());
+        }
+
+        List<Card> treasure = new ArrayList<>();
+        treasure.add(invalidCard);
+        treasure.addAll(createCardsFromValues(List.of(6), Suit.COPPE));
+        treasure.addAll(createCardsFromValues(List.of(1), Suit.DENARI));
+        treasure.addAll(createCardsFromValues(List.of(5), Suit.SPADE));
+
+        Player p1 = createPlayerWithTreasure(777L, treasure, 0);
+        Player p2 = createPlayerWithTreasure(888L, treasure, 0);
+
+        TeamResult teamResult = new TeamResult(p1, p2);
+
+        try {
+            assertEquals(49, teamResult.getPrimieraRaw());
+        } finally {
+            if (valueField != null) {
+                try {
+                    valueField.setInt(invalidCard, originalValue);
+                } catch (Exception e) {
+                    fail("Unable to restore the card value via reflection: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testResultOutcome_Loss() {
+
+        List<Card> treasureTeam1 = new ArrayList<>();
+        for (int i = 0; i < 22; i++) {
+            treasureTeam1.add(CardFactory.getCard(Suit.COPPE, 2));
+        }
+        treasureTeam1.addAll(createCardsFromValues(List.of(1, 2, 3, 7), Suit.DENARI));
+
+        List<Card> treasureTeam2 = new ArrayList<>();
+        for (int i = 0; i < 18; i++) {
+            treasureTeam2.add(CardFactory.getCard(Suit.COPPE, 2));
+        }
+        treasureTeam2.addAll(createCardsFromValues(List.of(1, 2, 3), Suit.DENARI));
+
+        Player team1Player1 = createPlayerWithTreasure(100L, treasureTeam2, 1);
+        Player team1Player2 = createPlayerWithTreasure(300L, treasureTeam2, 1);
+        Player team2Player1 = createPlayerWithTreasure(200L, treasureTeam1, 2);
+        Player team2Player2 = createPlayerWithTreasure(400L, treasureTeam1, 0);
+
+        List<Player> players = new ArrayList<>();
+        players.add(team1Player1);
+        players.add(team2Player1);
+        players.add(team1Player2);
+        players.add(team2Player2);
+
+        Result result = new Result(12345L, players);
+
+        assertEquals(Outcome.LOST, result.getTeam1().getOutcome(), "Team1 should have lost.");
+        assertEquals(Outcome.WON, result.getTeam2().getOutcome(), "Team2 should have won.");
+    }
+
 }

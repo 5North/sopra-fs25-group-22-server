@@ -12,6 +12,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -206,31 +209,58 @@ public class UserServiceTest {
     assertEquals(1, testUser.getTieCount(), "Tie count should be incremented to 1.");
   }
 
-    @Test
-    public void checkIfUserExists_success() throws NotFoundException {
-        // given -> a first user has already been created
-        userService.createUser(testUser);
-        Optional<User> optionalUser = Optional.of(testUser);
+  @Test
+  public void checkIfUserExists_success() throws NotFoundException {
+    // given -> a first user has already been created
+    userService.createUser(testUser);
+    Optional<User> optionalUser = Optional.of(testUser);
 
-        // when -> setup additional mocks for UserRepository
-        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalUser);
+    // when -> setup additional mocks for UserRepository
+    Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalUser);
 
+    assertDoesNotThrow(() -> userService.checkIfUserExists(testUser.getId()));
 
-        assertDoesNotThrow(() -> userService.checkIfUserExists(testUser.getId()));
+  }
 
-    }
+  @Test
+  public void checkIfUserExists_throwsException() {
+    // given -> a first user has already been created
+    userService.createUser(testUser);
+    Optional<User> optionalEmptyUser = Optional.empty();
 
-    @Test
-    public void checkIfUserExists_throwsException() {
-        // given -> a first user has already been created
-        userService.createUser(testUser);
-        Optional<User> optionalEmptyUser = Optional.empty();
+    // when -> setup additional mocks for UserRepository
+    Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalEmptyUser);
 
-        // when -> setup additional mocks for UserRepository
-        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalEmptyUser);
+    assertThrows(
+        NotFoundException.class, () -> userService.checkIfUserExists(1L));
+  }
 
-        assertThrows(
-                NotFoundException.class, () -> userService.checkIfUserExists(1L));
-    }
+  @Test
+  public void testGetUsersReturnsEmpty() {
+    Mockito.when(userRepository.findAll()).thenReturn(new ArrayList<>());
+
+    List<User> users = userService.getUsers();
+
+    assertNotNull(users, "Returned list should not be null");
+    assertEquals(0, users.size(), "The user list should be empty.");
+
+    Mockito.verify(userRepository, Mockito.times(1)).findAll();
+  }
+
+  @Test
+  public void testGetUsersSuccess() {
+    List<User> usersFromRepo = new ArrayList<>();
+    usersFromRepo.add(testUser);
+
+    Mockito.when(userRepository.findAll()).thenReturn(usersFromRepo);
+
+    List<User> returnedUsers = userService.getUsers();
+
+    assertNotNull(returnedUsers, "Returned list should not be null");
+    assertEquals(1, returnedUsers.size(), "The user list size should be 1.");
+    assertEquals(testUser, returnedUsers.get(0), "The returned user should match the test user.");
+
+    Mockito.verify(userRepository, Mockito.times(1)).findAll();
+  }
 
 }

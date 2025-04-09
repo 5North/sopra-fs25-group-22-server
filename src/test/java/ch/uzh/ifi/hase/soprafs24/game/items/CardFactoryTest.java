@@ -2,6 +2,9 @@ package ch.uzh.ifi.hase.soprafs24.game.items;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.text.DateFormat.Field;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
 public class CardFactoryTest {
@@ -27,5 +30,19 @@ public class CardFactoryTest {
                 CardFactory.getCard(suit, value);
             }
         }
+    }
+
+    @Test
+    public void testFactoryCacheContent() throws Exception {
+        for (Suit suit : Suit.values()) {
+            for (int value = 1; value <= 10; value++) {
+                CardFactory.getCard(suit, value);
+            }
+        }
+        java.lang.reflect.Field cacheField = CardFactory.class.getDeclaredField("cardCache");
+        cacheField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<String, Card> cache = (Map<String, Card>) cacheField.get(null);
+        assertEquals(40, cache.size(), "The card cache should contain exactly 40 entries.");
     }
 }
