@@ -1,9 +1,10 @@
 name: Dockerize
 
 on:
-  push:
-    branches: 
-      - main
+  # disable dockerize on main
+  #push:
+    #branches:
+      #- main
   # disable dockerize on pull requests
     
   #pull_request:
