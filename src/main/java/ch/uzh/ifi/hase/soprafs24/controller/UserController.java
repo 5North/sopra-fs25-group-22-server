@@ -74,6 +74,7 @@ public class UserController {
     HttpHeaders responseHeaders = new HttpHeaders();
     responseHeaders.set("Token", createdUser.getToken());
     UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+    System.out.println("=================USER REGISTERED===============");
     return new ResponseEntity<>(userGetDTO, responseHeaders, HttpStatus.CREATED);
   }
 
