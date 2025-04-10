@@ -60,6 +60,8 @@ public class GameSession {
         return table;
     }
 
+    public Player getCurrentPlayer() {return players.get(currentPlayerIndex);}
+
     public int getCurrentPlayerIndex() {
         return currentPlayerIndex;
     }
