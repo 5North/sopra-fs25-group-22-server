@@ -10,8 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -49,7 +50,7 @@ public class LobbyService {
         return lobbyRepository.save(newLobby);
     }
 
-    //TODO cleanup
+    //TODO cleanup, add check if user already in a lobby
     public void joinLobby(Long lobbyId, Long userId) throws NotFoundException {
         checkIfLobbyExists(lobbyId);
         userService.checkIfUserExists(userId);
@@ -79,6 +80,14 @@ public class LobbyService {
             String msg = "User " + userId + " is not part of lobby " + lobby.getLobbyId();
             throw new NoSuchElementException(msg);
         }
+    }
+
+    public Lobby getLobbyById(Long lobbyId) {
+        Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
+        if (lobby == null) {
+            throw new NoSuchElementException("No lobby with id " + lobbyId);
+        }
+        return lobby;
     }
 
     public boolean lobbyIsFull(Long lobbyId) {

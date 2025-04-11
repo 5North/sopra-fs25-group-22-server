@@ -4,6 +4,8 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
+import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
+import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -24,21 +26,22 @@ import java.util.Objects;
 @Controller
 public class MessageController {
 
+    //TODO look into move services in gameService
     private final LobbyService lobbyService;
     private final WebSocketService webSocketService;
+    private final GameService gameService;
 
-    public MessageController(LobbyService lobbyService, WebSocketService webSocketService) {
+    public MessageController(LobbyService lobbyService, WebSocketService webSocketService, GameService gameService) {
         this.lobbyService = lobbyService;
         this.webSocketService = webSocketService;
+        this.gameService = gameService;
     }
 
     // app/play/card -> respond with card played
     @MessageMapping("/app/startGame")
-    public void processPlayedCard(String message, StompHeaderAccessor accessor) {
-        // Retrieve the userid of the current session, which was saved during auth before handshake
-        Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-        Long userId = (Long) userIdAttr;
-        Lobby lobby = lobbyService.getLobby(userId);
+    public void processPlayedCard(lobbyDTO DTO) {
+        Long lobbyId = lobbyDTO.getLobbyId();
+        Lobby lobby = lobbyService.getLobbyById(lobbyId);
         GameSession game = gameService.startGame(lobby);
         GameSessionDTO gameDTO =  convertGameEntityToGameSessionDTO(game);
         webSocketService.broadCastLobbyNotifications(lobbyId, gameDTO);
@@ -46,23 +49,30 @@ public class MessageController {
 
     // app/play/card -> respond with card played
     @MessageMapping("/app/playCard")
-    public void processPlayedCard(String message, StompHeaderAccessor accessor) {
+    public void processPlayedCard(CardDTO DTO, StompHeaderAccessor accessor) {
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
         Long userId = (Long) userIdAttr;
 
-        gameService.playCard(Card, gameId);
+        Card card = DTOMapper.INSTANCE.convertCardDTOtoEntity(DTO);
+
+        gameService.playCard(card, gameId);
         Player player = game.getCurrentPlayer();
         PlayerDTO playerDTO = convertPlayerEntityToPlayerDTO(player);
+
+        GameUpdateDTO gameDTO = DTOMapper.convertEntityGameToGameUpdateDTO(gameService.getGame());
 
         webSocketService.lobbyNotifications(userid, playerDTO);
         webSocketService.broadCastLobbyNotifications(lobbyId, gameUpdateDTO);
     }
 
     @MessageMapping("/app/chooseCapture")
-    public void processOptionChosen(String message, StompHeaderAccessor accessor) {
+    public void processOptionChosen(choosenCardDTO DTO, StompHeaderAccessor accessor) {
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-       gameService.playCard(List<Card>);
+
+        List<Card> cards = choosenCardDTO.getCards();
+
+       gameService.playCard(cards);
     }
 }
