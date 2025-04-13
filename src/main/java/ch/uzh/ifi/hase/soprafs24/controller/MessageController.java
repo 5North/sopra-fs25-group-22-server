@@ -3,98 +3,117 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
+import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
-import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.Objects;
 
-// TODO update docs
-/**
- * Message Controller
- * This class is responsible for handling all STOMP msg sent to the server.
- * The controller will receive the msg and delegate the execution to the
- * LobbyService/Gameservice/UserService and then
- * send a response with methods from WebSocketService.
- */
-
 @Controller
 public class MessageController {
 
-    // TODO look into move services in gameService
     private final LobbyService lobbyService;
-    private final WebSocketService webSocketService;
     private final GameService gameService;
+    private final WebSocketService webSocketService;
 
-    public MessageController(LobbyService lobbyService, WebSocketService webSocketService, GameService gameService) {
+    public MessageController(LobbyService lobbyService, GameService gameService, WebSocketService webSocketService) {
         this.lobbyService = lobbyService;
-        this.webSocketService = webSocketService;
         this.gameService = gameService;
+        this.webSocketService = webSocketService;
     }
 
-    // app/play/card -> respond with card played
     @MessageMapping("/app/startGame")
     public void processStartGame(LobbyDTO lobbyDTO) {
         Long lobbyId = lobbyDTO.getLobbyId();
         Lobby lobby = lobbyService.getLobbyById(lobbyId);
-
         GameSession game = gameService.startGame(lobby);
 
-        lobby.setGameSession(game);
-
-        GameSessionDTO publicGameDTO = GameSessionMapper.convertToDTO(game);
-
+        GameSessionDTO publicGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
         webSocketService.broadCastLobbyNotifications(lobbyId, publicGameDTO);
 
         game.getPlayers().forEach(player -> {
-            PrivatePlayerDTO privateDTO = GameSessionMapper.convertPlayerToPrivateDTO(player);
+            PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(player);
             webSocketService.lobbyNotifications(player.getUserId(), privateDTO);
         });
     }
 
-    // app/play/card -> respond with card played
-    // @MessageMapping("/app/playCard")
-    // public void processPlayedCard(CardDTO DTO, StompHeaderAccessor accessor) {
-    // // Retrieve the userid of the current session, which was saved during auth
-    // before handshake
-    // Object userIdAttr =
-    // Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-    // Long userId = (Long) userIdAttr;
+    @MessageMapping("/app/playCard")
+    public void processPlayCard(@Payload CardDTO cardDTO,
+            @Header("gameId") Long gameId,
+            SimpMessageHeaderAccessor headerAccessor) {
+        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+        Long userId = (Long) userIdObj;
 
-    // Card card = DTOMapper.INSTANCE.convertCardDTOtoEntity(DTO);
+        if (gameId == null) {
+            webSocketService.lobbyNotifications(userId, "Game ID not provided. Unable to process played card.");
+            return;
+        }
 
-    // gameService.playCard(card, gameId);
-    // Player player = game.getCurrentPlayer();
-    // PlayerDTO playerDTO = convertPlayerEntityToPlayerDTO(player);
+        Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
 
-    // GameUpdateDTO gameDTO =
-    // DTOMapper.convertEntityGameToGameUpdateDTO(gameService.getGame());
+        try {
+            gameService.processPlayTurn(gameId, playedCard, null);
+        } catch (IllegalStateException e) {
+            List<List<Card>> options = gameService.getGameSessionById(gameId).getTable().getCaptureOptions(playedCard);
+            var optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
+            webSocketService.lobbyNotifications(userId, optionsDTO);
+            return;
+        } catch (IllegalArgumentException e) {
+            webSocketService.lobbyNotifications(userId, e.getMessage());
+            return;
+        }
 
-    // webSocketService.lobbyNotifications(userid, playerDTO);
-    // webSocketService.broadCastLobbyNotifications(lobbyId, gameUpdateDTO);
-    // }
+        GameSession game = gameService.getGameSessionById(gameId);
+        GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
+        webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
 
-    // @MessageMapping("/app/chooseCapture")
-    // public void processOptionChosen(choosenCardDTO DTO, StompHeaderAccessor
-    // accessor) {
-    // // Retrieve the userid of the current session, which was saved during auth
-    // before handshake
-    // Object userIdAttr =
-    // Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
+        Player currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
+        PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
+        webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
 
-    // List<Card> cards = choosenCardDTO.getCards();
+        if (game.isGameOver()) {
+            game.finishGame();
 
-    // gameService.playCard(cards);
-    // }
+            game.getPlayers().forEach(player -> {
+                var resultDTO = GameSessionMapper.convertResultToDTO(game.calculateResult(), player.getUserId());
+                webSocketService.lobbyNotifications(player.getUserId(), resultDTO);
+            });
+        }
+    }
+
+    @MessageMapping("/app/chooseCapture")
+    public void processChooseCapture(@Payload List<CardDTO> chosenOption,
+            @Header("gameId") Long gameId,
+            @Header("playedCard") CardDTO playedCardDTO,
+            SimpMessageHeaderAccessor headerAccessor) {
+        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+        Long userId = (Long) userIdObj;
+
+        List<Card> selectedOption = GameSessionMapper.convertCardDTOListToEntity(chosenOption);
+        Card playedCard = GameSessionMapper.convertCardDTOtoEntity(playedCardDTO);
+
+        gameService.processPlayTurn(gameId, playedCard, selectedOption);
+
+        GameSession game = gameService.getGameSessionById(gameId);
+        GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
+        webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
+
+        Player currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
+        PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
+        webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
+    }
+
 }

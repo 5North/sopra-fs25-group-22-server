@@ -29,32 +29,23 @@ public class GameServiceTest {
 
     @Test
     public void testStartGame_createsGameSession_withCorrectPlayerOrder() {
-        // Create a dummy lobby
         Lobby lobby = new Lobby();
         lobby.setLobbyId(1234L);
 
-        // Set the lobby owner (creator)
         User owner = new User();
         owner.setId(10L);
         lobby.setUser(owner);
 
-        // Add extra user IDs to the lobby; these come from users joining via WebSocket,
-        // etc.
         List<Long> lobbyUsers = new ArrayList<>(Arrays.asList(20L, 30L, 40L));
         for (Long id : lobbyUsers) {
             lobby.addUsers(id);
         }
 
-        // Call startGame: first player (index 0) must be the lobby owner, then the rest
-        // in order.
         GameSession gameSession = gameService.startGame(lobby);
 
-        // Verify game session is created with lobby id as game id
         assertNotNull(gameSession);
         assertEquals(1234L, gameSession.getGameId());
 
-        // Verify that the players are in the correct order: owner first, then others as
-        // in lobby.getUsers()
         List<Player> players = gameSession.getPlayers();
         assertEquals(4, players.size());
         assertEquals(10L, players.get(0).getUserId());
@@ -62,7 +53,6 @@ public class GameServiceTest {
         assertEquals(30L, players.get(2).getUserId());
         assertEquals(40L, players.get(3).getUserId());
 
-        // The gameSessions map should contain an entry with key = 1234L
         GameSession retrieved = gameService.getGameSessionById(1234L);
         assertSame(gameSession, retrieved);
     }
@@ -121,4 +111,32 @@ public class GameServiceTest {
         List<Card> treasure = p.getTreasure();
         assertTrue(treasure.contains(card1) && treasure.contains(card2));
     }
+
+    @Test
+    void testStartGame_CreatesGameSessionWithCorrectPlayerOrder() {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(1234L);
+        ch.uzh.ifi.hase.soprafs24.entity.User owner = new ch.uzh.ifi.hase.soprafs24.entity.User();
+        owner.setId(10L);
+        lobby.setUser(owner);
+        lobby.addUsers(20L);
+        lobby.addUsers(30L);
+
+        GameSession gameSession = gameService.startGame(lobby);
+        assertNotNull(gameSession);
+        assertEquals(1234L, gameSession.getGameId());
+        List<Long> expected = Arrays.asList(10L, 20L, 30L);
+        for (int i = 0; i < gameSession.getPlayers().size(); i++) {
+            assertEquals(expected.get(i), gameSession.getPlayers().get(i).getUserId());
+        }
+    }
+
+    @Test
+    void testProcessPlayTurn_GameSessionNotFound() {
+        Card playedCard = ch.uzh.ifi.hase.soprafs24.game.items.CardFactory.getCard(Suit.COPPE, 7);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> gameService.processPlayTurn(9999L, playedCard, null));
+        assertTrue(ex.getMessage().contains("Game session not found"));
+    }
+
 }
