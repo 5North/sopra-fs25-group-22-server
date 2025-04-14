@@ -2,16 +2,12 @@ package ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.*;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
 import ch.uzh.ifi.hase.soprafs24.game.result.TeamResult;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,6 +126,22 @@ public class GameSessionMapper {
             dto.setUserId(userId);
             dto.setOutcome("UNKNOWN");
         }
+        return dto;
+    }
+
+    public static MoveActionDTO convertToMoveActionDTO(Long playerId, Card playedCard, List<Card> capturedCards) {
+        MoveActionDTO dto = new MoveActionDTO();
+        dto.setPlayerId(playerId);
+        dto.setPlayedCard(convertToCardDTO(playedCard));
+
+        List<CardDTO> capturedCardsDTO = new ArrayList<>();
+        if (capturedCards != null) {
+            for (Card card : capturedCards) {
+                capturedCardsDTO.add(convertToCardDTO(card));
+            }
+        }
+        dto.setCapturedCards(capturedCardsDTO);
+
         return dto;
     }
 }

@@ -18,6 +18,8 @@ public class GameSession {
     private int lastGetterIndex;
     private int turnCounter;
     private static final int TOTAL_TURNS = 36;
+    private Card lastCardPlayed;
+    private List<Card> lastPickedCards;
 
     public GameSession(Long gameId, List<Long> playerIds) {
         this.gameId = gameId;
@@ -78,6 +80,16 @@ public class GameSession {
         return turnCounter >= TOTAL_TURNS;
     }
 
+    public void setLastCardPlayed(Card lastCardPlayed) {
+        this.lastCardPlayed = lastCardPlayed;
+    }
+
+    public Card getLastCardPlayed() {return lastCardPlayed;}
+
+    public void setLastPickedCards(List<Card> lastPickedCards) {}
+
+    public List<Card> getLastCardPickedCards() {return lastPickedCards;}
+
     /**
      * Processes a single turn.
      *
@@ -101,8 +113,13 @@ public class GameSession {
      */
     public void playTurn(Card playedCard, List<Card> selectedOption) {
         Player currentPlayer = players.get(currentPlayerIndex);
-
-        Card cardPlayed = currentPlayer.pickPlayedCard(playedCard);
+        Card cardPlayed;
+        if (selectedOption == null) {
+             cardPlayed = currentPlayer.pickPlayedCard(playedCard);
+            this.setLastCardPlayed(cardPlayed);
+        } else {
+             cardPlayed = this.getLastCardPlayed();
+        }
 
         List<List<Card>> captureOptions = table.getCaptureOptions(cardPlayed);
         boolean captureOccurred = false;
@@ -131,6 +148,7 @@ public class GameSession {
             table.applyCaptureOption(optionToApply);
             captureOccurred = true;
             capturedCards.addAll(optionToApply);
+            this.setLastPickedCards(optionToApply);
         } else {
             table.addCard(cardPlayed);
         }
@@ -142,6 +160,7 @@ public class GameSession {
             cardsToCollect.add(cardPlayed);
             cardsToCollect.addAll(capturedCards);
             currentPlayer.collectCards(cardsToCollect, isScopa);
+            this.setLastCardPlayed(cardPlayed);
         }
 
         turnCounter++;
