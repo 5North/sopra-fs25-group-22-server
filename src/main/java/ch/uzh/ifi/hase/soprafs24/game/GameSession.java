@@ -86,9 +86,11 @@ public class GameSession {
 
     public Card getLastCardPlayed() {return lastCardPlayed;}
 
-    public void setLastPickedCards(List<Card> lastPickedCards) {}
+    public void setLastPickedCards(List<Card> lastPickedCards) {this.lastPickedCards = lastPickedCards;}
 
     public List<Card> getLastCardPickedCards() {return lastPickedCards;}
+
+    public Long getLastPickedPlayerId() {return players.get(lastGetterIndex).getUserId();}
 
     /**
      * Processes a single turn.
@@ -119,6 +121,7 @@ public class GameSession {
             this.setLastCardPlayed(cardPlayed);
         } else {
              cardPlayed = this.getLastCardPlayed();
+             this.setLastPickedCards(selectedOption);
         }
 
         List<List<Card>> captureOptions = table.getCaptureOptions(cardPlayed);
@@ -148,8 +151,8 @@ public class GameSession {
             table.applyCaptureOption(optionToApply);
             captureOccurred = true;
             capturedCards.addAll(optionToApply);
-            this.setLastPickedCards(optionToApply);
         } else {
+            this.setLastPickedCards(new ArrayList<>());
             table.addCard(cardPlayed);
         }
 

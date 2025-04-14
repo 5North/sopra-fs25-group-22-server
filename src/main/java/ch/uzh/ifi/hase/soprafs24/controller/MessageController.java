@@ -61,17 +61,23 @@ public class MessageController {
         Long gameId = DTO.getLobbyId();
 
         try {
-            Pair<GameSessionDTO, PrivatePlayerDTO> pairDTO = gameService.playCard(gameId, cardDTO, userId);
-            GameSessionDTO updateGameDTO = pairDTO.getFirst();
-            PrivatePlayerDTO updatedPrivateDTO = pairDTO.getSecond();
+            Pair<GameSession, Player> pairDTO = gameService.playCard(gameId, cardDTO, userId);
+            GameSession game = pairDTO.getFirst();
+            Player currentPlayer = pairDTO.getSecond();
 
+            if (currentPlayer!=null) {
+                GameSessionDTO updateGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
+                PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
 
-            webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
-            webSocketService.broadCastLobbyNotifications(gameId, updateGameDTO);
+                webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
+                webSocketService.broadCastLobbyNotifications(gameId, updateGameDTO);
+            }
 
+            gameService.isGameOver(gameId);
         } catch (Exception e) {
             webSocketService.lobbyNotifications(userId, e.getMessage());
         }
+
     }
 
     @MessageMapping("/app/chooseCapture")
@@ -94,6 +100,8 @@ public class MessageController {
         Player currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
         PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
         webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
+
+        gameService.isGameOver(gameId);
 
         } catch (Exception e) {
             webSocketService.lobbyNotifications(userId, e.getMessage());

@@ -4,11 +4,11 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
+import ch.uzh.ifi.hase.soprafs24.game.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -54,15 +54,14 @@ public class GameService {
         return null;
     }
 
-    public Pair<GameSessionDTO, PrivatePlayerDTO> playCard(Long gameId, CardDTO cardDTO, Long userId) {
-        GameSessionDTO updatedGameDTO;
-        PrivatePlayerDTO updatedPrivateDTO;
+    public Pair<GameSession, Player> playCard(Long gameId, CardDTO cardDTO, Long userId) {
+        Player currentPlayer = null;
         GameSession game = getGameSessionById(gameId);
         Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
+
         if (game == null) {
             throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
         }
-
 
         if (gameId == null) {
             throw new IllegalArgumentException("Game ID not provided. Unable to process played card.");
@@ -70,30 +69,17 @@ public class GameService {
 
         try {
             game.playTurn(playedCard, null);
-        } catch (IllegalStateException e) {
+            currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
+        }
+        catch (IllegalStateException e) {
             List<List<Card>> options = getGameSessionById(gameId).getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.lobbyNotifications(userId, optionsDTO);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
         }
-
-        updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
-
-        Player currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
-        updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
-
-
-        //DO NOT TOUCH
-        if (game.isGameOver()) {
-            game.finishGame();
-
-            game.getPlayers().forEach(player -> {
-                ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(game.calculateResult(), player.getUserId());
-                webSocketService.lobbyNotifications(player.getUserId(), resultDTO);
-            });
-        }
-        return Pair.of(updatedGameDTO, updatedPrivateDTO);
+        return Pair.of(game, currentPlayer);
     }
 
     public void processPlayTurn(Long gameId, List<Card> selectedOption) {
@@ -106,5 +92,29 @@ public class GameService {
         if (game.isGameOver()) {
             game.finishGame();
         }
+    }
+
+    public boolean isGameOver(Long gameId) {
+        GameSession game = getGameSessionById(gameId);
+        if (game.isGameOver()) {
+            game.finishGame();
+
+            Long playerId = game.getLastPickedPlayerId();
+            List<Card> lastCards = game.getTable().getCards();
+
+            LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
+            lastCardsDTO.setUserId(playerId);
+            webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
+
+            Result result = game.calculateResult();
+
+            game.getPlayers().forEach(player -> {
+                ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
+                webSocketService.lobbyNotifications(player.getUserId(), resultDTO);
+            });
+            gameSessions.remove(gameId);
+            return true;
+        }
+        return false;
     }
 }

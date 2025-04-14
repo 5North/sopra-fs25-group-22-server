@@ -144,4 +144,17 @@ public class GameSessionMapper {
 
         return dto;
     }
+
+    public static LastCardsDTO convertToLastCardsDTO(Long userId, List<Card> lastCards) {
+        LastCardsDTO dto = new LastCardsDTO();
+        dto.setUserId(userId);
+        List<CardDTO> cardDTOs = new ArrayList<>();
+        if (lastCards != null) {
+            for (Card card : lastCards) {
+                cardDTOs.add(convertToCardDTO(card));
+            }
+        }
+        dto.setCards(cardDTOs);
+        return dto;
+    }
 }
