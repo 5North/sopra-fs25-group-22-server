@@ -12,6 +12,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.AiRequestDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
 import org.springframework.data.util.Pair;
@@ -106,6 +107,18 @@ public class MessageController {
         } catch (Exception e) {
             webSocketService.lobbyNotifications(userId, e.getMessage());
         }
+    }
+
+    @MessageMapping("/app/ai")
+    public void processAISuggestion(@Payload AiRequestDTO aiRequestDTO,
+                                    StompHeaderAccessor headerAccessor) {
+        Long gameId = aiRequestDTO.getGameId();
+        Long userId = (Long) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+
+        // call to aiSuggestion in gs
+        // AiDTO aiSuggestion = gameService.aiSuggestion(gameId, userId);
+
+        //webSocketService.lobbyNotifications(userId, aiSuggestion);
     }
 
 }

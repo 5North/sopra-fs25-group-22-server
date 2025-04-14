@@ -117,4 +117,11 @@ public class GameService {
         }
         return false;
     }
+
+    /*public AiDTO aiSuggestion(Long gameId, Long userId) {
+        AiDTO aiDTO = new AiDTO();
+        aiDTO.setSuggestion("Play 7 of Denari, Play 5 of Coppe");
+        return aiDTO;
+    }*/
+
 }
