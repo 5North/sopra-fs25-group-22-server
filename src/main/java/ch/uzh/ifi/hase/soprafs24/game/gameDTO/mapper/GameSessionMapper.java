@@ -129,21 +129,22 @@ public class GameSessionMapper {
         return dto;
     }
 
-    public static MoveActionDTO convertToMoveActionDTO(Long playerId, Card playedCard, List<Card> capturedCards) {
-        MoveActionDTO dto = new MoveActionDTO();
-        dto.setPlayerId(playerId);
-        dto.setPlayedCard(convertToCardDTO(playedCard));
+    // public static MoveActionDTO convertToMoveActionDTO(Long playerId, Card
+    // playedCard, List<Card> capturedCards) {
+    // MoveActionDTO dto = new MoveActionDTO();
+    // dto.setPlayerId(playerId);
+    // dto.setPlayedCard(convertToCardDTO(playedCard));
 
-        List<CardDTO> capturedCardsDTO = new ArrayList<>();
-        if (capturedCards != null) {
-            for (Card card : capturedCards) {
-                capturedCardsDTO.add(convertToCardDTO(card));
-            }
-        }
-        dto.setCapturedCards(capturedCardsDTO);
+    // List<CardDTO> capturedCardsDTO = new ArrayList<>();
+    // if (capturedCards != null) {
+    // for (Card card : capturedCards) {
+    // capturedCardsDTO.add(convertToCardDTO(card));
+    // }
+    // }
+    // dto.setCapturedCards(capturedCardsDTO);
 
-        return dto;
-    }
+    // return dto;
+    // }
 
     public static LastCardsDTO convertToLastCardsDTO(Long userId, List<Card> lastCards) {
         LastCardsDTO dto = new LastCardsDTO();

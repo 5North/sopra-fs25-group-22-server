@@ -1,3 +1,4 @@
+
 package ch.uzh.ifi.hase.soprafs24.game;
 
 import java.util.ArrayList;
@@ -62,7 +63,9 @@ public class GameSession {
         return table;
     }
 
-    public Player getCurrentPlayer() {return players.get(currentPlayerIndex);}
+    public Player getCurrentPlayer() {
+        return players.get(currentPlayerIndex);
+    }
 
     public int getCurrentPlayerIndex() {
         return currentPlayerIndex;
@@ -84,13 +87,21 @@ public class GameSession {
         this.lastCardPlayed = lastCardPlayed;
     }
 
-    public Card getLastCardPlayed() {return lastCardPlayed;}
+    public Card getLastCardPlayed() {
+        return lastCardPlayed;
+    }
 
-    public void setLastPickedCards(List<Card> lastPickedCards) {this.lastPickedCards = lastPickedCards;}
+    public void setLastPickedCards(List<Card> lastPickedCards) {
+        this.lastPickedCards = lastPickedCards;
+    }
 
-    public List<Card> getLastCardPickedCards() {return lastPickedCards;}
+    public List<Card> getLastCardPickedCards() {
+        return lastPickedCards;
+    }
 
-    public Long getLastPickedPlayerId() {return players.get(lastGetterIndex).getUserId();}
+    public Long getLastPickedPlayerId() {
+        return players.get(lastGetterIndex).getUserId();
+    }
 
     /**
      * Processes a single turn.
@@ -116,12 +127,15 @@ public class GameSession {
     public void playTurn(Card playedCard, List<Card> selectedOption) {
         Player currentPlayer = players.get(currentPlayerIndex);
         Card cardPlayed;
-        if (selectedOption == null) {
-             cardPlayed = currentPlayer.pickPlayedCard(playedCard);
+        if (selectedOption == null || selectedOption.isEmpty()) {
+            cardPlayed = currentPlayer.pickPlayedCard(playedCard);
             this.setLastCardPlayed(cardPlayed);
         } else {
-             cardPlayed = this.getLastCardPlayed();
-             this.setLastPickedCards(selectedOption);
+            if (this.getLastCardPlayed() == null) {
+                throw new IllegalArgumentException("No last card played available for processing capture selection.");
+            }
+            cardPlayed = this.getLastCardPlayed();
+            this.setLastPickedCards(selectedOption);
         }
 
         List<List<Card>> captureOptions = table.getCaptureOptions(cardPlayed);
@@ -132,7 +146,7 @@ public class GameSession {
             List<Card> optionToApply = null;
             if (captureOptions.size() == 1) {
                 optionToApply = captureOptions.get(0);
-            } else if (selectedOption != null) {
+            } else if (selectedOption != null && !selectedOption.isEmpty()) {
                 boolean valid = false;
                 for (List<Card> option : captureOptions) {
                     if (option.equals(selectedOption)) {

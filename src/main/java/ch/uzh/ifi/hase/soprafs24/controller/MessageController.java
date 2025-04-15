@@ -66,7 +66,7 @@ public class MessageController {
             GameSession game = pairDTO.getFirst();
             Player currentPlayer = pairDTO.getSecond();
 
-            if (currentPlayer!=null) {
+            if (currentPlayer != null) {
                 GameSessionDTO updateGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
                 PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
 
@@ -93,16 +93,16 @@ public class MessageController {
         List<Card> selectedOption = GameSessionMapper.convertCardDTOListToEntity(chosenOption);
 
         try {
-        gameService.processPlayTurn(gameId, selectedOption);
+            gameService.processPlayTurn(gameId, selectedOption);
 
-        GameSession game = gameService.getGameSessionById(gameId);
-        GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
-        webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
-        Player currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
-        PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
-        webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
+            GameSession game = gameService.getGameSessionById(gameId);
+            GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
+            webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
+            Player currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
+            PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
+            webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
 
-        gameService.isGameOver(gameId);
+            gameService.isGameOver(gameId);
 
         } catch (Exception e) {
             webSocketService.lobbyNotifications(userId, e.getMessage());
@@ -111,14 +111,14 @@ public class MessageController {
 
     @MessageMapping("/app/ai")
     public void processAISuggestion(@Payload AiRequestDTO aiRequestDTO,
-                                    StompHeaderAccessor headerAccessor) {
+            StompHeaderAccessor headerAccessor) {
         Long gameId = aiRequestDTO.getGameId();
         Long userId = (Long) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
 
         // call to aiSuggestion in gs
         // AiDTO aiSuggestion = gameService.aiSuggestion(gameId, userId);
 
-        //webSocketService.lobbyNotifications(userId, aiSuggestion);
+        // webSocketService.lobbyNotifications(userId, aiSuggestion);
     }
 
 }

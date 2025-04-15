@@ -70,13 +70,11 @@ public class GameService {
         try {
             game.playTurn(playedCard, null);
             currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
-        }
-        catch (IllegalStateException e) {
+        } catch (IllegalStateException e) {
             List<List<Card>> options = getGameSessionById(gameId).getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.lobbyNotifications(userId, optionsDTO);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
         }
         return Pair.of(game, currentPlayer);
@@ -118,10 +116,12 @@ public class GameService {
         return false;
     }
 
-    /*public AiDTO aiSuggestion(Long gameId, Long userId) {
-        AiDTO aiDTO = new AiDTO();
-        aiDTO.setSuggestion("Play 7 of Denari, Play 5 of Coppe");
-        return aiDTO;
-    }*/
+    /*
+     * public AiDTO aiSuggestion(Long gameId, Long userId) {
+     * AiDTO aiDTO = new AiDTO();
+     * aiDTO.setSuggestion("Play 7 of Denari, Play 5 of Coppe");
+     * return aiDTO;
+     * }
+     */
 
 }

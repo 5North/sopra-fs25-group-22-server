@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
@@ -109,4 +110,46 @@ public class GameSessionMapperTest {
         assertNotNull(dto);
         assertNotEquals("UNKNOWN", dto.getOutcome());
     }
+
+    @Test
+    public void testConvertToGameSessionDTO() {
+        List<Long> playerIds = Arrays.asList(1L, 2L, 3L, 4L);
+        GameSession gameSession = new GameSession(999L, playerIds);
+
+        GameSessionDTO dto = GameSessionMapper.convertToGameSessionDTO(gameSession);
+
+        assertEquals(999L, dto.getGameId());
+
+        assertNotNull(dto.getTableCards());
+        assertEquals(4, dto.getTableCards().size());
+
+        assertNotNull(dto.getPlayers());
+        assertEquals(4, dto.getPlayers().size());
+
+        assertEquals(1L, dto.getCurrentPlayerId());
+    }
+
+    @Test
+    public void testConvertToLastCardsDTO() {
+        List<Card> lastCards = Arrays.asList(
+                CardFactory.getCard(Suit.DENARI, 7),
+                CardFactory.getCard(Suit.SPADE, 5));
+
+        LastCardsDTO dto = GameSessionMapper.convertToLastCardsDTO(1L, lastCards);
+
+        assertEquals(1L, dto.getUserId());
+
+        assertNotNull(dto.getCards());
+        assertEquals(2, dto.getCards().size());
+
+        CardDTO card1 = dto.getCards().get(0);
+        CardDTO card2 = dto.getCards().get(1);
+
+        assertEquals("DENARI", card1.getSuit());
+        assertEquals(7, card1.getValue());
+
+        assertEquals("SPADE", card2.getSuit());
+        assertEquals(5, card2.getValue());
+    }
+
 }

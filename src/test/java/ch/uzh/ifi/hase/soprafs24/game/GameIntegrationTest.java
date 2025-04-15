@@ -95,6 +95,11 @@ public class GameIntegrationTest {
         setPlayerHand(currentPlayer, forcedHand);
         Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
 
+        try {
+            gameSession.playTurn(playedCard, null);
+        } catch (IllegalStateException e) {
+        }
+
         List<List<Card>> options = table.getCaptureOptions(playedCard);
         assertFalse(options.isEmpty(), "There should be capture options for played card 7.");
 
@@ -265,7 +270,15 @@ public class GameIntegrationTest {
         setPlayerHand(currentPlayer, forcedHand);
 
         Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
+
+        try {
+            gameSession.playTurn(playedCard, null);
+        } catch (Exception e) {
+        }
+
         List<Card> invalidOption = new ArrayList<>();
+        invalidOption.add(CardFactory.getCard(Suit.COPPE, 8));
+
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             gameSession.playTurn(playedCard, invalidOption);
         });
