@@ -26,7 +26,6 @@ public class WebSocketEventListener {
 
     private final WebSocketService webSocketService;
     private final LobbyService lobbyService;
-    private Long lobbyId;
 
     @Autowired
      WebSocketEventListener(WebSocketService webSocketService, LobbyService lobbyService) {
@@ -36,9 +35,15 @@ public class WebSocketEventListener {
 
     @EventListener
     public void handleSubscribeEvent(SessionSubscribeEvent event) throws URISyntaxException {
+        Long lobbyId;
+
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        lobbyId = getLobbyId(event);
+        try {
+             lobbyId = getLobbyId(event);
+        } catch (NullPointerException e){
+            return;
+        }
 
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
@@ -68,9 +73,15 @@ public class WebSocketEventListener {
 
     @EventListener
     public void handleUnsubscribeEvent(SessionUnsubscribeEvent event) throws URISyntaxException {
+        Long lobbyId;
+
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        lobbyId = getLobbyId(event);
+        try {
+             lobbyId = getLobbyId(event);
+        } catch (NullPointerException e){
+            return;
+        }
 
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
@@ -97,11 +108,11 @@ public class WebSocketEventListener {
 
     }
 
-    @EventListener
+   /* @EventListener
     public void handleDisconnectEvent(SessionDisconnectEvent event) throws URISyntaxException {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        lobbyId = getLobbyId(event);
+        Long lobbyId = getLobbyId(event);
 
         // Retrieve the userid of the current session, which was saved during auth before handshake
         Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
@@ -128,10 +139,11 @@ public class WebSocketEventListener {
         UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
         webSocketService.lobbyNotifications(userId, DTO);
 
-    }
+    }*/
 
     // Get lobbyId from the URI extracted
     private Long getLobbyId(AbstractSubProtocolEvent event) throws URISyntaxException {
+        Long lobbyId = null;
         String simpDestination = Objects.requireNonNull(event
                         .getMessage()
                         .getHeaders()
@@ -140,6 +152,7 @@ public class WebSocketEventListener {
         if (simpDestination.startsWith("/topic/lobby/")) {
             lobbyId = getLobbyIdFromDestination(simpDestination);
         }
+        if (lobbyId == null) {throw new NullPointerException("Could not find lobby ID");}
         return lobbyId;
     }
 
