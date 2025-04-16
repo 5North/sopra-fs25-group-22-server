@@ -23,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.util.Pair;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class MessageControllerTest {
         GameSession session = new GameSession(100L, new ArrayList<>(lobby.getUsers()));
         when(gameService.startGame(lobby)).thenReturn(session);
 
-        messageController.processStartGame(lobbyDTO);
+        messageController.processStartGame(lobbyDTO.getLobbyId());
 
         verify(webSocketService, times(1)).broadCastLobbyNotifications(eq(100L), any());
         verify(webSocketService, times(2)).lobbyNotifications(anyLong(), any());

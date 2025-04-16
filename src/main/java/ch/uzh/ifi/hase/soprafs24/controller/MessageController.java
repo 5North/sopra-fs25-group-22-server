@@ -71,9 +71,9 @@ public class MessageController {
 
                 webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
                 webSocketService.broadCastLobbyNotifications(gameId, updateGameDTO);
+                gameService.isGameOver(gameId);
             }
 
-            gameService.isGameOver(gameId);
         } catch (Exception e) {
             webSocketService.lobbyNotifications(userId, e.getMessage());
         }
