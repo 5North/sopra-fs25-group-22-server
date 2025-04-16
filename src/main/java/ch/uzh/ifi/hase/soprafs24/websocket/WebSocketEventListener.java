@@ -70,7 +70,6 @@ public class WebSocketEventListener {
         webSocketService.lobbyNotifications(userId, DTO);}
         else {
             log.debug("Received other sub protocol event: {}", event.getMessage());
-            return;
         }
     }
 
@@ -109,7 +108,6 @@ public class WebSocketEventListener {
         UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
         webSocketService.lobbyNotifications(userId, DTO);} else {
             log.debug("Received other sub protocol event: {}", event.getMessage());
-            return;
         }
 
     }
