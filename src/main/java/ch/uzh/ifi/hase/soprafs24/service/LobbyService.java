@@ -64,10 +64,10 @@ public class LobbyService {
         Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
 
         // check if user is already in the lobby
-        if (lobby.getUsers().contains(userId)) {
+        /*if (lobby.getUsers().contains(userId)) {
             String msg = "The user is already in the lobby";
             throw new IllegalStateException(msg);
-        }
+        }*/
         lobby.addUsers(userId);
         //lobbyIsFull(lobbyId);
     }

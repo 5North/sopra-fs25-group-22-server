@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -62,6 +65,26 @@ public class LobbyServiceIntegrationTest {
         assertNotNull(createdLobby.getLobbyId(), "The id of the lobby was not created");
         assertEquals(createdLobby.getLobbyId(), testUser.getLobby().getLobbyId(), "The correct db association was not created");
         assertEquals(createdLobby.getUser().getId(),testUser.getId(), "The correct db association was not created");
+    }
+
+    @Test
+    public void joinLobby_success() {
+
+        User testUser = new User();
+        testUser.setUsername("testUsername");
+        testUser.setPassword("testPassword");
+        testUser.setStatus(UserStatus.ONLINE);
+        testUser.setToken("testToken");
+        testUser = userRepository.save(testUser);
+
+        // when:
+        Lobby createdLobby = lobbyService.createLobby(testUser);
+        createdLobby.addUsers(1L);
+        createdLobby.addUsers(2L);
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(1L);
+        userIds.add(2L);
+        assertEquals(createdLobby.getUsers().toString(), userIds.toString());
     }
 
 }

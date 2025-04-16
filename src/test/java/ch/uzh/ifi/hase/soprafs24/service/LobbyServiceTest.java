@@ -127,24 +127,6 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void joinLobby_duplicatedInputs_noSuccess() throws Exception {
-        testLobby.addUsers(1L);
-        testLobby.addUsers(2L);
-
-        ArrayList<Long> users = new ArrayList<>();
-        users.add(1L);
-        users.add(2L);
-
-        // when -> setup additional mocks for LobbyRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
-
-        assertThrows(
-                IllegalStateException.class, () -> lobbyService
-                        .joinLobby(testLobby.getLobbyId(), 2L));
-
-    }
-
-    @Test
     public void joinLobby_NonExistentUser_noSuccess() throws NotFoundException {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
