@@ -94,11 +94,10 @@ public class GameServiceTest {
         assertNotNull(result, "La risposta non deve essere null.");
         GameSession updatedSession = result.getFirst();
         Player nextPlayer = result.getSecond();
-        assertNotNull(updatedSession, "La sessione aggiornata non deve essere null.");
-        assertNotNull(nextPlayer, "Il giocatore corrente (del turno successivo) non deve essere null.");
+        assertNotNull(updatedSession);
+        assertNotNull(nextPlayer);
 
-        assertFalse(currentPlayer.getHand().stream().anyMatch(c -> c.getValue() == 7),
-                "La carta giocata non deve essere presente nella mano del giocatore.");
+        assertFalse(currentPlayer.getHand().stream().anyMatch(c -> c.getValue() == 7));
     }
 
     @Test
