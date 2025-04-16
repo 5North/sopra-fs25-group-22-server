@@ -8,7 +8,6 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
@@ -16,6 +15,7 @@ import ch.uzh.ifi.hase.soprafs24.websocket.DTO.AiRequestDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
 import org.springframework.data.util.Pair;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -37,9 +37,8 @@ public class MessageController {
         this.webSocketService = webSocketService;
     }
 
-    @MessageMapping("/app/startGame")
-    public void processStartGame(@Payload LobbyDTO lobbyDTO) {
-        Long lobbyId = lobbyDTO.getLobbyId();
+    @MessageMapping("/startGame/{lobbyId}")
+    public void processStartGame(@DestinationVariable Long lobbyId) {
         Lobby lobby = lobbyService.getLobbyById(lobbyId);
         GameSession game = gameService.startGame(lobby);
 
@@ -52,7 +51,7 @@ public class MessageController {
         });
     }
 
-    @MessageMapping("/app/playCard")
+    @MessageMapping("/playCard")
     public void processPlayCard(@Payload PlayCardDTO DTO,
             StompHeaderAccessor headerAccessor) {
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
@@ -81,7 +80,7 @@ public class MessageController {
 
     }
 
-    @MessageMapping("/app/chooseCapture")
+    @MessageMapping("/chooseCapture")
     public void processChooseCapture(@Payload ChosenCaptureDTO DTO,
             StompHeaderAccessor headerAccessor) {
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
@@ -109,7 +108,7 @@ public class MessageController {
         }
     }
 
-    @MessageMapping("/app/ai")
+    @MessageMapping("/ai")
     public void processAISuggestion(@Payload AiRequestDTO aiRequestDTO,
             StompHeaderAccessor headerAccessor) {
         Long gameId = aiRequestDTO.getGameId();
