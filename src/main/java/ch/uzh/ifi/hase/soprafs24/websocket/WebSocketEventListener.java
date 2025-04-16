@@ -3,15 +3,15 @@ package ch.uzh.ifi.hase.soprafs24.websocket;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
-import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
@@ -23,7 +23,7 @@ import javassist.NotFoundException;
 
 @Component
 public class WebSocketEventListener {
-
+    private final Logger log = LoggerFactory.getLogger(WebSocketEventListener.class);
     private final WebSocketService webSocketService;
     private final LobbyService lobbyService;
 
@@ -53,8 +53,8 @@ public class WebSocketEventListener {
         // join lobby
         try {
             lobbyId = getLobbyId(event);
-
             lobbyService.joinLobby(lobbyId, userId);
+            log.info("Lobby {} joined successfully", lobbyId);
 
             // broadcast msg to lobby
             UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
@@ -69,6 +69,7 @@ public class WebSocketEventListener {
         UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
         webSocketService.lobbyNotifications(userId, DTO);}
         else {
+            log.debug("Received other sub protocol event: {}", event.getMessage());
             return;
         }
     }
@@ -94,6 +95,7 @@ public class WebSocketEventListener {
             lobbyId = getLobbyId(event);
 
             lobbyService.leaveLobby(lobbyId, userId);
+            log.info("Lobby {} left successfully", lobbyId);
 
             // broadcast msg to lobby
             UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
@@ -106,11 +108,13 @@ public class WebSocketEventListener {
         // notify user
         UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
         webSocketService.lobbyNotifications(userId, DTO);} else {
+            log.debug("Received other sub protocol event: {}", event.getMessage());
             return;
         }
 
     }
 
+    //TODO investigate
    /* @EventListener
     public void handleDisconnectEvent(SessionDisconnectEvent event) throws URISyntaxException {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
