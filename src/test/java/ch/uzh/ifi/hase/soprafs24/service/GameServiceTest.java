@@ -200,7 +200,7 @@ public class GameServiceTest {
         lobby.addUsers(2L);
         gameService.startGame(lobby);
         CardDTO cardDTO = new CardDTO("COPPE", 7);
-        assertThrows(NullPointerException.class, () -> gameService.playCard(null, cardDTO, 1L));
+        assertThrows(IllegalArgumentException.class, () -> gameService.playCard(null, cardDTO, 1L));
     }
 
     @Test
