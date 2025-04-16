@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
@@ -28,7 +27,7 @@ public class WebSocketEventListener {
     private final LobbyService lobbyService;
 
     @Autowired
-     WebSocketEventListener(WebSocketService webSocketService, LobbyService lobbyService) {
+    WebSocketEventListener(WebSocketService webSocketService, LobbyService lobbyService) {
         this.webSocketService = webSocketService;
         this.lobbyService = lobbyService;
     }
@@ -42,33 +41,32 @@ public class WebSocketEventListener {
 
         if (simpDestination.startsWith("/topic/lobby")) {
 
-        // Retrieve the userid of the current session, which was saved during auth before handshake
-        Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-        Long userId = (Long) userIdAttr;
+            // Retrieve the userid of the current session, which was saved during auth
+            // before handshake
+            Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
+            Long userId = (Long) userIdAttr;
 
+            String msg = "Lobby joined successfully";
+            boolean success = true;
 
-        String msg = "Lobby joined successfully";
-        boolean success = true;
+            // join lobby
+            try {
+                lobbyId = getLobbyId(event);
+                lobbyService.joinLobby(lobbyId, userId);
+                log.info("Lobby {} joined successfully", lobbyId);
 
-        // join lobby
-        try {
-            lobbyId = getLobbyId(event);
-            lobbyService.joinLobby(lobbyId, userId);
-            log.info("Lobby {} joined successfully", lobbyId);
+                // broadcast msg to lobby
+                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
+                webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
+            } catch (NotFoundException | IllegalStateException e) {
+                msg = e.getMessage();
+                success = false;
+            }
 
-            // broadcast msg to lobby
-            UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
-            webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
-        }
-        catch (NotFoundException | IllegalStateException e) {
-            msg = e.getMessage();
-            success = false;
-        }
-
-        // notify user
-        UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
-        webSocketService.lobbyNotifications(userId, DTO);}
-        else {
+            // notify user
+            UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
+            webSocketService.lobbyNotifications(userId, DTO);
+        } else {
             log.debug("Received other sub protocol event: {}", event.getMessage());
         }
     }
@@ -82,76 +80,84 @@ public class WebSocketEventListener {
 
         if (simpDestination.startsWith("/topic/lobby")) {
 
-        // Retrieve the userid of the current session, which was saved during auth before handshake
-        Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-        Long userId = (Long) userIdAttr;
+            // Retrieve the userid of the current session, which was saved during auth
+            // before handshake
+            Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
+            Long userId = (Long) userIdAttr;
 
-        String msg = "Lobby left successfully";
-        boolean success = true;
+            String msg = "Lobby left successfully";
+            boolean success = true;
 
-        // leave lobby
-        try {
-            lobbyId = getLobbyId(event);
+            // leave lobby
+            try {
+                lobbyId = getLobbyId(event);
 
-            lobbyService.leaveLobby(lobbyId, userId);
-            log.info("Lobby {} left successfully", lobbyId);
+                lobbyService.leaveLobby(lobbyId, userId);
+                log.info("Lobby {} left successfully", lobbyId);
 
-            // broadcast msg to lobby
-            UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
-            webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
-        } catch (NotFoundException  | IllegalStateException e) {
-             msg = e.getMessage();
-             success = false;
-        }
+                // broadcast msg to lobby
+                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
+                webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
+            } catch (NotFoundException | IllegalStateException e) {
+                msg = e.getMessage();
+                success = false;
+            }
 
-        // notify user
-        UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
-        webSocketService.lobbyNotifications(userId, DTO);} else {
+            // notify user
+            UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
+            webSocketService.lobbyNotifications(userId, DTO);
+        } else {
             log.debug("Received other sub protocol event: {}", event.getMessage());
         }
 
     }
 
-    //TODO investigate
-   /* @EventListener
-    public void handleDisconnectEvent(SessionDisconnectEvent event) throws URISyntaxException {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-
-        Long lobbyId = getLobbyId(event);
-
-        // Retrieve the userid of the current session, which was saved during auth before handshake
-        Object userIdAttr = Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-        Long userId = (Long) userIdAttr;
-
-
-        String msg = "Lobby left successfully";
-        boolean success = true;
-
-        // leave lobby
-        try {
-            lobbyService.leaveLobby(lobbyId, userId);
-
-            // broadcast msg to lobby
-            UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
-            webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
-
-        } catch (NotFoundException | NoSuchElementException e) {
-            success = false;
-            msg = e.getMessage();
-        }
-
-        // notify user
-        UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
-        webSocketService.lobbyNotifications(userId, DTO);
-
-    }*/
+    // TODO investigate
+    /*
+     * @EventListener
+     * public void handleDisconnectEvent(SessionDisconnectEvent event) throws
+     * URISyntaxException {
+     * StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+     * 
+     * Long lobbyId = getLobbyId(event);
+     * 
+     * // Retrieve the userid of the current session, which was saved during auth
+     * before handshake
+     * Object userIdAttr =
+     * Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
+     * Long userId = (Long) userIdAttr;
+     * 
+     * 
+     * String msg = "Lobby left successfully";
+     * boolean success = true;
+     * 
+     * // leave lobby
+     * try {
+     * lobbyService.leaveLobby(lobbyId, userId);
+     * 
+     * // broadcast msg to lobby
+     * UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId,
+     * "subscribed");
+     * webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
+     * 
+     * } catch (NotFoundException | NoSuchElementException e) {
+     * success = false;
+     * msg = e.getMessage();
+     * }
+     * 
+     * // notify user
+     * UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
+     * webSocketService.lobbyNotifications(userId, DTO);
+     * 
+     * }
+     */
 
     // Get string destination from event
-    private String getSimpDestination(AbstractSubProtocolEvent event){
+    private String getSimpDestination(AbstractSubProtocolEvent event) {
         return Objects.requireNonNull(event
-                        .getMessage()
-                        .getHeaders()
-                        .get("simpDestination"))
+                .getMessage()
+                .getHeaders()
+                .get("simpDestination"))
                 .toString();
     }
 
@@ -162,7 +168,9 @@ public class WebSocketEventListener {
         if (simpDestination.startsWith("/topic/lobby/")) {
             lobbyId = getLobbyIdFromDestination(simpDestination);
         }
-        if (lobbyId == null) {throw new NullPointerException("Could not find lobby ID");}
+        if (lobbyId == null) {
+            throw new NullPointerException("Could not find lobby ID");
+        }
         return lobbyId;
     }
 
