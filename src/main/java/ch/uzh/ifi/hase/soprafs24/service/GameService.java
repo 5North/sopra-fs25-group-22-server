@@ -47,15 +47,6 @@ public class GameService {
         return gameSessions.get(gameId);
     }
 
-    public GameSession getGameSessionForUser(Long userId) {
-        for (GameSession session : gameSessions.values()) {
-            if (session.getPlayers().stream().anyMatch(p -> p.getUserId().equals(userId))) {
-                return session;
-            }
-        }
-        return null;
-    }
-
     public Pair<GameSession, Player> playCard(Long gameId, CardDTO cardDTO, Long userId) {
         if (gameId == null) {
             throw new IllegalArgumentException("Game ID not provided. Unable to process played card.");

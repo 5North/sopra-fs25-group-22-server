@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 public class LobbyServiceTest {
 
@@ -63,7 +64,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void createLobby_validInputs_success()  {
+    public void createLobby_validInputs_success() {
 
         Lobby createdLobby = lobbyService.createLobby(testUser);
 
@@ -73,7 +74,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void isFull_true()  {
+    public void isFull_true() {
 
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
@@ -86,7 +87,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void isFull_notEmpty_false()  {
+    public void isFull_notEmpty_false() {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
 
@@ -97,7 +98,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void isFull_Empty_false()  {
+    public void isFull_Empty_false() {
         // when -> setup additional mocks for LobbyRepository
         Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
 
@@ -120,7 +121,6 @@ public class LobbyServiceTest {
         Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionaluser);
 
-
         lobbyService.joinLobby(testLobby.getLobbyId(), 3L);
 
         assertEquals(testLobby.getUsers(), users);
@@ -142,7 +142,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void joinLobby_full_noSuccess()  {
+    public void joinLobby_full_noSuccess() {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
         testLobby.addUsers(3L);
@@ -158,7 +158,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void leaveLobby_validInputs_success() throws Exception  {
+    public void leaveLobby_validInputs_success() throws Exception {
         testLobby.addUsers(1L);
 
         // when -> setup additional mocks for LobbyRepository and userRepository
@@ -171,7 +171,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void leaveLobby_NonExistentUser_noSuccess()  throws Exception {
+    public void leaveLobby_NonExistentUser_noSuccess() throws Exception {
         testLobby.addUsers(1L);
 
         // when -> setup additional mocks for LobbyRepository and userRepository
@@ -184,10 +184,32 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void generateId_success()  {
+    public void generateId_success() {
         Long id = lobbyService.generateId();
         assertNotNull(id);
     }
 
-}
+    @Test
+    public void getLobbyById_notExists_throwsNoSuchElementException() {
+        when(lobbyRepository.findByLobbyId(123L)).thenReturn(null);
 
+        assertThrows(NoSuchElementException.class,
+                () -> lobbyService.getLobbyById(123L));
+    }
+
+    @Test
+    public void checkIfLobbyExists_exists_doesNotThrow() {
+        when(lobbyRepository.findByLobbyId(testLobby.getLobbyId())).thenReturn(testLobby);
+
+        assertDoesNotThrow(() -> lobbyService.checkIfLobbyExists(testLobby.getLobbyId()));
+    }
+
+    @Test
+    public void checkIfLobbyExists_notExists_throwsNotFoundException() {
+        when(lobbyRepository.findByLobbyId(999L)).thenReturn(null);
+
+        assertThrows(NotFoundException.class,
+                () -> lobbyService.checkIfLobbyExists(999L));
+    }
+
+}
