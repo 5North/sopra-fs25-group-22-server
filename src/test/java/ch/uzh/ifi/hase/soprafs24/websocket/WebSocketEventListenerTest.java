@@ -41,8 +41,8 @@ class WebSocketEventListenerTest {
     }
 
     /**
-     * Helper per costruire un SessionSubscribeEvent (o Unsubscribe) con
-     * simpDestination e sessionAttributes.
+     * Helper for building a  SessionSubscribeEvent (or Unsubscribe) with
+     * simpDestination or sessionAttributes.
      */
     private SessionSubscribeEvent buildSubscribeEvent(String destination, Long userId) {
         Map<String, Object> sessionAttrs = new HashMap<>();
