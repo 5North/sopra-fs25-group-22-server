@@ -51,11 +51,10 @@ public class AIServiceTest {
         verify(openAiClient).createCompletion(captor.capture());
         String prompt = captor.getValue();
 
-        assertTrue(prompt.contains("Your hand: [DENARI-7]"), "manca la mano");
-        assertTrue(prompt.contains("Cards on table: [COPPE-5, SPADE-3]"), "manca il tavolo");
+        assertTrue(prompt.contains("Your hand: [DENARI-7]"));
+        assertTrue(prompt.contains("Cards on table: [COPPE-5, SPADE-3]"));
 
-        assertTrue(prompt.contains("Return suggestions in this exact format"),
-                "manca l’istruzione di formato");
+        assertTrue(prompt.contains("Return suggestions in this exact format"));
     }
 
     @Test
@@ -68,8 +67,8 @@ public class AIServiceTest {
         verify(openAiClient).createCompletion(captor.capture());
         String prompt = captor.getValue();
 
-        assertTrue(prompt.contains("Your hand: []"), "il prompt non riporta mano vuota");
-        assertTrue(prompt.contains("Cards on table: []"), "il prompt non riporta tavolo vuoto");
+        assertTrue(prompt.contains("Your hand: []"));
+        assertTrue(prompt.contains("Cards on table: []"));
     }
 
     @Test
