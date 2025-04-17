@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
@@ -26,6 +27,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,8 +39,24 @@ public class GameServiceTest {
     @InjectMocks
     private GameService gameService;
 
+    @Mock
+    private AIService aiService;
+
+    private Lobby lobby;
+    private Long gameId;
+    private Long playerA;
+    private Long playerB;
+
     @BeforeEach
     public void setup() {
+        lobby = new Lobby();
+        lobby.setLobbyId(42L);
+        lobby.addUsers(100L);
+        lobby.addUsers(200L);
+        gameService.startGame(lobby);
+        gameId = lobby.getLobbyId();
+        playerA = 100L;
+        playerB = 200L;
     }
 
     @Test
@@ -252,6 +270,28 @@ public class GameServiceTest {
         Exception exception = assertThrows(IllegalArgumentException.class,
                 () -> gameService.processPlayTurn(800L, invalidOption));
         assertTrue(exception.getMessage().contains("Selected capture option is not valid"));
+    }
+
+    @Test
+    public void testAiSuggestionSuccess() {
+        String rawSuggestion = "DENARI-7; COPPE-4";
+        GameSession session = gameService.getGameSessionById(gameId);
+        List<Card> hand = session.getPlayers().get(0).getHand();
+        List<Card> table = session.getTable().getCards();
+
+        when(aiService.generateAISuggestion(hand, table))
+                .thenReturn(rawSuggestion);
+
+        AISuggestionDTO dto = gameService.aiSuggestion(gameId, playerA);
+
+        assertNotNull(dto);
+        assertEquals(rawSuggestion, dto.getSuggestion());
+    }
+
+    @Test
+    public void testAiSuggestionThrowsForUnknownUser() {
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.aiSuggestion(gameId, /* userId inesistente */ 999L));
     }
 
     // --- Helper Methods ---

@@ -22,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.util.Pair;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.AiRequestDTO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -135,4 +137,22 @@ public class MessageControllerTest {
         assertDoesNotThrow(() -> messageController.processPlayCard(playCardDTO, accessor));
         verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(300L), contains("Invalid card played"));
     }
+
+    // --- Test /app/ai ---
+    @Test
+    public void testProcessAISuggestion() {
+        AiRequestDTO aiReq = new AiRequestDTO();
+        aiReq.setGameId(123L);
+
+        StompHeaderAccessor accessor = createHeaderAccessorWithUser(42L);
+
+        AISuggestionDTO expectedDto = new AISuggestionDTO("DENARI-7; COPPE-4");
+        when(gameService.aiSuggestion(123L, 42L)).thenReturn(expectedDto);
+
+        messageController.processAISuggestion(aiReq, accessor);
+
+        verify(webSocketService, times(1))
+                .lobbyNotifications(eq(42L), eq(expectedDto));
+    }
+
 }
