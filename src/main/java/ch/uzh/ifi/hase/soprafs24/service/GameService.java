@@ -55,29 +55,26 @@ public class GameService {
     }
 
     public Pair<GameSession, Player> playCard(Long gameId, CardDTO cardDTO, Long userId) {
-        Player currentPlayer = null;
-        GameSession game = getGameSessionById(gameId);
-        Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
-
-        if (game == null) {
-            throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
-        }
-
         if (gameId == null) {
             throw new IllegalArgumentException("Game ID not provided. Unable to process played card.");
         }
-
+        GameSession game = getGameSessionById(gameId);
+        if (game == null) {
+            throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
+        }
+        Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
         try {
+            Player playingPlayer = game.getCurrentPlayer();
             game.playTurn(playedCard, null);
-            currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
+            return Pair.of(game, playingPlayer);
         } catch (IllegalStateException e) {
-            List<List<Card>> options = getGameSessionById(gameId).getTable().getCaptureOptions(playedCard);
+            List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.lobbyNotifications(userId, optionsDTO);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
         }
-        return Pair.of(game, currentPlayer);
+        return Pair.of(game, null);
     }
 
     public void processPlayTurn(Long gameId, List<Card> selectedOption) {
@@ -87,9 +84,6 @@ public class GameService {
         }
         Card playedCard = game.getLastCardPlayed();
         game.playTurn(playedCard, selectedOption);
-        if (game.isGameOver()) {
-            game.finishGame();
-        }
     }
 
     public boolean isGameOver(Long gameId) {

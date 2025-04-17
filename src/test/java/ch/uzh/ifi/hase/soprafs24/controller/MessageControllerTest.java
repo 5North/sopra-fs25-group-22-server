@@ -8,9 +8,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
@@ -72,7 +70,7 @@ public class MessageControllerTest {
         GameSession session = new GameSession(100L, new ArrayList<>(lobby.getUsers()));
         when(gameService.startGame(lobby)).thenReturn(session);
 
-        messageController.processStartGame(lobbyDTO);
+        messageController.processStartGame(lobbyDTO.getLobbyId());
 
         verify(webSocketService, times(1)).broadCastLobbyNotifications(eq(100L), any());
         verify(webSocketService, times(2)).lobbyNotifications(anyLong(), any());

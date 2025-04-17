@@ -18,7 +18,7 @@ public class Lobby implements Serializable {
     private User user;
 
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Long> users = new ArrayList<>();
 
     @Transient
