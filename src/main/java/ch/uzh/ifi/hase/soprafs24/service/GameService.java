@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
@@ -23,12 +24,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameService {
 
     private final Map<Long, GameSession> gameSessions = new ConcurrentHashMap<>();
-
     private final WebSocketService webSocketService;
+    private final AIService aiService;
 
     @Autowired
-    public GameService(WebSocketService webSocketService) {
+    public GameService(WebSocketService webSocketService, AIService aiService) {
         this.webSocketService = webSocketService;
+        this.aiService = aiService;
     }
 
     public GameSession startGame(Lobby lobby) {
@@ -43,15 +45,6 @@ public class GameService {
 
     public GameSession getGameSessionById(Long gameId) {
         return gameSessions.get(gameId);
-    }
-
-    public GameSession getGameSessionForUser(Long userId) {
-        for (GameSession session : gameSessions.values()) {
-            if (session.getPlayers().stream().anyMatch(p -> p.getUserId().equals(userId))) {
-                return session;
-            }
-        }
-        return null;
     }
 
     public Pair<GameSession, Player> playCard(Long gameId, CardDTO cardDTO, Long userId) {
@@ -110,12 +103,14 @@ public class GameService {
         return false;
     }
 
-    /*
-     * public AiDTO aiSuggestion(Long gameId, Long userId) {
-     * AiDTO aiDTO = new AiDTO();
-     * aiDTO.setSuggestion("Play 7 of Denari, Play 5 of Coppe");
-     * return aiDTO;
-     * }
-     */
+    public AISuggestionDTO aiSuggestion(Long gameId, Long userId) {
+        GameSession game = getGameSessionById(gameId);
+        Player player = game.getPlayers().stream()
+                .filter(p -> p.getUserId().equals(userId))
+                .findFirst()
+                .orElseThrow();
+        String raw = aiService.generateAISuggestion(player.getHand(), game.getTable().getCards());
+        return new AISuggestionDTO(raw);
+    }
 
 }

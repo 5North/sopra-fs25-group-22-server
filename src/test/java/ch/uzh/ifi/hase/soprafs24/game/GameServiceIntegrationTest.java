@@ -1,15 +1,19 @@
 package ch.uzh.ifi.hase.soprafs24.game;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
+import ch.uzh.ifi.hase.soprafs24.service.AIService;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.Pair;
@@ -18,18 +22,19 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class GameServiceIntegrationTest {
 
     private GameService gameService;
-
     private WebSocketService webSocketService;
+    private AIService aiService;
 
     @BeforeEach
     public void setup() {
-
         webSocketService = mock(WebSocketService.class);
-        gameService = new GameService(webSocketService);
+        aiService = mock(AIService.class);
+        gameService = new GameService(webSocketService, aiService);
     }
 
     @Test
@@ -117,6 +122,32 @@ public class GameServiceIntegrationTest {
         for (Card card : validOption) {
             assertTrue(treasure.contains(card));
         }
+    }
+
+    @Test
+    public void testAiSuggestionReturnsDto() {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(500L);
+        lobby.addUsers(55L);
+        gameService.startGame(lobby);
+
+        String fake = "Play 7 of Denari; Play 4 of Coppe";
+        when(aiService.generateAISuggestion(
+                anyList(), anyList())).thenReturn(fake);
+
+        AISuggestionDTO dto = gameService.aiSuggestion(500L, 55L);
+        assertNotNull(dto);
+        assertEquals(fake, dto.getSuggestion());
+    }
+
+    @Test
+    public void testAiSuggestionThrowsForUnknownUser() {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(600L);
+        gameService.startGame(lobby);
+
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.aiSuggestion(600L, 99L));
     }
 
     // --- Helper Methods ---
