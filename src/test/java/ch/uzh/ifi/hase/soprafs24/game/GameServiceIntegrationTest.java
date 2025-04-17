@@ -8,8 +8,10 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
+import ch.uzh.ifi.hase.soprafs24.service.AIService;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import ch.uzh.ifi.hase.soprafs24.service.AIService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.util.Pair;
@@ -22,14 +24,14 @@ import java.util.List;
 public class GameServiceIntegrationTest {
 
     private GameService gameService;
-
     private WebSocketService webSocketService;
+    private AIService aiService; // <-- aggiungi questo
 
     @BeforeEach
     public void setup() {
-
         webSocketService = mock(WebSocketService.class);
-        gameService = new GameService(webSocketService);
+        aiService = mock(AIService.class); // <-- mock dell’AIService
+        gameService = new GameService(webSocketService, aiService); // <-- entrambi i parametri
     }
 
     @Test

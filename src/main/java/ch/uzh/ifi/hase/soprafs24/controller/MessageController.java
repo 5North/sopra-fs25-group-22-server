@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
@@ -108,16 +109,13 @@ public class MessageController {
         }
     }
 
-    @MessageMapping("/ai")
-    public void processAISuggestion(@Payload AiRequestDTO aiRequestDTO,
-            StompHeaderAccessor headerAccessor) {
-        Long gameId = aiRequestDTO.getGameId();
-        Long userId = (Long) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
-
-        // call to aiSuggestion in gs
-        // AiDTO aiSuggestion = gameService.aiSuggestion(gameId, userId);
-
-        // webSocketService.lobbyNotifications(userId, aiSuggestion);
+    @MessageMapping("/app/ai")
+    public void processAISuggestion(@Payload AiRequestDTO aiReq,
+            StompHeaderAccessor header) {
+        Long gameId = aiReq.getGameId();
+        Long userId = (Long) Objects.requireNonNull(header.getSessionAttributes()).get("userId");
+        AISuggestionDTO aiDto = gameService.aiSuggestion(gameId, userId);
+        webSocketService.lobbyNotifications(userId, aiDto);
     }
 
 }
