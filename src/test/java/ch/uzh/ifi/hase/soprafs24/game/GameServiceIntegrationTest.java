@@ -28,13 +28,13 @@ public class GameServiceIntegrationTest {
 
     private GameService gameService;
     private WebSocketService webSocketService;
-    private AIService aiService; // <-- aggiungi questo
+    private AIService aiService;
 
     @BeforeEach
     public void setup() {
         webSocketService = mock(WebSocketService.class);
-        aiService = mock(AIService.class); // <-- mock dell’AIService
-        gameService = new GameService(webSocketService, aiService); // <-- entrambi i parametri
+        aiService = mock(AIService.class);
+        gameService = new GameService(webSocketService, aiService);
     }
 
     @Test
