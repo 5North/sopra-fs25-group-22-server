@@ -8,13 +8,15 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
-import org.junit.jupiter.api.BeforeEach;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,13 +53,9 @@ public class MessageControllerTest {
         return accessor;
     }
 
-    @BeforeEach
-    public void setup() {
-    }
-
     // --- Test /app/startGame ---
     @Test
-    public void testProcessStartGame() {
+    void testProcessStartGame() {
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);
 
@@ -72,9 +70,31 @@ public class MessageControllerTest {
 
         messageController.processStartGame(lobbyDTO.getLobbyId());
 
-        verify(webSocketService, times(1)).broadCastLobbyNotifications(eq(100L), any());
-        verify(webSocketService, times(2)).lobbyNotifications(anyLong(), any());
+        UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO("msg", true);
+        verify(webSocketService, times(1)).broadCastLobbyNotifications(100L, notificationDTO);
     }
+
+    @Test
+    void testGameUpdateRequest() {
+        Long userId = 1L;
+        StompHeaderAccessor headerAccessor = createHeaderAccessorWithUser(userId);
+        LobbyDTO lobbyDTO = new LobbyDTO();
+        lobbyDTO.setLobbyId(100L);
+
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(100L);
+        lobby.addUsers(1L);
+        lobby.addUsers(2L);
+
+        GameSession session = new GameSession(100L, new ArrayList<>(lobby.getUsers()));
+        when(gameService.getGameSessionById(100L)).thenReturn(session);
+
+        messageController.receiveUpdateGame(session.getGameId(), headerAccessor);
+
+        verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(PrivatePlayerDTO.class));
+        verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(GameSessionDTO.class));
+    }
+
 
     // --- Test /app/playCard ---
     @Test
