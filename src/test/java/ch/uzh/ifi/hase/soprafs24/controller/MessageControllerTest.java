@@ -55,7 +55,7 @@ public class MessageControllerTest {
 
     // --- Test /app/startGame ---
     @Test
-    void testProcessStartGame() {
+    void testProcessStartGameSuccess() {
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);
 
@@ -71,6 +71,25 @@ public class MessageControllerTest {
         messageController.processStartGame(lobbyDTO.getLobbyId());
 
         UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO("msg", true);
+        verify(webSocketService, times(1)).broadCastLobbyNotifications(100L, notificationDTO);
+    }
+
+    @Test
+    void testProcessStartGameThrowsException() {
+        LobbyDTO lobbyDTO = new LobbyDTO();
+        lobbyDTO.setLobbyId(100L);
+
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(100L);
+        lobby.addUsers(1L);
+        lobby.addUsers(2L);
+        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
+
+        when(gameService.startGame(lobby)).thenThrow(new IllegalArgumentException());
+
+        messageController.processStartGame(lobbyDTO.getLobbyId());
+
+        UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO(new IllegalArgumentException().getMessage(), false);
         verify(webSocketService, times(1)).broadCastLobbyNotifications(100L, notificationDTO);
     }
 
