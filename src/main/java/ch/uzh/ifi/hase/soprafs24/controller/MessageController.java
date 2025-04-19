@@ -15,6 +15,9 @@ import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.AiRequestDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -28,6 +31,7 @@ import java.util.Objects;
 @Controller
 public class MessageController {
 
+    private final Logger log = LoggerFactory.getLogger(MessageController.class);
     private final LobbyService lobbyService;
     private final GameService gameService;
     private final WebSocketService webSocketService;
@@ -40,16 +44,37 @@ public class MessageController {
 
     @MessageMapping("/startGame/{lobbyId}")
     public void processStartGame(@DestinationVariable Long lobbyId) {
+        String msg = "Starting game";
+        boolean success = true;
+        try {
         Lobby lobby = lobbyService.getLobbyById(lobbyId);
-        GameSession game = gameService.startGame(lobby);
+        gameService.startGame(lobby);} catch (Exception e) {
+            log.error(e.getMessage());
+            msg = "Error starting game: " + e.getMessage();
+            success = false;
+        }
+
+        //TODO refactor DTO name
+        UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO(msg, success);
+        webSocketService.broadCastLobbyNotifications(lobbyId, notificationDTO);
+    }
+
+    @MessageMapping("/updateGame/{gameId}")
+    public void receiveUpdateGame(@DestinationVariable Long gameId,
+        StompHeaderAccessor headerAccessor) {
+
+        GameSession game = gameService.getGameSessionById(gameId);
+
+        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+        Long userId = (Long) userIdObj;
 
         GameSessionDTO publicGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
-        webSocketService.broadCastLobbyNotifications(lobbyId, publicGameDTO);
 
-        game.getPlayers().forEach(player -> {
-            PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(player);
-            webSocketService.lobbyNotifications(player.getUserId(), privateDTO);
-        });
+        Player player = game.getPlayerById(userId);
+
+        PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(player);
+        webSocketService.lobbyNotifications(userId, privateDTO);
+        webSocketService.lobbyNotifications(userId, publicGameDTO);
     }
 
     @MessageMapping("/playCard")

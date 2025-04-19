@@ -103,6 +103,14 @@ public class GameSession {
         return players.get(lastGetterIndex).getUserId();
     }
 
+    public Player getPlayerById(Long playerId) {
+        for(Player player: players){
+            if(player.getUserId().equals(playerId)){
+                return player;
+            }
+        } return null;
+    }
+
     /**
      * Processes a single turn.
      *
