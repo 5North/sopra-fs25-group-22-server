@@ -30,6 +30,7 @@ public class WebSocketAuth implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
 
+        //TODO remove debug statement
         System.out.println("====================BEFORE HANDSHAKE========================");
         System.out.println("Request: " + request.getURI());
         System.out.println("===================================================");
