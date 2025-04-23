@@ -58,41 +58,64 @@ public class MessageControllerTest {
     // --- Test /app/startGame ---
     @Test
     void testProcessStartGameSuccess() {
+        // given
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);
 
         Lobby lobby = new Lobby();
         lobby.setLobbyId(100L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
-        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
 
-        GameSession session = new GameSession(100L, new ArrayList<>(lobby.getUsers()));
-        when(gameService.startGame(lobby)).thenReturn(session);
+
+        String msg = "Starting game";
+        GameSession dummyGame = new GameSession(lobby.getLobbyId(), lobby.getUsers());
+        UserJoinNotificationDTO dummyNotificationDTO = new UserJoinNotificationDTO();
+        dummyNotificationDTO.setSuccess(Boolean.TRUE);
+        dummyNotificationDTO.setMessage(msg);
+
+
+        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
+        when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
+        when(gameService.startGame(lobby)).thenReturn(dummyGame);
+        when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
+
+
 
         messageController.processStartGame(lobbyDTO.getLobbyId());
 
-        UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO("msg", true);
-        verify(webSocketService, times(1)).broadCastLobbyNotifications(100L, notificationDTO);
+
+        verify(webSocketService, times(1))
+                .convertToDTO(msg, true);
+        verify(webSocketService, times(1))
+                .broadCastLobbyNotifications(eq(100L), any(UserJoinNotificationDTO.class));
     }
 
     @Test
     void testProcessStartGameThrowsException() {
+        // given
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);
 
         Lobby lobby = new Lobby();
         lobby.setLobbyId(100L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
-        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
 
-        when(gameService.startGame(lobby)).thenThrow(new IllegalArgumentException());
+
+        String msg = "Lobby " + lobby.getLobbyId() + " is not full yet";
+        UserJoinNotificationDTO dummyNotificationDTO = new UserJoinNotificationDTO();
+        dummyNotificationDTO.setSuccess(Boolean.FALSE);
+        dummyNotificationDTO.setMessage(msg);
+
+        // when
+        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
+        when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(false);
+        when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
 
         messageController.processStartGame(lobbyDTO.getLobbyId());
 
-        UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO(new IllegalArgumentException().getMessage(), false);
-        verify(webSocketService, times(1)).broadCastLobbyNotifications(100L, notificationDTO);
+
+        verify(webSocketService, times(1))
+                .convertToDTO("Error starting game: " + msg, false);
+        verify(webSocketService, times(1))
+                .broadCastLobbyNotifications(eq(100L), any(UserJoinNotificationDTO.class));
     }
 
     @Test
