@@ -48,7 +48,12 @@ public class MessageController {
         boolean success = true;
         try {
         Lobby lobby = lobbyService.getLobbyById(lobbyId);
-        gameService.startGame(lobby);} catch (Exception e) {
+        // check if lobby is full
+        if (!lobbyService.lobbyIsFull(lobbyId)) {
+            throw new IllegalArgumentException("Lobby " + lobbyId + " is not full yet");
+            }
+        gameService.startGame(lobby);
+        } catch (Exception e) {
             log.error(e.getMessage());
             msg = "Error starting game: " + e.getMessage();
             success = false;
