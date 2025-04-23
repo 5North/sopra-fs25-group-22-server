@@ -20,7 +20,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/lobby")
                 .setAllowedOrigins("*")
-                //TODO ev add socks.js
 
                 // Set custom handshake handler to set UserId as the name of the session Principal
                 .setHandshakeHandler(new CustomHandshakeHandler())
