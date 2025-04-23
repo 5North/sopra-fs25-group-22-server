@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +37,7 @@ class OpenAiClientTest {
         clientField.setAccessible(true);
         clientField.set(client, mockHttpClient);
 
-        String result = client.createCompletion("qualunque prompt");
+        String result = client.createCompletion("any prompt");
         assertEquals("AI says hi", result);
     }
 
@@ -52,8 +51,12 @@ class OpenAiClientTest {
         clientField.setAccessible(true);
         clientField.set(client, mockHttpClient);
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> client.createCompletion("prompt"));
-        assertTrue(ex.getMessage().contains("OpenAI API call failed"));
+        OpenAIClientException ex = assertThrows(
+                OpenAIClientException.class,
+                () -> client.createCompletion("prompt"));
+
+        assertTrue(ex.getMessage().contains("I/O error"));
+
         assertTrue(ex.getCause() instanceof IOException);
     }
 }
