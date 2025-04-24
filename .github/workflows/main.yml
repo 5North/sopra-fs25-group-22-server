@@ -38,11 +38,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Render app.yaml
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          envsubst < app.yaml > app.rendered.yaml
+
       - name: Deploy to App Engine
         id: deploy
         uses: google-github-actions/deploy-appengine@v0.2.0
         with:
-          deliverables: app.yaml
+          deliverables: app.rendered.yaml 
           version: v2
           credentials: ${{ secrets.GCP_SERVICE_CREDENTIALS }}
 
