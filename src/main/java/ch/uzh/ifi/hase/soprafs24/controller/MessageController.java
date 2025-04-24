@@ -123,12 +123,13 @@ public class MessageController {
         List<Card> selectedOption = GameSessionMapper.convertCardDTOListToEntity(chosenOption);
 
         try {
+            GameSession gameBefore = gameService.getGameSessionById(gameId);
+            Player currentPlayer = gameBefore.getPlayers().get(gameBefore.getCurrentPlayerIndex());
             gameService.processPlayTurn(gameId, selectedOption);
 
             GameSession game = gameService.getGameSessionById(gameId);
             GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
             webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
-            Player currentPlayer = game.getPlayers().get(game.getCurrentPlayerIndex());
             PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
             webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
 
