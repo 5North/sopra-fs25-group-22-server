@@ -139,7 +139,7 @@ public class MessageController {
         }
     }
 
-    @MessageMapping("/app/ai")
+    @MessageMapping("/ai")
     public void processAISuggestion(@Payload AiRequestDTO aiReq,
             StompHeaderAccessor header) {
         Long gameId = aiReq.getGameId();
