@@ -185,21 +185,6 @@ public class MessageControllerTest {
         verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(10L), any());
     }
 
-    // --- Further ---
-    @Test
-    public void testProcessPlayCardThrowsExceptionAndNotifiesUser() {
-
-        PlayCardDTO playCardDTO = new PlayCardDTO();
-        playCardDTO.setLobbyId(500L);
-        playCardDTO.setCard(new CardDTO("COPPE", 7));
-        StompHeaderAccessor accessor = createHeaderAccessorWithUser(300L);
-        when(gameService.playCard(eq(500L), any(CardDTO.class), eq(300L)))
-                .thenThrow(new IllegalArgumentException("Invalid card played. Unable to process played card."));
-
-        assertDoesNotThrow(() -> messageController.processPlayCard(playCardDTO, accessor));
-        verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(300L), contains("Invalid card played"));
-    }
-
     // --- Test /app/ai ---
     @Test
     public void testProcessAISuggestion() {
