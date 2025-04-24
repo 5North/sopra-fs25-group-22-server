@@ -82,10 +82,10 @@ public class GameService {
     public boolean isGameOver(Long gameId) {
         GameSession game = getGameSessionById(gameId);
         if (game.isGameOver()) {
+            List<Card> lastCards = game.getTable().getCards();
             game.finishGame();
 
             Long playerId = game.getLastPickedPlayerId();
-            List<Card> lastCards = game.getTable().getCards();
 
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
