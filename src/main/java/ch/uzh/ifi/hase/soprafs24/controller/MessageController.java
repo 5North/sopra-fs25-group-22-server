@@ -106,7 +106,7 @@ public class MessageController {
             }
 
         } catch (Exception e) {
-            webSocketService.lobbyNotifications(userId, e.getMessage());
+            log.error(e.getMessage());
         }
 
     }
@@ -136,7 +136,7 @@ public class MessageController {
             gameService.isGameOver(gameId);
 
         } catch (Exception e) {
-            webSocketService.lobbyNotifications(userId, e.getMessage());
+           log.error(e.getMessage());
         }
     }
 
