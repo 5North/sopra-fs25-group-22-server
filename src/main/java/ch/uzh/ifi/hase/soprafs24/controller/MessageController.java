@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
@@ -47,26 +48,26 @@ public class MessageController {
         String msg = "Starting game";
         boolean success = true;
         try {
-        Lobby lobby = lobbyService.getLobbyById(lobbyId);
-        // check if lobby is full
-        if (!lobbyService.lobbyIsFull(lobbyId)) {
-            throw new IllegalArgumentException("Lobby " + lobbyId + " is not full yet");
+            Lobby lobby = lobbyService.getLobbyById(lobbyId);
+            // check if lobby is full
+            if (!lobbyService.lobbyIsFull(lobbyId)) {
+                throw new IllegalArgumentException("Lobby " + lobbyId + " is not full yet");
             }
-        gameService.startGame(lobby);
+            gameService.startGame(lobby);
         } catch (Exception e) {
             log.error(e.getMessage());
             msg = "Error starting game: " + e.getMessage();
             success = false;
         }
 
-        //TODO refactor DTO name
+        // TODO refactor DTO name
         UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO(msg, success);
         webSocketService.broadCastLobbyNotifications(lobbyId, notificationDTO);
     }
 
     @MessageMapping("/updateGame/{gameId}")
     public void receiveUpdateGame(@DestinationVariable Long gameId,
-        StompHeaderAccessor headerAccessor) {
+            StompHeaderAccessor headerAccessor) {
 
         GameSession game = gameService.getGameSessionById(gameId);
 
@@ -97,6 +98,12 @@ public class MessageController {
             Player currentPlayer = pairDTO.getSecond();
 
             if (currentPlayer != null) {
+                Card lastPlayed = game.getLastCardPlayed();
+                if (lastPlayed != null) {
+                    List<Card> lastPicked = game.getLastCardPickedCards();
+                    MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(lastPlayed, lastPicked);
+                    webSocketService.broadCastLobbyNotifications(gameId, moveDto);
+                }
                 GameSessionDTO updateGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
                 PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
 
@@ -128,6 +135,12 @@ public class MessageController {
             gameService.processPlayTurn(gameId, selectedOption);
 
             GameSession game = gameService.getGameSessionById(gameId);
+            Card lastPlayed = game.getLastCardPlayed();
+            if (lastPlayed != null) {
+                List<Card> lastPicked = game.getLastCardPickedCards();
+                MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(lastPlayed, lastPicked);
+                webSocketService.broadCastLobbyNotifications(gameId, moveDto);
+            }
             GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
             webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
             PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
@@ -136,7 +149,7 @@ public class MessageController {
             gameService.isGameOver(gameId);
 
         } catch (Exception e) {
-           log.error(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 

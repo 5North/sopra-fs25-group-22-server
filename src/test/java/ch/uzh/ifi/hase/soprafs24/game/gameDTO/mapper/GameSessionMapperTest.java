@@ -5,6 +5,7 @@ import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
@@ -150,6 +151,63 @@ public class GameSessionMapperTest {
 
         assertEquals("SPADE", card2.getSuit());
         assertEquals(5, card2.getValue());
+    }
+
+    @Test
+    public void testConvertCaptureOptionsToDTO_empty() {
+        List<List<Card>> empty = Collections.emptyList();
+        List<List<CardDTO>> dto = GameSessionMapper.convertCaptureOptionsToDTO(empty);
+        assertNotNull(dto, "Should return non-null list");
+        assertTrue(dto.isEmpty(), "Empty input should produce empty output");
+    }
+
+    @Test
+    public void testConvertToMoveActionDTO_noCaptured() {
+        // preparazione
+        Card played = CardFactory.getCard(Suit.DENARI, 9);
+        List<Card> picked = Collections.emptyList();
+
+        // esecuzione
+        MoveActionDTO dto = GameSessionMapper.convertToMoveActionDTO(played, picked);
+
+        // verifiche
+        assertNotNull(dto);
+        assertNotNull(dto.getPlayedCard());
+        assertEquals("DENARI", dto.getPlayedCard().getSuit());
+        assertEquals(9, dto.getPlayedCard().getValue());
+
+        assertNotNull(dto.getPickedCards());
+        assertTrue(dto.getPickedCards().isEmpty(), "Se non ci sono carte catturate, la lista dev'essere vuota");
+    }
+
+    @Test
+    public void testConvertToMoveActionDTO_withCaptured() {
+        // preparazione
+        Card played = CardFactory.getCard(Suit.COPPE, 7);
+        List<Card> picked = new ArrayList<>();
+        picked.add(CardFactory.getCard(Suit.SPADE, 3));
+        picked.add(CardFactory.getCard(Suit.DENARI, 4));
+
+        // esecuzione
+        MoveActionDTO dto = GameSessionMapper.convertToMoveActionDTO(played, picked);
+
+        // verifiche del playedCard
+        CardDTO playedDto = dto.getPlayedCard();
+        assertNotNull(playedDto);
+        assertEquals("COPPE", playedDto.getSuit());
+        assertEquals(7, playedDto.getValue());
+
+        // verifiche dei capturedCards
+        List<CardDTO> caps = dto.getPickedCards();
+        assertNotNull(caps);
+        assertEquals(2, caps.size());
+
+        // l'ordine dev'essere lo stesso
+        CardDTO first = caps.get(0), second = caps.get(1);
+        assertEquals("SPADE", first.getSuit());
+        assertEquals(3, first.getValue());
+        assertEquals("DENARI", second.getSuit());
+        assertEquals(4, second.getValue());
     }
 
 }
