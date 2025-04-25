@@ -101,7 +101,7 @@ public class MessageController {
                 Card lastPlayed = game.getLastCardPlayed();
                 if (lastPlayed != null) {
                     List<Card> lastPicked = game.getLastCardPickedCards();
-                    MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(lastPlayed, lastPicked);
+                    MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(userId, lastPlayed, lastPicked);
                     webSocketService.broadCastLobbyNotifications(gameId, moveDto);
                 }
                 GameSessionDTO updateGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
@@ -138,7 +138,7 @@ public class MessageController {
             Card lastPlayed = game.getLastCardPlayed();
             if (lastPlayed != null) {
                 List<Card> lastPicked = game.getLastCardPickedCards();
-                MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(lastPlayed, lastPicked);
+                MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(userId, lastPlayed, lastPicked);
                 webSocketService.broadCastLobbyNotifications(gameId, moveDto);
             }
             GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
