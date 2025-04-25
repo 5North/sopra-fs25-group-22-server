@@ -162,47 +162,49 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertToMoveActionDTO_noCaptured() {
-        // preparazione
+    public void testConvertToMoveActionDTO_noCaptured_withUser() {
+        long userId = 42L;
         Card played = CardFactory.getCard(Suit.DENARI, 9);
         List<Card> picked = Collections.emptyList();
 
-        // esecuzione
-        MoveActionDTO dto = GameSessionMapper.convertToMoveActionDTO(played, picked);
+        MoveActionDTO dto = GameSessionMapper.convertToMoveActionDTO(userId, played, picked);
 
-        // verifiche
         assertNotNull(dto);
-        assertNotNull(dto.getPlayedCard());
-        assertEquals("DENARI", dto.getPlayedCard().getSuit());
-        assertEquals(9, dto.getPlayedCard().getValue());
+        assertEquals(userId, dto.getPlayerId(), "UserId must be preserved in DTO");
 
-        assertNotNull(dto.getPickedCards());
-        assertTrue(dto.getPickedCards().isEmpty(), "Se non ci sono carte catturate, la lista dev'essere vuota");
+        CardDTO playedDto = dto.getPlayedCard();
+        assertNotNull(playedDto);
+        assertEquals("DENARI", playedDto.getSuit());
+        assertEquals(9, playedDto.getValue());
+
+        List<CardDTO> caps = dto.getPickedCards();
+        assertNotNull(caps);
+        assertTrue(caps.isEmpty(), "pickedCards deve essere vuota se non ci sono catture");
     }
 
     @Test
-    public void testConvertToMoveActionDTO_withCaptured() {
-        // preparazione
+    public void testConvertToMoveActionDTO_withCaptured_withUser() {
+        long userId = 99L;
         Card played = CardFactory.getCard(Suit.COPPE, 7);
         List<Card> picked = new ArrayList<>();
         picked.add(CardFactory.getCard(Suit.SPADE, 3));
         picked.add(CardFactory.getCard(Suit.DENARI, 4));
 
-        // esecuzione
-        MoveActionDTO dto = GameSessionMapper.convertToMoveActionDTO(played, picked);
+        MoveActionDTO dto = GameSessionMapper.convertToMoveActionDTO(userId, played, picked);
 
-        // verifiche del playedCard
+        assertNotNull(dto);
+        assertEquals(userId, dto.getPlayerId(), "UserId deve corrispondere a quello passato");
+
         CardDTO playedDto = dto.getPlayedCard();
         assertNotNull(playedDto);
         assertEquals("COPPE", playedDto.getSuit());
         assertEquals(7, playedDto.getValue());
 
-        // verifiche dei capturedCards
         List<CardDTO> caps = dto.getPickedCards();
         assertNotNull(caps);
-        assertEquals(2, caps.size());
+        assertEquals(2, caps.size(), "Dovrebbero esserci due carte catturate");
 
-        // l'ordine dev'essere lo stesso
+        // verifica ordine
         CardDTO first = caps.get(0), second = caps.get(1);
         assertEquals("SPADE", first.getSuit());
         assertEquals(3, first.getValue());

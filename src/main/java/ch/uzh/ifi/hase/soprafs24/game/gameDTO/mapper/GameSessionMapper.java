@@ -159,15 +159,17 @@ public class GameSessionMapper {
         return dto;
     }
 
-    public static MoveActionDTO convertToMoveActionDTO(Card playedCard, List<Card> pickedCards) {
+    public static MoveActionDTO convertToMoveActionDTO(Long playerId, Card lastPlayed, List<Card> lastPicked) {
         MoveActionDTO dto = new MoveActionDTO();
-        dto.setPlayedCard(convertToCardDTO(playedCard));
-        // riusa il metodo per liste di CardDTO
-        List<CardDTO> pickedDTOs = new ArrayList<>();
-        for (Card c : pickedCards) {
-            pickedDTOs.add(convertToCardDTO(c));
+        dto.setPlayerId(playerId);
+        dto.setPlayedCard(convertToCardDTO(lastPlayed));
+
+        List<CardDTO> pickedCardsDTO = new ArrayList<>();
+        for (Card c : lastPicked) {
+            pickedCardsDTO.add(convertToCardDTO(c));
         }
-        dto.setPickedCards(pickedDTOs);
+        dto.setPickedCards(pickedCardsDTO);
+
         return dto;
     }
 
