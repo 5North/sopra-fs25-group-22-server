@@ -158,4 +158,17 @@ public class GameSessionMapper {
         dto.setCards(cardDTOs);
         return dto;
     }
+
+    public static MoveActionDTO convertToMoveActionDTO(Card playedCard, List<Card> pickedCards) {
+        MoveActionDTO dto = new MoveActionDTO();
+        dto.setPlayedCard(convertToCardDTO(playedCard));
+        // riusa il metodo per liste di CardDTO
+        List<CardDTO> pickedDTOs = new ArrayList<>();
+        for (Card c : pickedCards) {
+            pickedDTOs.add(convertToCardDTO(c));
+        }
+        dto.setPickedCards(pickedDTOs);
+        return dto;
+    }
+
 }

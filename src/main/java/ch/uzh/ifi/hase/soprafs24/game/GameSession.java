@@ -104,11 +104,12 @@ public class GameSession {
     }
 
     public Player getPlayerById(Long playerId) {
-        for(Player player: players){
-            if(player.getUserId().equals(playerId)){
+        for (Player player : players) {
+            if (player.getUserId().equals(playerId)) {
                 return player;
             }
-        } return null;
+        }
+        return null;
     }
 
     /**
@@ -154,6 +155,7 @@ public class GameSession {
             List<Card> optionToApply = null;
             if (captureOptions.size() == 1) {
                 optionToApply = captureOptions.get(0);
+                this.setLastPickedCards(optionToApply);
             } else if (selectedOption != null && !selectedOption.isEmpty()) {
                 boolean valid = false;
                 for (List<Card> option : captureOptions) {
