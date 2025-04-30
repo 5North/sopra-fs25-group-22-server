@@ -76,4 +76,22 @@ public class LobbyControllerTest {
       mockMvc.perform(postRequest)
               .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void createLobby_conflict() throws Exception {
+        //given
+
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(1225L);
+
+        given(lobbyService.createLobby(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
+
+        // when/then -> do the request + validate the result
+        MockHttpServletRequestBuilder postRequest = post("/lobbies")
+                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
+
+        // then
+        mockMvc.perform(postRequest)
+                .andExpect(status().isConflict());
+    }
 }
