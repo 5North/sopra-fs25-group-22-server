@@ -263,4 +263,26 @@ public class UserServiceTest {
     Mockito.verify(userRepository, Mockito.times(1)).findAll();
   }
 
+  @Test
+    void getUserById_success() {
+      // given -> a first user has already been created
+      userService.createUser(testUser);
+      Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+
+      User returnedUser = userService.getUserById(testUser.getId());
+      assertNotNull(returnedUser, "Returned user should not be null");
+      assertEquals(testUser, returnedUser, "The returned user should match the test user.");
+  }
+
+    @Test
+    void getUserById_throwsException() {
+        // given
+        // no user
+
+
+        //when
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+        assertThrows(
+                ResponseStatusException.class, () -> userService.getUserById(1L));
+    }
 }

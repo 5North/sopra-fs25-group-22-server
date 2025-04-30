@@ -44,32 +44,124 @@ public class UserControllerTest {
 
         // # 1
         @Test
-        public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
+        void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
                 // given
                 User user = new User();
                 user.setUsername("testUser");
                 user.setStatus(UserStatus.OFFLINE);
+                user.setToken("dummyToken");
                 user.setWinCount(0);
                 user.setLossCount(0);
                 user.setTieCount(0);
 
                 List<User> allUsers = Collections.singletonList(user);
+                given(userService.authorizeUser(user.getToken())).willReturn(user);
                 given(userService.getUsers()).willReturn(allUsers);
 
                 // when
                 MockHttpServletRequestBuilder getRequest = get("/users")
-                                .contentType(MediaType.APPLICATION_JSON);
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Token", "dummyToken");
 
                 // then
                 mockMvc.perform(getRequest)
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$", hasSize(1)))
-                                .andExpect(jsonPath("$[0].username", is(user.getUsername())))
-                                .andExpect(jsonPath("$[0].status", is(user.getStatus().toString())))
-                                .andExpect(jsonPath("$[0].winCount", is(user.getWinCount())))
-                                .andExpect(jsonPath("$[0].lossCount", is(user.getLossCount())))
-                                .andExpect(jsonPath("$[0].tieCount", is(user.getTieCount())));
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$", hasSize(1)))
+                        .andExpect(jsonPath("$[0].username", is(user.getUsername())))
+                        .andExpect(jsonPath("$[0].status", is(user.getStatus().toString())))
+                        .andExpect(jsonPath("$[0].winCount", is(user.getWinCount())))
+                        .andExpect(jsonPath("$[0].lossCount", is(user.getLossCount())))
+                        .andExpect(jsonPath("$[0].tieCount", is(user.getTieCount())));
         }
+
+    @Test
+    void givenUser_whenGetUser_thenReturnUser() throws Exception {
+        // given
+        Long userId = 1L;
+
+        User user = new User();
+        user.setId(userId);
+        user.setUsername("testUser");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setToken("IamAToken");
+        user.setWinCount(0);
+        user.setLossCount(0);
+        user.setTieCount(0);
+
+        given(userService.authorizeUser(user.getToken())).willReturn(user);
+
+        given(userService.getUserById(userId)).willReturn(user);
+
+        // when
+        MockHttpServletRequestBuilder getRequest = get("/users/{userId}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Token", "ImAToken");
+
+        // then
+        mockMvc.perform(getRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username", is(user.getUsername())))
+                .andExpect(jsonPath("$.status", is(user.getStatus().toString())))
+                .andExpect(jsonPath("$.winCount", is(user.getWinCount())))
+                .andExpect(jsonPath("$.lossCount", is(user.getLossCount())))
+                .andExpect(jsonPath("$.tieCount", is(user.getTieCount())));
+    }
+
+    @Test
+    void givenUser_whenGetUser_NotFoundException() throws Exception {
+        // given
+        // no user
+        Long userId = 2L;
+
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("testUser");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setToken("IamAToken");
+        user.setWinCount(0);
+        user.setLossCount(0);
+        user.setTieCount(0);
+
+        given(userService.authorizeUser(user.getToken())).willReturn(user);
+
+        given(userService.getUserById(userId)).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // when
+        MockHttpServletRequestBuilder getRequest = get("/users/{userId}", userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Token", "ImAToken");
+
+        // then
+        mockMvc.perform(getRequest)
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    void givenUser_whenGetUser_unauthorized() throws Exception {
+        // given
+        // no user
+        Long userId = 2L;
+
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("testUser");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setToken("IamAToken");
+        user.setWinCount(0);
+        user.setLossCount(0);
+        user.setTieCount(0);
+
+        given(userService.authorizeUser("ImNotAToken"))
+                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        // when
+        MockHttpServletRequestBuilder getRequest = get("/users/{userId}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Token", "ImNotAToken");
+
+        // then
+        mockMvc.perform(getRequest)
+                .andExpect(status().isUnauthorized());
+    }
 
         @Test
         public void logout_User_validAuth_userLoggedOut() throws Exception {
