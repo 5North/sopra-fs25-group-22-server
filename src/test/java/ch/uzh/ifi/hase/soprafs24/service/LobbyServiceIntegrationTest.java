@@ -40,9 +40,6 @@ public class LobbyServiceIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserService userService;
-
     @InjectMocks
     private User testUser;
 

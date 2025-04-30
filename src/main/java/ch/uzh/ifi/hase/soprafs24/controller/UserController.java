@@ -32,7 +32,6 @@ public class UserController {
 
   @GetMapping("/users")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public List<UserGetDTO> getAllUsers(@RequestHeader String token) {
     userService.authorizeUser(token);
 
@@ -49,16 +48,14 @@ public class UserController {
 
     @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
     public UserGetDTO getUser(@RequestHeader String token, @PathVariable Long userId) {
         userService.authorizeUser(token);
         // fetch specific user in the internal representation
         User user = userService.getUserById(userId);
 
-        // convert  user to the API representation
-        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+        // convert and return user to the API representation
 
-        return userGetDTO;
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
     }
 
   @PostMapping("/login")
@@ -90,13 +87,11 @@ public class UserController {
     HttpHeaders responseHeaders = new HttpHeaders();
     responseHeaders.set("Token", createdUser.getToken());
     UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
-    System.out.println("=================USER REGISTERED===============");
     return new ResponseEntity<>(userGetDTO, responseHeaders, HttpStatus.CREATED);
   }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
     public void logoutUser(@RequestHeader String token) {
         User authUser = userService.authorizeUser(token);
         userService.logoutUser(authUser);

@@ -159,12 +159,14 @@ public class LobbyServiceTest {
         testLobby.addUsers(3L);
         testLobby.addUsers(4L);
 
+        Long lobbyId = testLobby.getLobbyId();
+
         // when -> setup additional mocks for LobbyRepository and userRepository
         Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
 
         assertThrows(
                 IllegalStateException.class, () -> lobbyService
-                        .joinLobby(testLobby.getLobbyId(), 5L));
+                        .joinLobby(lobbyId, 5L));
 
     }
 
@@ -182,15 +184,16 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void leaveLobby_NonExistentUser_noSuccess() throws Exception {
+    public void leaveLobby_NonExistentUser_noSuccess()  {
         testLobby.addUsers(1L);
 
+        Long lobbyId = testLobby.getLobbyId();
         // when -> setup additional mocks for LobbyRepository and userRepository
         Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
 
         assertThrows(
                 NoSuchElementException.class, () -> lobbyService
-                        .leaveLobby(testLobby.getLobbyId(), 2L));
+                        .leaveLobby(lobbyId, 2L));
 
     }
 
