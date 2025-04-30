@@ -33,7 +33,9 @@ public class UserController {
   @GetMapping("/users")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public List<UserGetDTO> getAllUsers() {
+  public List<UserGetDTO> getAllUsers(@RequestHeader String token) {
+    userService.authorizeUser(token);
+
     // fetch all users in the internal representation
     List<User> users = userService.getUsers();
     List<UserGetDTO> userGetDTOs = new ArrayList<>();
@@ -44,6 +46,20 @@ public class UserController {
     }
     return userGetDTOs;
   }
+
+    @GetMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public UserGetDTO getUser(@RequestHeader String token, @PathVariable Long userId) {
+        userService.authorizeUser(token);
+        // fetch specific user in the internal representation
+        User user = userService.getUserById(userId);
+
+        // convert  user to the API representation
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+
+        return userGetDTO;
+    }
 
   @PostMapping("/login")
   public ResponseEntity<String> loginUser(@RequestBody UserPostDTO userPostDTO) {
