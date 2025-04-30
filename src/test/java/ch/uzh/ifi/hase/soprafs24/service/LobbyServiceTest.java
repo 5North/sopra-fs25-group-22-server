@@ -42,7 +42,8 @@ public class LobbyServiceTest {
     private User testUser;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
+        // given
         MockitoAnnotations.openMocks(this);
 
         // given
@@ -64,17 +65,27 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void createLobby_validInputs_success() {
+    void createLobby_validInputs_success() {
 
         Lobby createdLobby = lobbyService.createLobby(testUser);
 
-        Mockito.verify(lobbyRepository, Mockito.times(1)).save(Mockito.any(Lobby.class));
+        Mockito.verify(userRepository, Mockito.times(1)).save(Mockito.any(User.class));
         assertNotNull(createdLobby);
         assertNotNull(createdLobby.getLobbyId());
+        assertNotNull(testUser.getLobby());
     }
 
     @Test
-    public void isFull_true() {
+    void createLobby_alreadyExists_success() {
+
+        Lobby createdLobby = lobbyService.createLobby(testUser);
+        Lobby createdLobby2 = lobbyService.createLobby(testUser);
+
+        assertEquals(createdLobby.getLobbyId(), createdLobby2.getLobbyId());
+    }
+
+    @Test
+    void isFull_true() {
 
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);

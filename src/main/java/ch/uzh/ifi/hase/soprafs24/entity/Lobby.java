@@ -14,7 +14,7 @@ public class Lobby implements Serializable {
     @Id
     private Long lobbyId;
 
-    @OneToOne(mappedBy = "lobby", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "lobby")
     private User user;
 
 

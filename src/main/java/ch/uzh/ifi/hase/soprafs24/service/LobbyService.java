@@ -4,6 +4,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,23 +32,29 @@ public class LobbyService {
     private final Logger log = LoggerFactory.getLogger(LobbyService.class);
 
     private final LobbyRepository lobbyRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
     private final Random random;
 
     @Autowired
-    public LobbyService(@Qualifier("lobbyRepository") LobbyRepository lobbyRepository, UserService userService) {
+    public LobbyService(@Qualifier("lobbyRepository") LobbyRepository lobbyRepository, UserRepository userRepository, UserService userService) {
         this.lobbyRepository = lobbyRepository;
+        this.userRepository = userRepository;
         this.userService = userService;
         this.random = new Random();
     }
 
     // TODO consider if user already has lobby check
     public Lobby createLobby(User user) {
+        if (user.getLobby() != null) {
+            return user.getLobby();
+        }
         Lobby newLobby = new Lobby();
         newLobby.setLobbyId(generateId());
         user.setLobby(newLobby);
         newLobby.setUser(user);
-        return lobbyRepository.save(newLobby);
+        userRepository.save(user);
+        return newLobby;
     }
 
     //TODO cleanup, add check if user already in a lobby
@@ -67,7 +74,6 @@ public class LobbyService {
         if (!lobby.getUsers().contains(userId)) {
             lobby.addUsers(userId);
         }
-        //lobbyIsFull(lobbyId);
     }
 
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {

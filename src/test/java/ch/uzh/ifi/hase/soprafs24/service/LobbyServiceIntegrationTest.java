@@ -7,6 +7,8 @@ import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,22 +43,31 @@ public class LobbyServiceIntegrationTest {
     @Autowired
     private UserService userService;
 
+    @InjectMocks
+    private User testUser;
+
     @BeforeEach
-    public void setup() {
+    void setup() {
+        // given
+        MockitoAnnotations.openMocks(this);
+
         lobbyRepository.deleteAll();
-    }
-
-    @Test
-    public void createLobby_success() {
-        // given:
-        assertNull(lobbyRepository.findByLobbyId(1000L));
-
-        User testUser = new User();
+        testUser.setId(1L);
         testUser.setUsername("testUsername");
         testUser.setPassword("testPassword");
         testUser.setStatus(UserStatus.ONLINE);
         testUser.setToken("testToken");
+        testUser.setLossCount(0);
+        testUser.setTieCount(0);
+        testUser.setWinCount(0);
+
         testUser = userRepository.save(testUser);
+    }
+
+    @Test
+    void createLobby_success() {
+        // given:
+        assertNull(lobbyRepository.findByLobbyId(1000L));
 
         // when:
         Lobby createdLobby = lobbyService.createLobby(testUser);
@@ -68,17 +79,13 @@ public class LobbyServiceIntegrationTest {
     }
 
     @Test
-    public void joinLobby_success() {
-
-        User testUser = new User();
-        testUser.setUsername("testUsername");
-        testUser.setPassword("testPassword");
-        testUser.setStatus(UserStatus.ONLINE);
-        testUser.setToken("testToken");
-        testUser = userRepository.save(testUser);
+    void joinLobby_success() {
+        // given
+        List<Long> emptyList = new ArrayList<>();
+        Lobby createdLobby = lobbyService.createLobby(testUser);
+        assertEquals(emptyList, createdLobby.getUsers());
 
         // when:
-        Lobby createdLobby = lobbyService.createLobby(testUser);
         createdLobby.addUsers(1L);
         createdLobby.addUsers(2L);
         List<Long> userIds = new ArrayList<>();
