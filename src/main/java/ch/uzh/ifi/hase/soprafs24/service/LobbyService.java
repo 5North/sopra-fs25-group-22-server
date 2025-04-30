@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import javassist.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -44,10 +46,13 @@ public class LobbyService {
         this.random = new Random();
     }
 
-    // TODO consider if user already has lobby check
+
     public Lobby createLobby(User user) {
         if (user.getLobby() != null) {
             return user.getLobby();
+        } else if (user.getLobbyJoined() != null) {
+            String msg = "User with id " + user.getId() + " already joined lobby " +  user.getLobbyJoined();
+            throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
         }
         Lobby newLobby = new Lobby();
         newLobby.setLobbyId(generateId());
@@ -57,10 +62,10 @@ public class LobbyService {
         return newLobby;
     }
 
-    //TODO cleanup, add check if user already in a lobby
+
     public void joinLobby(Long lobbyId, Long userId) throws NotFoundException {
         checkIfLobbyExists(lobbyId);
-        userService.checkIfUserExists(userId);
+        User user = userService.checkIfUserExists(userId);
 
         // check if lobby is already full
         if (lobbyIsFull(lobbyId)) {
@@ -69,21 +74,28 @@ public class LobbyService {
         }
 
         Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
+        // check if user is already in another lobby
+        if (user.getLobbyJoined() != null) {
+            String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
+            throw new IllegalStateException(msg);
+        }
 
         // check if user is already in the lobby
         if (!lobby.getUsers().contains(userId)) {
             lobby.addUsers(userId);
+            user.setLobbyJoined(lobbyId);
         }
     }
 
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {
         checkIfLobbyExists(lobbyId);
-        userService.checkIfUserExists(userId);
+        User user = userService.checkIfUserExists(userId);
         Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
         if(!lobby.removeUsers(userId)){
             String msg = "User " + userId + " is not part of lobby " + lobby.getLobbyId();
             throw new NoSuchElementException(msg);
         }
+        user.setLobbyJoined(null);
     }
 
     public Lobby getLobbyById(Long lobbyId) {
