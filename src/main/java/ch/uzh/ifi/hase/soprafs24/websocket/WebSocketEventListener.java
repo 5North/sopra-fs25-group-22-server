@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,19 +89,23 @@ public class WebSocketEventListener {
             String msg = "Lobby left successfully";
             boolean success = true;
 
+            lobbyId = getLobbyId(event);
             // leave lobby
             try {
-                lobbyId = getLobbyId(event);
-
                 lobbyService.leaveLobby(lobbyId, userId);
                 log.info("Lobby {} left successfully", lobbyId);
 
                 // broadcast msg to lobby
-                UsersBroadcastNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
+                UsersBroadcastNotificationDTO DTO = webSocketService.convertToDTO(userId, "unsubscribed");
                 webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
-            } catch (NotFoundException | IllegalStateException e) {
+            } catch (NotFoundException e) {
                 msg = e.getMessage();
                 success = false;
+            } catch (IllegalStateException e) {
+                msg = e.getMessage();
+                BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+                webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+                msg = "Lobby deleted successfully";
             }
 
             // notify user

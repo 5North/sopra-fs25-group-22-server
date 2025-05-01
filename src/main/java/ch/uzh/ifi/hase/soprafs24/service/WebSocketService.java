@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
 import javassist.NotFoundException;
@@ -50,6 +51,12 @@ public class WebSocketService {
     public UserNotificationDTO convertToDTO(String msg, boolean success) {
         UserNotificationDTO DTO = new UserNotificationDTO();
         DTO.setSuccess(success);
+        DTO.setMessage(msg);
+        return DTO;
+    }
+
+    public BroadcastNotificationDTO convertToDTO(String msg) {
+        BroadcastNotificationDTO DTO = new BroadcastNotificationDTO();
         DTO.setMessage(msg);
         return DTO;
     }

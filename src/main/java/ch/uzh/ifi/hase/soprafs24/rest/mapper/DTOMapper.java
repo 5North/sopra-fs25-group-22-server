@@ -33,6 +33,7 @@ public interface DTOMapper {
   @Mapping(target = "lossCount", ignore = true)
   @Mapping(target = "lobby", ignore = true)
   @Mapping(target = "tieCount", ignore = true)
+  @Mapping(target = "lobbyJoined", ignore = true)
   User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
   @Mapping(source = "id", target = "id")
@@ -42,6 +43,7 @@ public interface DTOMapper {
   @Mapping(source = "lossCount", target = "lossCount")
   @Mapping(target = "lobby", ignore = true)
   @Mapping(source = "tieCount", target = "tieCount")
+  @Mapping(target = "lobbyJoined", ignore = true)
   UserGetDTO convertEntityToUserGetDTO(User user);
 
   @Mapping(source="lobbyId", target = "lobbyId")
