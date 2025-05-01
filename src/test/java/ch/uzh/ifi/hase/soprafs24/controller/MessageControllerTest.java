@@ -16,6 +16,7 @@ import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -56,7 +57,7 @@ public class MessageControllerTest {
 
     // --- Test /app/startGame ---
     @Test
-    void testProcessStartGameSuccess() {
+    void testProcessStartGameSuccess() throws NotFoundException {
         // given
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);
@@ -89,7 +90,7 @@ public class MessageControllerTest {
     }
 
     @Test
-    void testProcessStartGameThrowsException() {
+    void testProcessStartGameThrowsException() throws NotFoundException {
         // given
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);

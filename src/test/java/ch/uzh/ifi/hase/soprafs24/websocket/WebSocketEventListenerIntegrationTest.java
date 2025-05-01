@@ -127,7 +127,7 @@ public class WebSocketEventListenerIntegrationTest {
                 doNothing().when(lobbyService).leaveLobby(3000L, 42L);
 
                 doReturn(broadcastDTO)
-                                .when(webSocketService).convertToDTO(42L, "subscribed");
+                                .when(webSocketService).convertToDTO(42L, "unsubscribed");
 
                 doReturn(userDTO)
                                 .when(webSocketService).convertToDTO(anyString(), anyBoolean());

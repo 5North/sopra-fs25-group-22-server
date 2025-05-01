@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -120,7 +121,7 @@ class WebSocketEventListenerTest {
         userDto.setSuccess(true);
 
         doNothing().when(lobbyService).leaveLobby(3000L, 88L);
-        when(webSocketService.convertToDTO(88L, "subscribed")).thenReturn(broadcastDto);
+        when(webSocketService.convertToDTO(88L, "unsubscribed")).thenReturn(broadcastDto);
         when(webSocketService.convertToDTO("Lobby left successfully", true)).thenReturn(userDto);
 
         listener.handleUnsubscribeEvent(event);
@@ -131,13 +132,52 @@ class WebSocketEventListenerTest {
     }
 
     @Test
+    void handleUnsubscribeEvent_lobbyDeletion_success() throws Exception {
+        SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/3000", 88L);
+
+        BroadcastNotificationDTO broadcastDto = new BroadcastNotificationDTO();
+        broadcastDto.setMessage("");
+
+        UserNotificationDTO userDto = new UserNotificationDTO();
+        userDto.setMessage("Lobby deleted successfully");
+        userDto.setSuccess(true);
+
+        doThrow(new IllegalStateException("Lobby with id <lobbyId> has been deleted")).when(lobbyService).leaveLobby(3000L, 88L);
+        when(webSocketService.convertToDTO("Lobby with id <lobbyId> has been deleted")).thenReturn(broadcastDto);
+        when(webSocketService.convertToDTO("Lobby deleted successfully", true)).thenReturn(userDto);
+
+        listener.handleUnsubscribeEvent(event);
+
+        verify(lobbyService).leaveLobby(3000L, 88L);
+        verify(webSocketService).broadCastLobbyNotifications(3000L, broadcastDto);
+        verify(webSocketService).lobbyNotifications(88L, userDto);
+    }
+
+    @Test
+    void handleUnsubscribeEvent_lobbyDeletion_failure() throws Exception {
+        SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/3000", 88L);
+
+        UserNotificationDTO userDto = new UserNotificationDTO();
+        userDto.setMessage("No lobby with id <lobbyId> found");
+        userDto.setSuccess(false);
+
+        doThrow(new NotFoundException("No lobby with id <lobbyId> found")).when(lobbyService).leaveLobby(3000L, 88L);
+        when(webSocketService.convertToDTO("No lobby with id <lobbyId> found", false)).thenReturn(userDto);
+
+        listener.handleUnsubscribeEvent(event);
+
+        verify(lobbyService).leaveLobby(3000L, 88L);
+        verify(webSocketService).lobbyNotifications(88L, userDto);
+    }
+
+    @Test
     void handleUnsubscribeEvent_failure() throws Exception {
         SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/4000", 99L);
         UserNotificationDTO userDto = new UserNotificationDTO();
         userDto.setMessage("error!");
         userDto.setSuccess(false);
 
-        doThrow(new IllegalStateException("error!"))
+        doThrow(new NotFoundException("error!"))
                 .when(lobbyService).leaveLobby(4000L, 99L);
         when(webSocketService.convertToDTO("error!", false)).thenReturn(userDto);
 

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
@@ -21,7 +23,7 @@ public class LobbyRepositoryIntegrationTest {
 
     // 1
     @Test
-    public void findByLobbyId_success() {
+    public void findById_success() {
         // given
         Lobby lobby = new Lobby();
         lobby.setLobbyId(1000L);
@@ -29,15 +31,15 @@ public class LobbyRepositoryIntegrationTest {
         entityManager.flush();
 
         // when
-        Lobby found = lobbyRepository.findByLobbyId(lobby.getLobbyId());
+        Optional<Lobby> found = lobbyRepository.findById(lobby.getLobbyId());
 
         // then
-        assertNotNull(found.getLobbyId());
-        assertEquals(found.getLobbyId(), lobby.getLobbyId());
+        assertFalse(found.isEmpty());
+        assertEquals(found.get().getLobbyId(), lobby.getLobbyId());
     }
 
     @Test
-    public void findByLobbyId_returnsNull() {
+    public void findById_returnsNull() {
         // given
         Lobby lobby = new Lobby();
         lobby.setLobbyId(1000L);
@@ -46,9 +48,9 @@ public class LobbyRepositoryIntegrationTest {
         entityManager.flush();
 
         // when
-        Lobby found = lobbyRepository.findByLobbyId(1111L);
+        Optional<Lobby> found = lobbyRepository.findById(1111L);
 
         // then
-        assertNull(found);
+        assertTrue(found.isEmpty());
     }
 }

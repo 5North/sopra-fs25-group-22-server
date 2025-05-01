@@ -16,10 +16,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class LobbyServiceTest {
 
@@ -98,33 +98,33 @@ public class LobbyServiceTest {
     }
 
     @Test
-    void isFull_true() {
+    void isFull_true() throws NotFoundException {
 
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
         testLobby.addUsers(3L);
         testLobby.addUsers(4L);
         // when -> setup additional mocks for LobbyRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
         assertTrue(lobbyService.lobbyIsFull(testLobby.getLobbyId()));
     }
 
     @Test
-    public void isFull_notEmpty_false() {
+    public void isFull_notEmpty_false() throws NotFoundException {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
 
         // when -> setup additional mocks for LobbyRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
         assertFalse(lobbyService.lobbyIsFull(testLobby.getLobbyId()));
     }
 
     @Test
-    public void isFull_Empty_false() {
+    public void isFull_Empty_false() throws NotFoundException {
         // when -> setup additional mocks for LobbyRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
         assertFalse(lobbyService.lobbyIsFull(testLobby.getLobbyId()));
     }
@@ -143,7 +143,7 @@ public class LobbyServiceTest {
         users.add(3L);
 
         // when -> setup additional mocks for LobbyRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
         Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
 
         lobbyService.joinLobby(testLobby.getLobbyId(), 3L);
@@ -158,7 +158,7 @@ public class LobbyServiceTest {
         testLobby.addUsers(2L);
 
         // when -> setup additional mocks for LobbyRepository and userRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
         doThrow(new NotFoundException("error")).when(userService).checkIfUserExists(Mockito.anyLong());
 
         assertThrows(
@@ -177,7 +177,7 @@ public class LobbyServiceTest {
         Long lobbyId = testLobby.getLobbyId();
 
         // when -> setup additional mocks for LobbyRepository and userRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
         assertThrows(
                 IllegalStateException.class, () -> lobbyService
@@ -188,10 +188,12 @@ public class LobbyServiceTest {
     @Test
     public void leaveLobby_validInputs_success() throws Exception {
         testLobby.addUsers(1L);
+        testUser.setLobbyJoined(testLobby.getLobbyId());
+        assertNotNull(testUser.getLobbyJoined());
 
         // when -> setup additional mocks for userService and lobbyRepo
         Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
         lobbyService.leaveLobby(testLobby.getLobbyId(), 1L);
 
@@ -201,12 +203,39 @@ public class LobbyServiceTest {
     }
 
     @Test
+    public void leaveLobby_validInputs_deleteLobby_success() throws Exception {
+        testLobby.addUsers(1L);
+        testLobby.setUser(testUser);
+        testUser.setLobby(testLobby);
+
+        // when -> setup additional mocks for userService and lobbyRepo
+        Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+
+        assertThrows(IllegalStateException.class,
+                () -> lobbyService.leaveLobby(testLobby.getLobbyId(), testUser.getId()));
+
+    }
+
+    @Test
+    public void leaveLobby_noLobbyFound_deleteLobby_throwsException() throws Exception {
+        testLobby.addUsers(1L);
+
+        // when -> setup additional mocks for userService and lobbyRepo
+        Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, ()-> lobbyService.leaveLobby(testLobby.getLobbyId(), 1L));
+
+    }
+
+    @Test
     public void leaveLobby_NonExistentUser_noSuccess()  {
         testLobby.addUsers(1L);
 
         Long lobbyId = testLobby.getLobbyId();
         // when -> setup additional mocks for LobbyRepository and userRepository
-        Mockito.when(lobbyRepository.findByLobbyId(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
         assertThrows(
                 NoSuchElementException.class, () -> lobbyService
@@ -222,25 +251,57 @@ public class LobbyServiceTest {
 
     @Test
     public void getLobbyById_notExists_throwsNoSuchElementException() {
-        when(lobbyRepository.findByLobbyId(123L)).thenReturn(null);
+        when(lobbyRepository.findById(123L)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class,
+        assertThrows(NotFoundException.class,
                 () -> lobbyService.getLobbyById(123L));
     }
 
     @Test
-    public void checkIfLobbyExists_exists_doesNotThrow() {
-        when(lobbyRepository.findByLobbyId(testLobby.getLobbyId())).thenReturn(testLobby);
+    public void checkIfLobbyExists_exists_doesNotThrow() throws NotFoundException {
+        when(lobbyRepository.findById(testLobby.getLobbyId())).thenReturn(Optional.of(testLobby));
 
         assertDoesNotThrow(() -> lobbyService.checkIfLobbyExists(testLobby.getLobbyId()));
+        assertEquals(lobbyService.checkIfLobbyExists(testLobby.getLobbyId()), testLobby);
     }
 
     @Test
     public void checkIfLobbyExists_notExists_throwsNotFoundException() {
-        when(lobbyRepository.findByLobbyId(999L)).thenReturn(null);
+        when(lobbyRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
                 () -> lobbyService.checkIfLobbyExists(999L));
+    }
+
+    //TODO delete if useless
+    @Test
+    void deleteLobby_validInputs_success() throws NotFoundException {
+        testLobby.setUser(testUser);
+        testUser.setLobby(testLobby);
+        // when
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
+
+        lobbyService.deleteLobby(testLobby.getLobbyId(), testUser.getId());
+        //assert
+        verify(lobbyRepository, times(1)).delete(testLobby);
+    }
+
+
+    //TODO delete if useless
+    @Test
+    void deleteLobby_noLobbyFound_throwsException() throws NotFoundException {
+        testLobby.setUser(testUser);
+        testUser.setLobby(testLobby);
+        // when
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.empty());
+        Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
+
+        assertThrows(NotFoundException.class,
+                () -> lobbyService.deleteLobby(testLobby.getLobbyId(), testUser.getId()));
+
+
+
     }
 
 }
