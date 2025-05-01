@@ -1,8 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -57,11 +57,11 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
-                UsersBroadcastJoinNotificationDTO LobbyDTO = new UsersBroadcastJoinNotificationDTO();
+                UsersBroadcastNotificationDTO LobbyDTO = new UsersBroadcastNotificationDTO();
                 LobbyDTO.setUsername("username");
                 LobbyDTO.setStatus("subscribed");
 
-                UserJoinNotificationDTO UserDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO UserDTO = new UserNotificationDTO();
                 UserDTO.setMessage("message");
                 UserDTO.setSuccess(true);
 
@@ -87,11 +87,11 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
-                UsersBroadcastJoinNotificationDTO LobbyDTO = new UsersBroadcastJoinNotificationDTO();
+                UsersBroadcastNotificationDTO LobbyDTO = new UsersBroadcastNotificationDTO();
                 LobbyDTO.setUsername("username");
                 LobbyDTO.setStatus("subscribed");
 
-                UserJoinNotificationDTO UserDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO UserDTO = new UserNotificationDTO();
                 UserDTO.setMessage("message");
                 UserDTO.setSuccess(false);
 
@@ -116,11 +116,11 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionUnsubscribeEvent event = new SessionUnsubscribeEvent(this, message);
 
-                UsersBroadcastJoinNotificationDTO broadcastDTO = new UsersBroadcastJoinNotificationDTO();
+                UsersBroadcastNotificationDTO broadcastDTO = new UsersBroadcastNotificationDTO();
                 broadcastDTO.setUsername("userX");
                 broadcastDTO.setStatus("subscribed");
 
-                UserJoinNotificationDTO userDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO userDTO = new UserNotificationDTO();
                 userDTO.setSuccess(true);
                 userDTO.setMessage("Lobby left successfully");
 
@@ -148,7 +148,7 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionUnsubscribeEvent event = new SessionUnsubscribeEvent(this, message);
 
-                UserJoinNotificationDTO userDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO userDTO = new UserNotificationDTO();
                 userDTO.setSuccess(false);
                 userDTO.setMessage("oops");
 

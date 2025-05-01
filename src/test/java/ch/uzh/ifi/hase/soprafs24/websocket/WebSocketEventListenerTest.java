@@ -3,9 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.websocket;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,8 +18,8 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
 import javassist.NotFoundException;
 
 class WebSocketEventListenerTest {
@@ -75,10 +73,10 @@ class WebSocketEventListenerTest {
     @Test
     void handleSubscribeEvent_success() throws Exception {
         SessionSubscribeEvent event = buildSubscribeEvent("/topic/lobby/1234", 55L);
-        UsersBroadcastJoinNotificationDTO broadcastDto = new UsersBroadcastJoinNotificationDTO();
+        UsersBroadcastNotificationDTO broadcastDto = new UsersBroadcastNotificationDTO();
         broadcastDto.setUsername("pippo");
         broadcastDto.setStatus("subscribed");
-        UserJoinNotificationDTO userDto = new UserJoinNotificationDTO();
+        UserNotificationDTO userDto = new UserNotificationDTO();
         userDto.setMessage("Lobby joined successfully");
         userDto.setSuccess(true);
 
@@ -96,7 +94,7 @@ class WebSocketEventListenerTest {
     @Test
     void handleSubscribeEvent_failure() throws Exception {
         SessionSubscribeEvent event = buildSubscribeEvent("/topic/lobby/2000", 77L);
-        UserJoinNotificationDTO userDto = new UserJoinNotificationDTO();
+        UserNotificationDTO userDto = new UserNotificationDTO();
         userDto.setMessage("not found");
         userDto.setSuccess(false);
 
@@ -114,10 +112,10 @@ class WebSocketEventListenerTest {
     @Test
     void handleUnsubscribeEvent_success() throws Exception {
         SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/3000", 88L);
-        UsersBroadcastJoinNotificationDTO broadcastDto = new UsersBroadcastJoinNotificationDTO();
+        UsersBroadcastNotificationDTO broadcastDto = new UsersBroadcastNotificationDTO();
         broadcastDto.setUsername("pluto");
         broadcastDto.setStatus("subscribed");
-        UserJoinNotificationDTO userDto = new UserJoinNotificationDTO();
+        UserNotificationDTO userDto = new UserNotificationDTO();
         userDto.setMessage("Lobby left successfully");
         userDto.setSuccess(true);
 
@@ -135,7 +133,7 @@ class WebSocketEventListenerTest {
     @Test
     void handleUnsubscribeEvent_failure() throws Exception {
         SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/4000", 99L);
-        UserJoinNotificationDTO userDto = new UserJoinNotificationDTO();
+        UserNotificationDTO userDto = new UserNotificationDTO();
         userDto.setMessage("error!");
         userDto.setSuccess(false);
 
