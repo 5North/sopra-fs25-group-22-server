@@ -3,7 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -39,9 +39,9 @@ public class WebSocketService {
     }
 
     // method for creating DTO to broadcast lobby (joining) notifications
-    public UsersBroadcastNotificationDTO convertToDTO(Long userId, String status) throws NotFoundException {
+    public UsersBroadcastJoinNotificationDTO convertToDTO(Long userId, String status) throws NotFoundException {
         User user = userService.checkIfUserExists(userId);
-        UsersBroadcastNotificationDTO DTO = new UsersBroadcastNotificationDTO();
+        UsersBroadcastJoinNotificationDTO DTO = new UsersBroadcastJoinNotificationDTO();
         DTO.setStatus(status);
         DTO.setUsername(user.getUsername());
         return DTO;

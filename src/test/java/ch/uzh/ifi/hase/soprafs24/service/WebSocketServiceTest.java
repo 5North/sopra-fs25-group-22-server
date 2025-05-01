@@ -2,7 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ public class WebSocketServiceTest {
 
         String status = "subscribed";
 
-        UsersBroadcastNotificationDTO dto = webSocketService.convertToDTO(user.getId(), status);
+        UsersBroadcastJoinNotificationDTO dto = webSocketService.convertToDTO(user.getId(), status);
 
         assertNotNull(dto);
         assertEquals(status, dto.getStatus());

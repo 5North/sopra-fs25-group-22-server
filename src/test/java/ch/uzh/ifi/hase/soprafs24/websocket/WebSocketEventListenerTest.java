@@ -20,7 +20,7 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import javassist.NotFoundException;
 
 class WebSocketEventListenerTest {
@@ -74,7 +74,7 @@ class WebSocketEventListenerTest {
     @Test
     void handleSubscribeEvent_success() throws Exception {
         SessionSubscribeEvent event = buildSubscribeEvent("/topic/lobby/1234", 55L);
-        UsersBroadcastNotificationDTO broadcastDto = new UsersBroadcastNotificationDTO();
+        UsersBroadcastJoinNotificationDTO broadcastDto = new UsersBroadcastJoinNotificationDTO();
         broadcastDto.setUsername("pippo");
         broadcastDto.setStatus("subscribed");
         UserNotificationDTO userDto = new UserNotificationDTO();
@@ -113,7 +113,7 @@ class WebSocketEventListenerTest {
     @Test
     void handleUnsubscribeEvent_success() throws Exception {
         SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/3000", 88L);
-        UsersBroadcastNotificationDTO broadcastDto = new UsersBroadcastNotificationDTO();
+        UsersBroadcastJoinNotificationDTO broadcastDto = new UsersBroadcastJoinNotificationDTO();
         broadcastDto.setUsername("pluto");
         broadcastDto.setStatus("subscribed");
         UserNotificationDTO userDto = new UserNotificationDTO();

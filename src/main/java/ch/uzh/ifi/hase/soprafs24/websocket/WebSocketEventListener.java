@@ -18,7 +18,7 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import javassist.NotFoundException;
 
 @Component
@@ -57,7 +57,7 @@ public class WebSocketEventListener {
                 log.info("Lobby {} joined successfully", lobbyId);
 
                 // broadcast msg to lobby
-                UsersBroadcastNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
+                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
                 webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
             } catch (NotFoundException | IllegalStateException e) {
                 msg = e.getMessage();
@@ -96,7 +96,7 @@ public class WebSocketEventListener {
                 log.info("Lobby {} left successfully", lobbyId);
 
                 // broadcast msg to lobby
-                UsersBroadcastNotificationDTO DTO = webSocketService.convertToDTO(userId, "unsubscribed");
+                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "unsubscribed");
                 webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
             } catch (NotFoundException e) {
                 msg = e.getMessage();

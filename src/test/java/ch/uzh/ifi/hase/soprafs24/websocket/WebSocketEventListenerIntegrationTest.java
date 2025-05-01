@@ -2,7 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.websocket;
 
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
-                UsersBroadcastNotificationDTO LobbyDTO = new UsersBroadcastNotificationDTO();
+                UsersBroadcastJoinNotificationDTO LobbyDTO = new UsersBroadcastJoinNotificationDTO();
                 LobbyDTO.setUsername("username");
                 LobbyDTO.setStatus("subscribed");
 
@@ -87,7 +87,7 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
-                UsersBroadcastNotificationDTO LobbyDTO = new UsersBroadcastNotificationDTO();
+                UsersBroadcastJoinNotificationDTO LobbyDTO = new UsersBroadcastJoinNotificationDTO();
                 LobbyDTO.setUsername("username");
                 LobbyDTO.setStatus("subscribed");
 
@@ -116,7 +116,7 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionUnsubscribeEvent event = new SessionUnsubscribeEvent(this, message);
 
-                UsersBroadcastNotificationDTO broadcastDTO = new UsersBroadcastNotificationDTO();
+                UsersBroadcastJoinNotificationDTO broadcastDTO = new UsersBroadcastJoinNotificationDTO();
                 broadcastDTO.setUsername("userX");
                 broadcastDTO.setStatus("subscribed");
 

@@ -1,6 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.websocket.DTO;
 
-public class UsersBroadcastNotificationDTO {
+public class UsersBroadcastJoinNotificationDTO {
 
     private String username;
 
