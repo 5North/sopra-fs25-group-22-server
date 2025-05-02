@@ -13,11 +13,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OpenAiClient {
-
+    private final Logger log = LoggerFactory.getLogger(OpenAiClient.class);
     private static final String ENDPOINT = "https://api.openai.com/v1/chat/completions";
     private final String apiKey;
     private final HttpClient client;
@@ -52,6 +54,8 @@ public class OpenAiClient {
                     .build();
 
             HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+            log.info("Status code: {}", resp.statusCode());
+            log.info("Response from OpenAI API: {}", resp.body());
             JsonNode root = mapper.readTree(resp.body());
             return root.path("choices").get(0).path("message").path("content").asText();
 
