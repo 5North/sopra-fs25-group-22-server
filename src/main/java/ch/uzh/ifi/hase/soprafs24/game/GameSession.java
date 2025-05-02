@@ -2,7 +2,11 @@
 package ch.uzh.ifi.hase.soprafs24.game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import ch.uzh.ifi.hase.soprafs24.game.result.Outcome;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
 import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 
@@ -211,6 +215,34 @@ public class GameSession {
         Result result = new Result(this.gameId, this.players);
         GameStatisticsUtil.updateUserStatistics(result);
         return result;
+    }
+
+    public Map<Long, String> finishForfeit(Long quittingUserId) {
+        Map<Long, String> outcomes = new HashMap<>();
+        int quittingIndex = -1;
+        for (int i = 0; i < players.size(); i++) {
+            if (players.get(i).getUserId().equals(quittingUserId)) {
+                quittingIndex = i;
+                break;
+            }
+        }
+        if (quittingIndex < 0) {
+            throw new IllegalArgumentException("Quitting user not part of this game");
+        }
+        boolean quittingTeamEven = (quittingIndex % 2 == 0);
+        for (int i = 0; i < players.size(); i++) {
+            Long uid = players.get(i).getUserId();
+            boolean sameTeam = ((i % 2 == 0) == quittingTeamEven);
+            String outcome = sameTeam ? Outcome.LOST.name() : Outcome.WON.name();
+            outcomes.put(uid, outcome);
+            // update stats immediately
+            if (Outcome.WON.name().equals(outcome)) {
+                GameStatisticsUtil.incrementWin(uid);
+            } else {
+                GameStatisticsUtil.incrementLoss(uid);
+            }
+        }
+        return outcomes;
     }
 
 }

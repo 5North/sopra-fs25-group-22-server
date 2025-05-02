@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.game;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 
 public class GameIntegrationTest {
 
@@ -22,6 +25,8 @@ public class GameIntegrationTest {
 
     @BeforeEach
     public void setup() {
+        UserRepository dummyRepo = mock(UserRepository.class);
+        GameStatisticsUtil.setUserRepository(dummyRepo);
         gameId = 10L;
         playerIds = List.of(100L, 200L, 300L, 400L);
         gameSession = new GameSession(gameId, playerIds);
@@ -305,5 +310,22 @@ public class GameIntegrationTest {
         Player capturingPlayer = gameSession.getPlayers().get(gameSession.getLastGetterIndex());
         assertEquals(0, capturingPlayer.getScopaCount(),
                 "In the last turn, even if the table is emptied, scopa should not be counted.");
+    }
+
+    @Test
+    public void testFinishForfeitFullSessionIntegration() {
+        List<Long> ids = List.of(111L, 222L, 333L, 444L);
+        GameSession session = new GameSession(77L, ids);
+
+        Map<Long, String> outcomes = session.finishForfeit(333L);
+
+        assertEquals("LOST", outcomes.get(333L));
+        assertEquals("LOST", outcomes.get(111L));
+        assertEquals("WON", outcomes.get(222L));
+        assertEquals("WON", outcomes.get(444L));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> session.playTurn(CardFactory.getCard(Suit.COPPE, 1), List.of()),
+                "No further turns after forfeit");
     }
 }

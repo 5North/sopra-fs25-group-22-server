@@ -9,6 +9,8 @@ import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
@@ -65,23 +67,18 @@ public class MessageControllerTest {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(100L);
 
-
         String msg = "Starting game";
         GameSession dummyGame = new GameSession(lobby.getLobbyId(), lobby.getUsers());
         UserNotificationDTO dummyNotificationDTO = new UserNotificationDTO();
         dummyNotificationDTO.setSuccess(Boolean.TRUE);
         dummyNotificationDTO.setMessage(msg);
 
-
         when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
         when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
         when(gameService.startGame(lobby)).thenReturn(dummyGame);
         when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
 
-
-
         messageController.processStartGame(lobbyDTO.getLobbyId());
-
 
         verify(webSocketService, times(1))
                 .convertToDTO(msg, true);
@@ -98,7 +95,6 @@ public class MessageControllerTest {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(100L);
 
-
         String msg = "Lobby " + lobby.getLobbyId() + " is not full yet";
         UserNotificationDTO dummyNotificationDTO = new UserNotificationDTO();
         dummyNotificationDTO.setSuccess(Boolean.FALSE);
@@ -110,7 +106,6 @@ public class MessageControllerTest {
         when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
 
         messageController.processStartGame(lobbyDTO.getLobbyId());
-
 
         verify(webSocketService, times(1))
                 .convertToDTO("Error starting game: " + msg, false);
@@ -138,7 +133,6 @@ public class MessageControllerTest {
         verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(PrivatePlayerDTO.class));
         verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(GameSessionDTO.class));
     }
-
 
     // --- Test /app/playCard ---
     @Test
@@ -200,6 +194,41 @@ public class MessageControllerTest {
 
         verify(webSocketService, times(1))
                 .lobbyNotifications(eq(42L), eq(expectedDto));
+    }
+
+    // --- Test /app/quit ---
+    @Test
+    public void testProcessQuitGame() throws Exception {
+        // Given
+        Long quittingUserId = 5L;
+        Long gameId = 10L;
+        StompHeaderAccessor accessor = createHeaderAccessorWithUser(quittingUserId);
+
+        QuitGameDTO dto = new QuitGameDTO();
+        dto.setGameId(gameId);
+
+        QuitGameResultDTO r1 = new QuitGameResultDTO();
+        r1.setUserId(5L);
+        r1.setOutcome("LOST");
+        r1.setMessage("You lost by forfeit.");
+
+        QuitGameResultDTO r2 = new QuitGameResultDTO();
+        r2.setUserId(8L);
+        r2.setOutcome("WON");
+        r2.setMessage("You won by forfeit.");
+
+        List<QuitGameResultDTO> results = Arrays.asList(r1, r2);
+
+        when(gameService.quitGame(gameId, quittingUserId)).thenReturn(results);
+
+        messageController.processQuitGame(dto, accessor);
+
+        verify(webSocketService, times(1))
+                .lobbyNotifications(eq(5L), eq(r1));
+        verify(webSocketService, times(1))
+                .lobbyNotifications(eq(8L), eq(r2));
+
+        verify(lobbyService, times(1)).deleteLobby(gameId);
     }
 
 }

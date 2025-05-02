@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -135,20 +136,27 @@ class WebSocketEventListenerTest {
     void handleUnsubscribeEvent_lobbyDeletion_success() throws Exception {
         SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/3000", 88L);
 
+        UsersBroadcastJoinNotificationDTO broadcastDtoUnsubscribe = new UsersBroadcastJoinNotificationDTO();
+        broadcastDtoUnsubscribe.setUsername("pluto");
+        broadcastDtoUnsubscribe.setStatus("unsubscribed");
+
         BroadcastNotificationDTO broadcastDto = new BroadcastNotificationDTO();
-        broadcastDto.setMessage("");
+        broadcastDto.setMessage("Lobby with id 3000 has been deleted");
 
         UserNotificationDTO userDto = new UserNotificationDTO();
         userDto.setMessage("Lobby deleted successfully");
         userDto.setSuccess(true);
 
-        doThrow(new IllegalStateException("Lobby with id <lobbyId> has been deleted")).when(lobbyService).leaveLobby(3000L, 88L);
-        when(webSocketService.convertToDTO("Lobby with id <lobbyId> has been deleted")).thenReturn(broadcastDto);
+        doNothing().when(lobbyService).leaveLobby(3000L, 88L);
+        when(lobbyService.checkIfLobbyExists(anyLong())).thenThrow(new NotFoundException("not found"));
+        when(webSocketService.convertToDTO("Lobby with id 3000 has been deleted")).thenReturn(broadcastDto);
         when(webSocketService.convertToDTO("Lobby deleted successfully", true)).thenReturn(userDto);
+        when(webSocketService.convertToDTO(88L, "unsubscribed")).thenReturn(broadcastDtoUnsubscribe);
 
         listener.handleUnsubscribeEvent(event);
 
         verify(lobbyService).leaveLobby(3000L, 88L);
+        verify(webSocketService).broadCastLobbyNotifications(3000L, broadcastDtoUnsubscribe);
         verify(webSocketService).broadCastLobbyNotifications(3000L, broadcastDto);
         verify(webSocketService).lobbyNotifications(88L, userDto);
     }

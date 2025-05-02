@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.game;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,5 +65,37 @@ public class GameSessionTest {
     @Test
     public void testTurnCounterInitialization() {
         assertEquals(0, gameSession.getTurnCounter(), "Initial turn counter should be 0.");
+    }
+
+    @Test
+    public void testFinishForfeitWhenOddIndexQuits() {
+        // Player at index 1 (200L) quits → team {200,400} loses, {100,300} wins
+        Long quittingPlayer = 200L;
+        Map<Long, String> outcomes = gameSession.finishForfeit(quittingPlayer);
+
+        assertEquals("LOST", outcomes.get(200L), "Quitting player should lose");
+        assertEquals("LOST", outcomes.get(400L), "Teammate of quitting player should lose");
+        assertEquals("WON", outcomes.get(100L), "Opposing team member should win");
+        assertEquals("WON", outcomes.get(300L), "Opposing team member should win");
+    }
+
+    @Test
+    public void testFinishForfeitWhenEvenIndexQuits() {
+        // Player at index 0 (100L) quits → team {100,300} loses, {200,400} wins
+        Long quittingPlayer = 100L;
+        Map<Long, String> outcomes = gameSession.finishForfeit(quittingPlayer);
+
+        assertEquals("LOST", outcomes.get(100L), "Quitting player should lose");
+        assertEquals("LOST", outcomes.get(300L), "Teammate of quitting player should lose");
+        assertEquals("WON", outcomes.get(200L), "Opposing team member should win");
+        assertEquals("WON", outcomes.get(400L), "Opposing team member should win");
+    }
+
+    @Test
+    public void testFinishForfeitThrowsForUnknownUser() {
+        // If user not in session, expect IllegalArgumentException
+        assertThrows(IllegalArgumentException.class,
+                () -> gameSession.finishForfeit(999L),
+                "finishForfeit should reject a user ID not in the game");
     }
 }

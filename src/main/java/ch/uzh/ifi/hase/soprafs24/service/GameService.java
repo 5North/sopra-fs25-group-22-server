@@ -6,6 +6,7 @@ import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
@@ -15,6 +16,8 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -111,6 +114,30 @@ public class GameService {
                 .orElseThrow();
         String raw = aiService.generateAISuggestion(player.getHand(), game.getTable().getCards());
         return new AISuggestionDTO(raw);
+    }
+
+    public List<QuitGameResultDTO> quitGame(Long gameId, Long quittingUserId) {
+        GameSession game = gameSessions.get(gameId);
+        if (game == null) {
+            throw new IllegalArgumentException("Game session not found for id: " + gameId);
+        }
+
+        Map<Long, String> outcomes = game.finishForfeit(quittingUserId);
+        List<QuitGameResultDTO> resultDTOs = new ArrayList<>();
+
+        for (Map.Entry<Long, String> e : outcomes.entrySet()) {
+            Long userId = e.getKey();
+            String oc = e.getValue();
+            String msg = oc.equals("WON")
+                    ? "You won by forfeit."
+                    : "You lost by forfeit.";
+
+            resultDTOs.add(
+                    GameSessionMapper.toQuitGameResultDTO(userId, oc, msg));
+        }
+
+        gameSessions.remove(gameId);
+        return resultDTOs;
     }
 
 }

@@ -173,4 +173,14 @@ public class GameSessionMapper {
         return dto;
     }
 
+    public static QuitGameResultDTO toQuitGameResultDTO(Long userId,
+            String outcome,
+            String message) {
+        QuitGameResultDTO dto = new QuitGameResultDTO();
+        dto.setUserId(userId);
+        dto.setOutcome(outcome);
+        dto.setMessage(message);
+        return dto;
+    }
+
 }

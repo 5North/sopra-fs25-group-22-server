@@ -10,6 +10,7 @@ import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
@@ -27,8 +28,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
 public class GameServiceTest {
@@ -303,6 +306,38 @@ public class GameServiceTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to set player hand", e);
         }
+    }
+
+    @Test
+    public void testQuitGameForfeitRemovesSessionAndReturnsCorrectOutcomes() throws Exception {
+        Long gameId = 123L;
+        Long playerA = 10L;
+        Long playerB = 20L;
+
+        GameSession gs = new GameSession(gameId, Arrays.asList(playerA, playerB));
+        Field sessionsField = GameService.class.getDeclaredField("gameSessions");
+        sessionsField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<Long, GameSession> sessions = (Map<Long, GameSession>) sessionsField.get(gameService);
+        sessions.put(gameId, gs);
+
+        List<QuitGameResultDTO> results = gameService.quitGame(gameId, playerA);
+
+        assertEquals(2, results.size(), "Should return one DTO per player in the session");
+
+        Map<Long, QuitGameResultDTO> byUser = results.stream()
+                .collect(Collectors.toMap(QuitGameResultDTO::getUserId, dto -> dto));
+
+        assertTrue(byUser.containsKey(playerA), "Result must contain quitting player");
+        assertTrue(byUser.containsKey(playerB), "Result must contain other player");
+
+        assertEquals("LOST", byUser.get(playerA).getOutcome());
+        assertEquals("You lost by forfeit.", byUser.get(playerA).getMessage());
+
+        assertEquals("WON", byUser.get(playerB).getOutcome());
+        assertEquals("You won by forfeit.", byUser.get(playerB).getMessage());
+
+        assertNull(gameService.getGameSessionById(gameId), "Session should be removed after forfeit");
     }
 
     private List<Card> createCardsFromValues(List<Integer> values, Suit suit) {

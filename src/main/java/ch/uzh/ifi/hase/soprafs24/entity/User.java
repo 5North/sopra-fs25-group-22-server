@@ -36,7 +36,7 @@ public class User implements Serializable {
   @Column
   private Long lobbyJoined;
 
-  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL)
   @JoinColumn(name = "lobby_id")
   private Lobby lobby;
 
@@ -99,9 +99,13 @@ public class User implements Serializable {
     this.lossCount = lossCount;
   }
 
-  public void setLobby(Lobby lobby) {this.lobby = lobby;}
+  public void setLobby(Lobby lobby) {
+    this.lobby = lobby;
+  }
 
-  public Lobby getLobby() {return lobby;}
+  public Lobby getLobby() {
+    return lobby;
+  }
 
   public Integer getTieCount() {
     return tieCount;
@@ -123,7 +127,11 @@ public class User implements Serializable {
     this.tieCount++;
   }
 
-  public Long getLobbyJoined() {return lobbyJoined;}
+  public Long getLobbyJoined() {
+    return lobbyJoined;
+  }
 
-  public void setLobbyJoined(Long lobbyJoined) {this.lobbyJoined = lobbyJoined;}
+  public void setLobbyJoined(Long lobbyJoined) {
+    this.lobbyJoined = lobbyJoined;
+  }
 }

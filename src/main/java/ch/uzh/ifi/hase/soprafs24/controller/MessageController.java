@@ -9,6 +9,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
@@ -159,6 +161,22 @@ public class MessageController {
         Long userId = (Long) Objects.requireNonNull(header.getSessionAttributes()).get("userId");
         AISuggestionDTO aiDto = gameService.aiSuggestion(gameId, userId);
         webSocketService.lobbyNotifications(userId, aiDto);
+    }
+
+    @MessageMapping("/quitGame")
+    public void processQuitGame(@Payload QuitGameDTO dto,
+            StompHeaderAccessor headerAccessor) throws Exception {
+        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
+                .get("userId");
+        Long quittingUserId = (Long) userIdObj;
+        Long gameId = dto.getGameId();
+
+        List<QuitGameResultDTO> results = gameService.quitGame(gameId, quittingUserId);
+        for (QuitGameResultDTO result : results) {
+            webSocketService.lobbyNotifications(result.getUserId(), result);
+        }
+
+        lobbyService.deleteLobby(gameId);
     }
 
 }
