@@ -4,43 +4,52 @@
 
 ## REST Specs
 
-| Mapping                | Method     | Parameter(s)                                                      | Parameter Type     | Status Code | Response                                            | Response Type | Description                                                       |
-|------------------------|------------|-------------------------------------------------------------------|--------------------|-------------|-----------------------------------------------------|---------------|-------------------------------------------------------------------|
-| **/login**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 200         | Token &lt;string&gt;                                | Header        | Log in user and return an authentication token                    |
-| **/login**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 403         | Error: reason &lt;string&gt;                        | Body          | Login failed due to invalid credentials                           |
-| **/logout**            | **POST**   | Token &lt;string&gt;                                              | Header             | 204         | --                                                  | Header        | Log out the user (invalidate token)                               |
-| **/logout**            | **POST**   | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Logout failed due to unauthenticated request                      |
-| **/users**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 201         | Token &lt;string&gt;; User(*)                       | Header; Body  | Create new user and auto-login                                    |
-| **/users**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 409         | Error: reason &lt;string&gt;                        | Body          | User creation failed because username already exists              |
-| **/users**             | **GET**    | Token &lt;string&gt;                                              | Header             | 200         | list&lt;User(*)&gt;                                 | Body          | Retrieve all users (for scoreboard)                               |
-| **/users**             | **GET**    | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for users list                            |
-| **/users/{userId}**    | **GET**    | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 200         | User(*)                                             | Body          | Retrieve specific user profile                                    |
-| **/users/{userId}**    | **GET**    | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for user profile                          |
-| **/users/{userId}**    | **GET**    | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
-| **/users/{userId}**    | **PUT**    | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 204         | --                                                  | --            | Update user profile                                               |
-| **/users/{userId}**    | **PUT**    | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
-| **/lobbies**           | **POST**   | Token &lt;string&gt;                                              | Header; Body       | 201         | Lobby(*) (includes lobbyId, PIN, roomName, players) | Body          | Create new lobby; persist via LobbyRepository ensuring unique PIN |
-| **/lobbies**           | **POST**   | Token &lt;string&gt;                                              | Header; Body       | 401         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user is not authenticated           |
+|  Supported | Mapping                | Method     | Parameter(s)                                                      | Parameter Type     | Status Code | Response                                            | Response Type | Description                                                       |
+|----------- |------------------------|------------|-------------------------------------------------------------------|--------------------|-------------|-----------------------------------------------------|---------------|-------------------------------------------------------------------|
+|    ✅      | **/login**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 200         | Token &lt;string&gt;                                | Header        | Log in user and return an authentication token                    |
+|    ✅      | **/login**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 403         | Error: reason &lt;string&gt;                        | Body          | Login failed due to invalid credentials                           |
+|    ✅      | **/logout**            | **POST**   | Token &lt;string&gt;                                              | Header             | 204         | --                                                  | Header        | Log out the user (invalidate token)                               |
+|    ✅      | **/logout**            | **POST**   | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Logout failed due to unauthenticated request                      |
+|    ✅      | **/users**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 201         | Token &lt;string&gt;; User(*)                       | Header; Body  | Create new user and auto-login                                    |
+|    ✅      | **/users**             | **POST**   | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 409         | Error: reason &lt;string&gt;                        | Body          | User creation failed because username already exists              |
+|    ✅      | **/users**             | **GET**    | Token &lt;string&gt;                                              | Header             | 200         | list&lt;User(*)&gt;                                 | Body          | Retrieve all users (for scoreboard)                               |
+|    ✅      | **/users**             | **GET**    | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for users list                            |
+|    ✅      | **/users/{userId}**    | **GET**    | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 200         | User(*)                                             | Body          | Retrieve specific user profile                                    |
+|    ✅      | **/users/{userId}**    | **GET**    | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for user profile                          |
+|    ✅      | **/users/{userId}**    | **GET**    | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
+|    ❌      | **/users/{userId}**    | **PUT**    | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 204         | --                                                  | --            | Update user profile                                               |
+|    ❌      | **/users/{userId}**    | **PUT**    | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
+|    ✅      | **/lobbies**           | **POST**   | Token &lt;string&gt;                                              | Header; Body       | 201         | Lobby(*) (includes lobbyId, PIN, roomName, players) | Body          | Create new lobby; persist via LobbyRepository ensuring unique PIN |
+|    ✅      | **/lobbies**           | **POST**   | Token &lt;string&gt;                                              | Header; Body       | 401         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user is not authenticated           |
+|    ✅      | **/lobbies**           | **POST**   | Token &lt;string&gt;                                              | Header; Body       | 409         | Error: reason and id of lobby joined &lt;string&gt; | Body          | Lobby creation failed because user already joined a lobby         |
+
+
 
 
 ## WebSocket Specs
 
-| Mapping                    | Method          | Parameter(s)                                                                                         | Parameter Type | Description                                                                                         |
-|----------------------------|-----------------|------------------------------------------------------------------------------------------------------|----------------|-----------------------------------------------------------------------------------------------------|
-| **/lobby**                 | **CONNECT**     | Token &lt;string&gt;                                                                                 | Query          | Upgrade connection to WebSocket for lobby operations                                                |
-| **/lobby**                 | **DISCONNECT**  | --                                                                                                   | --             | Terminates the WebSocket connection                                                                 |
-| **/topic/lobby/{lobbyId}** | **SUBSCRIBE**   | lobbyId &lt;string&gt;                                                                               | Path           | Subscribe to real-time lobby updates (player joins/leaves, notifications)                           |
-| **/topic/lobby/{lobbyId}** | **UNSUBSCRIBE** | lobbyId &lt;string&gt;                                                                               | Path           | Unsubscribe from lobby updates                                                                      |
-| **/app/playcard**          | **SEND**        | gameId &lt;string&gt;, card &lt;Card&gt;                                                             | Body (JSON)    | Send played card event to server for in-game processing                                             |
-| **/app/chooseCapture**     | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, chosenOption &lt;List{Card}&gt;, playedCard &lt;Card&gt; | Body (JSON)    | Send chosen capture option when multiple options exist                                              |
-| **/app/ai**                | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, requestFlag &lt;string&gt;                               | Body (JSON)    | Send request for AI assistance (hint) to the server                                                 |
-| **/app/rematch**           | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, confirmRematch &lt;boolean&gt;                           | Body (JSON)    | Send rematch confirmation from the player to the server                                             |
-| **/app/quitGame**          | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;                                                           | Body (JSON)    | Send quit game request to the server                                                                |
-| **/game/{gameId}/results** | **SUBSCRIBE**   | gameId &lt;string&gt;                                                                                | Path           | Subscribe to final game results broadcast when the match ends                                       |
-| **/user/queue/reply**      | **SUBSCRIBE**   | --                                                                                                   | --             | Subscribe to private channel for receiving personal notifications (capture options, AI hints, etc.) |
-| **/user/queue/reply**      | **UNSUBSCRIBE** | --                                                                                                   | --             | Unsubscribe from the private channel                                                                |
+|  Supported  | Mapping                    | Method          | Parameter(s)                                                                                         | Parameter Type | Description                                                                                         |
+|-------------|----------------------------|-----------------|------------------------------------------------------------------------------------------------------|----------------|-----------------------------------------------------------------------------------------------------|
+|      ✅     | **/lobby**                 | **CONNECT**     | Token &lt;string&gt;                                                                                 | Query          | Upgrade connection to WebSocket for lobby operations                                                |
+|      ✅     | **/lobby**                 | **DISCONNECT**  | --                                                                                                   | --             | Terminates the WebSocket connection                                                                 |
+|      ✅     | **/topic/lobby/{lobbyId}** | **SUBSCRIBE**   | lobbyId &lt;string&gt;                                                                               | Path           | Subscribe to real-time lobby updates (player joins/leaves, notifications)                           |
+|      ✅     | **/topic/lobby/{lobbyId}** | **UNSUBSCRIBE** | lobbyId &lt;string&gt;                                                                               | Path           | Unsubscribe from lobby updates                                                                      |
+|      ✅     | **/startGame/{lobbyId}**   | **SEND**        | lobbyId &lt;string&gt;                                                                               | Path           | Start new game session                                                                              |
+|      ✅     | **/updateGame/{gameId}**   | **SEND**        | lobbyId &lt;string&gt;                                                                               | Path           | Request new game representation                                                                     |
+|      ✅     | **/app/playcard**          | **SEND**        | gameId &lt;string&gt;, card &lt;Card&gt;                                                             | Body (JSON)    | Send played card event to server for in-game processing                                             |
+|      ✅     | **/app/chooseCapture**     | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, chosenOption &lt;List{Card}&gt;, playedCard &lt;Card&gt; | Body (JSON)    | Send chosen capture option when multiple options exist                                              |
+|      ✅     | **/app/ai**                | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, requestFlag &lt;string&gt;                               | Body (JSON)    | Send request for AI assistance (hint) to the server                                                 |
+|      ❌     | **/app/rematch**           | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, confirmRematch &lt;boolean&gt;                           | Body (JSON)    | Send rematch confirmation from the player to the server                                             |
+|      ❌     | **/app/quitGame**          | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;                                                           | Body (JSON)    | Send quit game request to the server                                                                |
+|      🚫     | **/game/{gameId}/results** | **SUBSCRIBE**   | gameId &lt;string&gt;                                                                                | Path           | Subscribe to final game results broadcast when the match ends                                       |
+|      ✅     | **/user/queue/reply**      | **SUBSCRIBE**   | --                                                                                                   | --             | Subscribe to private channel for receiving personal notifications (capture options, AI hints, etc.) |
+|      ✅     | **/user/queue/reply**      | **UNSUBSCRIBE** | --                                                                                                   | --             | Unsubscribe from the private channel                                                                |
 
-### STOMP notifications
+## STOMP notifications
+
+### Lobby join/leave
+
+A client user does join a lobby by subscribing to the `topic/lobby/{lobbyId}` of the lobby he wants to join, and he leaves a lobby by unsubscribing from it.
 
 #### Broadcast to all users in a lobby
 
@@ -48,25 +57,58 @@ When a new user join or leave a lobby the following notification will be broadca
 `topic/lobby/{lobbyId}`.
 
         {
-         "user": username,
-         "status": status
+         "user": username <string>,
+         "status": status <string>
         }
 
-`status` can be either `subscribed`, `unsubscribed` or `disconnected`.
-Keep in mind that `disconnected` does refer to a disconnection event of the STOMP protocol, and not to a disconnection 
-of the Web Socket session.
+`status` can be either `subscribed`, `unsubscribed` ~or `disconnected`~.
+~Keep in mind that `disconnected` does refer to a disconnection event of the STOMP protocol, and not to a disconnection 
+of the Web Socket session.~
 
 #### Sent to a specific user
+
+##### General notification
 
 The user who tries to join will receive back the following notification: 
 
         {
-         "join": success,
-         "msg": msg
+         "success": success <bool>,
+         "msg": msg <string>
         }
 
-`success` is a boolean value, while `msg` is a short message describing the success or the reason of failure of the 
+`success` describe the success of the operation, while `msg` is a short message describing the success or the reason of failure of the 
 action.
+
+##### What if the user is already in a lobby?
+
+If the user is already in a lobby and they are trying to join again through the client ui, they will not be able to join a new lobby and the following message will be sent, 
+so that the client can redirect the user to the right lobby.
+
+        {
+         "success": "false",
+         "msg": "User with id {userId} already joined lobby {lobbyId}"
+        }
+
+### Lobby deletion
+
+When the host leave the lobby by esplicitly sending an `unsubscribe` request, their lobby is deleted.
+
+#### Broadcast to all users in a lobby
+
+The following message is broadcast to all the participants of this lobby.
+
+        {
+        "msg": "Lobby with id {lobbyId} has been deleted"
+        }
+
+#### Sent to a specific user
+
+The following message is sent to the host of the lobby.
+
+        {
+        "success": success <bool>,
+        "msg": msg <string>
+        }
 
 ## Getting started with Spring Boot
 -   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
