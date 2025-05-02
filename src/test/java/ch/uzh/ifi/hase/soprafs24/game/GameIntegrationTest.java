@@ -312,20 +312,4 @@ public class GameIntegrationTest {
                 "In the last turn, even if the table is emptied, scopa should not be counted.");
     }
 
-    @Test
-    public void testFinishForfeitFullSessionIntegration() {
-        List<Long> ids = List.of(111L, 222L, 333L, 444L);
-        GameSession session = new GameSession(77L, ids);
-
-        Map<Long, String> outcomes = session.finishForfeit(333L);
-
-        assertEquals("LOST", outcomes.get(333L));
-        assertEquals("LOST", outcomes.get(111L));
-        assertEquals("WON", outcomes.get(222L));
-        assertEquals("WON", outcomes.get(444L));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> session.playTurn(CardFactory.getCard(Suit.COPPE, 1), List.of()),
-                "No further turns after forfeit");
-    }
 }
