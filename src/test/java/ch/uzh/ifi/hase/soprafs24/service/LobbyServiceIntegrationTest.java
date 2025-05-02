@@ -39,13 +39,13 @@ public class LobbyServiceIntegrationTest {
 
     @BeforeEach
     void setup() {
-        // 1) Pulisci le tabelle USER e LOBBY
+        // clean stuff
         lobbyRepository.deleteAll();
         userRepository.deleteAll();
         lobbyRepository.flush();
         userRepository.flush();
 
-        // 2) Crea e salva due utenti distinti con token unici
+        // given users
         testUser = new User();
         testUser.setUsername("testUsername");
         testUser.setPassword("testPassword");
@@ -66,20 +66,20 @@ public class LobbyServiceIntegrationTest {
         testUser2.setTieCount(0);
         testUser2 = userRepository.save(testUser2);
 
-        // 3) Stub generateId() su 1000
+        // stub generated id to get a fixed value
         doReturn(1000L).when(lobbyService).generateId();
     }
 
     @Test
     void createLobby_success() {
-        // dato che non c'è ancora lobby 1000
+        // given
         assertTrue(lobbyRepository.findById(1000L).isEmpty());
 
-        // quando
+        // when
         Lobby created = lobbyService.createLobby(testUser);
         Long id = created.getLobbyId();
 
-        // allora
+        // assert
         assertNotNull(id);
         assertEquals(1000L, id);
         assertEquals(id, testUser.getLobby().getLobbyId());
@@ -91,13 +91,13 @@ public class LobbyServiceIntegrationTest {
         Lobby created = lobbyService.createLobby(testUser);
         Long id = created.getLobbyId();
 
-        // inizialmente vuota
+        // given
         assertTrue(created.getUsers().isEmpty());
 
-        // join
+        // when
         lobbyService.joinLobby(id, testUser.getId());
 
-        // controllo
+        // assert
         Optional<Lobby> updated = lobbyRepository.findById(id);
         assertTrue(updated.isPresent());
         assertEquals(1, updated.get().getUsers().size());
@@ -114,10 +114,10 @@ public class LobbyServiceIntegrationTest {
         lobbyRepository.save(created);
         lobbyRepository.flush();
 
-        // testUser2 leaves
+        // when
         lobbyService.leaveLobby(id, testUser2.getId());
 
-        // controllo
+        // assert
         Optional<Lobby> updated = lobbyRepository.findById(id);
         assertTrue(updated.isPresent());
         assertEquals(1, updated.get().getUsers().size());
@@ -133,9 +133,9 @@ public class LobbyServiceIntegrationTest {
         lobbyRepository.save(created);
         lobbyRepository.flush();
 
-        // host leaves: deve sparire la lobby
+        //when
         lobbyService.leaveLobby(id, testUser.getId());
 
-        assertFalse(lobbyRepository.existsById(id), "Lobby non è stata cancellata");
+        assertFalse(lobbyRepository.existsById(id), "Lobby has not been deleted");
     }
 }
