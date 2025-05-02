@@ -32,8 +32,9 @@ public class UserController {
 
   @GetMapping("/users")
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
-  public List<UserGetDTO> getAllUsers() {
+  public List<UserGetDTO> getAllUsers(@RequestHeader String token) {
+    userService.authorizeUser(token);
+
     // fetch all users in the internal representation
     List<User> users = userService.getUsers();
     List<UserGetDTO> userGetDTOs = new ArrayList<>();
@@ -44,6 +45,18 @@ public class UserController {
     }
     return userGetDTOs;
   }
+
+    @GetMapping("/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserGetDTO getUser(@RequestHeader String token, @PathVariable Long userId) {
+        userService.authorizeUser(token);
+        // fetch specific user in the internal representation
+        User user = userService.getUserById(userId);
+
+        // convert and return user to the API representation
+
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+    }
 
   @PostMapping("/login")
   public ResponseEntity<String> loginUser(@RequestBody UserPostDTO userPostDTO) {
@@ -74,13 +87,11 @@ public class UserController {
     HttpHeaders responseHeaders = new HttpHeaders();
     responseHeaders.set("Token", createdUser.getToken());
     UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
-    System.out.println("=================USER REGISTERED===============");
     return new ResponseEntity<>(userGetDTO, responseHeaders, HttpStatus.CREATED);
   }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
     public void logoutUser(@RequestHeader String token) {
         User authUser = userService.authorizeUser(token);
         userService.logoutUser(authUser);

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import javassist.NotFoundException;
 
@@ -64,7 +65,7 @@ public class WebSocketEventListener {
             }
 
             // notify user
-            UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
+            UserNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
             webSocketService.lobbyNotifications(userId, DTO);
         } else {
             log.debug("Received other sub protocol event: {}", event.getMessage());
@@ -88,23 +89,36 @@ public class WebSocketEventListener {
             String msg = "Lobby left successfully";
             boolean success = true;
 
+            lobbyId = getLobbyId(event);
             // leave lobby
             try {
-                lobbyId = getLobbyId(event);
-
                 lobbyService.leaveLobby(lobbyId, userId);
                 log.info("Lobby {} left successfully", lobbyId);
 
                 // broadcast msg to lobby
-                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
+                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "unsubscribed");
                 webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
-            } catch (NotFoundException | IllegalStateException e) {
+            } catch (NotFoundException e) {
                 msg = e.getMessage();
                 success = false;
+            } catch (IllegalStateException e) {
+                msg = e.getMessage();
+                BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+                webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+                msg = "Lobby deleted successfully";
+            }
+
+            // check if lobby has been deleted and set and broadcast right msg
+            try{lobbyService.checkIfLobbyExists(lobbyId);
+            } catch (NotFoundException e) {
+                msg = "Lobby with id {} has been deleted " + lobbyId;
+                BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+                webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+                msg = "Lobby deleted successfully";
             }
 
             // notify user
-            UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
+            UserNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
             webSocketService.lobbyNotifications(userId, DTO);
         } else {
             log.debug("Received other sub protocol event: {}", event.getMessage());

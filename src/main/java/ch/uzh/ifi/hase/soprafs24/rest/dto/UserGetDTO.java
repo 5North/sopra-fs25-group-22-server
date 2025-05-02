@@ -12,6 +12,7 @@ public class UserGetDTO {
   private Integer lossCount;
   private Lobby lobby;
   private Integer tieCount;
+  private Long lobbyJoined;
 
   public Long getId() {
     return id;
@@ -64,4 +65,10 @@ public class UserGetDTO {
   public void setTieCount(Integer tieCount) {
     this.tieCount = tieCount;
   }
+
+  public void setLobbyJoined(Long lobbyJoined) {
+        this.lobbyJoined = lobbyJoined;
+  }
+
+  public Long getLobbyJoined() {return lobbyJoined;}
 }

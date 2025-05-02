@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -16,7 +15,8 @@ import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -57,7 +57,7 @@ public class MessageControllerTest {
 
     // --- Test /app/startGame ---
     @Test
-    void testProcessStartGameSuccess() {
+    void testProcessStartGameSuccess() throws NotFoundException {
         // given
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);
@@ -68,7 +68,7 @@ public class MessageControllerTest {
 
         String msg = "Starting game";
         GameSession dummyGame = new GameSession(lobby.getLobbyId(), lobby.getUsers());
-        UserJoinNotificationDTO dummyNotificationDTO = new UserJoinNotificationDTO();
+        UserNotificationDTO dummyNotificationDTO = new UserNotificationDTO();
         dummyNotificationDTO.setSuccess(Boolean.TRUE);
         dummyNotificationDTO.setMessage(msg);
 
@@ -86,11 +86,11 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .convertToDTO(msg, true);
         verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(eq(100L), any(UserJoinNotificationDTO.class));
+                .broadCastLobbyNotifications(eq(100L), any(UserNotificationDTO.class));
     }
 
     @Test
-    void testProcessStartGameThrowsException() {
+    void testProcessStartGameThrowsException() throws NotFoundException {
         // given
         LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(100L);
@@ -100,7 +100,7 @@ public class MessageControllerTest {
 
 
         String msg = "Lobby " + lobby.getLobbyId() + " is not full yet";
-        UserJoinNotificationDTO dummyNotificationDTO = new UserJoinNotificationDTO();
+        UserNotificationDTO dummyNotificationDTO = new UserNotificationDTO();
         dummyNotificationDTO.setSuccess(Boolean.FALSE);
         dummyNotificationDTO.setMessage(msg);
 
@@ -115,7 +115,7 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .convertToDTO("Error starting game: " + msg, false);
         verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(eq(100L), any(UserJoinNotificationDTO.class));
+                .broadCastLobbyNotifications(eq(100L), any(UserNotificationDTO.class));
     }
 
     @Test

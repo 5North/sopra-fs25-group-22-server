@@ -16,7 +16,7 @@ import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.AiRequestDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
@@ -60,8 +60,7 @@ public class MessageController {
             success = false;
         }
 
-        // TODO refactor DTO name
-        UserJoinNotificationDTO notificationDTO = webSocketService.convertToDTO(msg, success);
+        UserNotificationDTO notificationDTO = webSocketService.convertToDTO(msg, success);
         webSocketService.broadCastLobbyNotifications(lobbyId, notificationDTO);
     }
 

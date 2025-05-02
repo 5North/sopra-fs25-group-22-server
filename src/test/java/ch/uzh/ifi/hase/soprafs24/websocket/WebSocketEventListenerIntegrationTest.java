@@ -1,7 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import javassist.NotFoundException;
@@ -61,7 +61,7 @@ public class WebSocketEventListenerIntegrationTest {
                 LobbyDTO.setUsername("username");
                 LobbyDTO.setStatus("subscribed");
 
-                UserJoinNotificationDTO UserDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO UserDTO = new UserNotificationDTO();
                 UserDTO.setMessage("message");
                 UserDTO.setSuccess(true);
 
@@ -91,7 +91,7 @@ public class WebSocketEventListenerIntegrationTest {
                 LobbyDTO.setUsername("username");
                 LobbyDTO.setStatus("subscribed");
 
-                UserJoinNotificationDTO UserDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO UserDTO = new UserNotificationDTO();
                 UserDTO.setMessage("message");
                 UserDTO.setSuccess(false);
 
@@ -120,14 +120,14 @@ public class WebSocketEventListenerIntegrationTest {
                 broadcastDTO.setUsername("userX");
                 broadcastDTO.setStatus("subscribed");
 
-                UserJoinNotificationDTO userDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO userDTO = new UserNotificationDTO();
                 userDTO.setSuccess(true);
                 userDTO.setMessage("Lobby left successfully");
 
                 doNothing().when(lobbyService).leaveLobby(3000L, 42L);
 
                 doReturn(broadcastDTO)
-                                .when(webSocketService).convertToDTO(42L, "subscribed");
+                                .when(webSocketService).convertToDTO(42L, "unsubscribed");
 
                 doReturn(userDTO)
                                 .when(webSocketService).convertToDTO(anyString(), anyBoolean());
@@ -148,7 +148,7 @@ public class WebSocketEventListenerIntegrationTest {
                 Message<byte[]> message = createMessage(destination, sessionAttributes);
                 SessionUnsubscribeEvent event = new SessionUnsubscribeEvent(this, message);
 
-                UserJoinNotificationDTO userDTO = new UserJoinNotificationDTO();
+                UserNotificationDTO userDTO = new UserNotificationDTO();
                 userDTO.setSuccess(false);
                 userDTO.setMessage("oops");
 

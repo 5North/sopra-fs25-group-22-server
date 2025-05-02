@@ -19,7 +19,6 @@ public class Application {
 
   @GetMapping(value = "/", produces = MediaType.TEXT_PLAIN_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  @ResponseBody
   public String helloWorld() {
     return "The application is running.";
   }
@@ -30,7 +29,7 @@ public class Application {
       @Override
       public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
+                .allowedOrigins("http://localhost:3000", "https://sopra-fs25-group-22-client.vercel.app")
                 .allowedMethods("*")
                 .exposedHeaders("Token");
       }

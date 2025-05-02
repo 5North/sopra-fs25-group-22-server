@@ -41,6 +41,15 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
+
+  public User getUserById(Long id) {
+      Optional<User> user = this.userRepository.findById(id);
+      if (user.isEmpty()) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id " + id + " not found");
+      }
+      return user.get();
+  }
+
   public String loginUser(User userInput) {
     User userByUsername = userRepository.findByUsername(userInput.getUsername());
     if (userByUsername == null) {

@@ -1,6 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.websocket.DTO;
 
-public class UserJoinNotificationDTO {
+public class UserNotificationDTO {
 
     private boolean success;
 

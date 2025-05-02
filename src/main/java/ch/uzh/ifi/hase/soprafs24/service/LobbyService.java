@@ -2,12 +2,15 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Random;
 
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +18,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import javassist.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -31,29 +35,39 @@ public class LobbyService {
     private final Logger log = LoggerFactory.getLogger(LobbyService.class);
 
     private final LobbyRepository lobbyRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
     private final Random random;
 
     @Autowired
-    public LobbyService(@Qualifier("lobbyRepository") LobbyRepository lobbyRepository, UserService userService) {
+    public LobbyService(@Qualifier("lobbyRepository") LobbyRepository lobbyRepository, UserRepository userRepository, UserService userService) {
         this.lobbyRepository = lobbyRepository;
+        this.userRepository = userRepository;
         this.userService = userService;
         this.random = new Random();
     }
 
-    // TODO consider if user already has lobby check
+
     public Lobby createLobby(User user) {
+        if (user.getLobby() != null) {
+            return user.getLobby();
+        } else if (user.getLobbyJoined() != null) {
+            String msg = "User with id " + user.getId() + " already joined lobby " +  user.getLobbyJoined();
+            throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
+        }
         Lobby newLobby = new Lobby();
         newLobby.setLobbyId(generateId());
         user.setLobby(newLobby);
         newLobby.setUser(user);
-        return lobbyRepository.save(newLobby);
+        userRepository.save(user);
+        userRepository.flush();
+        return newLobby;
     }
 
-    //TODO cleanup, add check if user already in a lobby
+
     public void joinLobby(Long lobbyId, Long userId) throws NotFoundException {
-        checkIfLobbyExists(lobbyId);
-        userService.checkIfUserExists(userId);
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        User user = userService.checkIfUserExists(userId);
 
         // check if lobby is already full
         if (lobbyIsFull(lobbyId)) {
@@ -61,51 +75,80 @@ public class LobbyService {
             throw new IllegalStateException(msg);
         }
 
-        Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
+        // check if user is already in another lobby
+        if (user.getLobbyJoined() != null) {
+            String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
+            throw new IllegalStateException(msg);
+        }
 
         // check if user is already in the lobby
         if (!lobby.getUsers().contains(userId)) {
             lobby.addUsers(userId);
+            user.setLobbyJoined(lobbyId);
         }
-        //lobbyIsFull(lobbyId);
+        userRepository.save(user);
+        userRepository.flush();
     }
 
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {
-        checkIfLobbyExists(lobbyId);
-        userService.checkIfUserExists(userId);
-        Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
+        User user = userService.checkIfUserExists(userId);
+        Lobby lobby = checkIfLobbyExists(lobbyId);
         if(!lobby.removeUsers(userId)){
             String msg = "User " + userId + " is not part of lobby " + lobby.getLobbyId();
             throw new NoSuchElementException(msg);
         }
-    }
-
-    public Lobby getLobbyById(Long lobbyId) {
-        Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
-        if (lobby == null) {
-            throw new NoSuchElementException("No lobby with id " + lobbyId);
+        user.setLobbyJoined(null);
+        if (user.getLobby()!=null && user.getLobby().getLobbyId().equals(lobbyId)) {
+            deleteLobby(lobbyId, userId);
+            log.info("Lobby with id {} has been deleted", lobbyId);
         }
-        return lobby;
+        userRepository.save(user);
+        userRepository.flush();
     }
 
-    public boolean lobbyIsFull(Long lobbyId) {
-        Lobby lobby = lobbyRepository.findByLobbyId(lobbyId);
-        return lobby.getUsers().size() >= 4;
+    public Lobby getLobbyById(Long lobbyId) throws NotFoundException {
+        return checkIfLobbyExists(lobbyId);
     }
 
-    public void checkIfLobbyExists(Long lobbyId) throws NotFoundException {
-        if (lobbyRepository.findByLobbyId(lobbyId) == null) {
+    public boolean lobbyIsFull(Long lobbyId) throws NotFoundException {
+        Optional<Lobby> lobby = lobbyRepository.findById(lobbyId);
+        if (lobby.isEmpty()) {
+            String msg = "No lobby with id " + lobbyId;
+            throw new NotFoundException(msg);
+        }
+        return lobby.get().getUsers().size() >= 4;
+    }
+
+    public Lobby checkIfLobbyExists(Long lobbyId) throws NotFoundException {
+        Optional<Lobby> lobby = lobbyRepository.findById(lobbyId);
+        if (lobby.isEmpty()) {
             String msg = "No lobby with id " + lobbyId + " found";
             throw new NotFoundException(msg);
         }
+        return lobby.get();
+    }
 
+    public void deleteLobby(Long lobbyId, Long userId) throws NotFoundException {
+        checkIfLobbyExists(lobbyId);
+        User user = userService.checkIfUserExists(userId);
+        // delete lobby by removing the user association to the lobby
+        user.setLobby(null);
+        userRepository.save(user);
+        userRepository.flush();
+        log.info("Lobby with id {} has been removed from user {}", lobbyId, userId);
+        // forces delete lobby in case some other references to lobby was keeping it alive
+        try {checkIfLobbyExists(lobbyId);
+        lobbyRepository.deleteById(lobbyId);
+    } catch (NotFoundException e) {
+        log.info("Lobby with id {} already deleted", lobbyId);
+        }
     }
 
     public Long generateId() {
         Long randomId;
         do {
             randomId = (long) (random.nextInt(9000) + 1000);
-        } while (lobbyRepository.findByLobbyId(randomId) != null);
+        } while (lobbyRepository.findById(randomId).isPresent());
         return randomId;
     }
 }
