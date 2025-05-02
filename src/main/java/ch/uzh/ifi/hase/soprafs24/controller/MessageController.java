@@ -19,6 +19,7 @@ import ch.uzh.ifi.hase.soprafs24.websocket.DTO.AiRequestDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
@@ -165,7 +166,7 @@ public class MessageController {
 
     @MessageMapping("/quitGame")
     public void processQuitGame(@Payload QuitGameDTO dto,
-            StompHeaderAccessor headerAccessor) throws Exception {
+            StompHeaderAccessor headerAccessor) throws NotFoundException {
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
                 .get("userId");
         Long quittingUserId = (Long) userIdObj;
