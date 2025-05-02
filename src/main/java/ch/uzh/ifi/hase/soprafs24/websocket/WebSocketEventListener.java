@@ -101,11 +101,6 @@ public class WebSocketEventListener {
             } catch (NotFoundException e) {
                 msg = e.getMessage();
                 success = false;
-            } catch (IllegalStateException e) {
-                msg = e.getMessage();
-                BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
-                webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
-                msg = "Lobby deleted successfully";
             }
 
             // check if lobby has been deleted and set and broadcast right msg
