@@ -1,6 +1,5 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Random;
@@ -10,8 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -19,7 +20,6 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import javassist.NotFoundException;
 import org.springframework.web.server.ResponseStatusException;
-
 
 /**
  * Lobby Service
@@ -40,19 +40,19 @@ public class LobbyService {
     private final Random random;
 
     @Autowired
-    public LobbyService(@Qualifier("lobbyRepository") LobbyRepository lobbyRepository, UserRepository userRepository, UserService userService) {
+    public LobbyService(@Qualifier("lobbyRepository") LobbyRepository lobbyRepository, UserRepository userRepository,
+            UserService userService) {
         this.lobbyRepository = lobbyRepository;
         this.userRepository = userRepository;
         this.userService = userService;
         this.random = new Random();
     }
 
-
     public Lobby createLobby(User user) {
         if (user.getLobby() != null) {
             return user.getLobby();
         } else if (user.getLobbyJoined() != null) {
-            String msg = "User with id " + user.getId() + " already joined lobby " +  user.getLobbyJoined();
+            String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
             throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
         }
         Lobby newLobby = new Lobby();
@@ -63,7 +63,6 @@ public class LobbyService {
         userRepository.flush();
         return newLobby;
     }
-
 
     public void joinLobby(Long lobbyId, Long userId) throws NotFoundException {
         Lobby lobby = checkIfLobbyExists(lobbyId);
@@ -90,20 +89,37 @@ public class LobbyService {
         userRepository.flush();
     }
 
+    @Transactional // propagation=REQUIRED (default)
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {
         User user = userService.checkIfUserExists(userId);
         Lobby lobby = checkIfLobbyExists(lobbyId);
-        if(!lobby.removeUsers(userId)){
-            String msg = "User " + userId + " is not part of lobby " + lobby.getLobbyId();
-            throw new NoSuchElementException(msg);
+
+        // 1) Se sono l’host: prima dissocio il mio User nella TX principale
+        if (lobby.getUser() != null && lobby.getUser().getId().equals(userId)) {
+            // azzero i riferimenti nel contesto dell’outer‐Tx
+            user.setLobby(null);
+            user.setLobbyJoined(null);
+            userRepository.save(user);
+            userRepository.flush();
+
+            // poi apro la nuova tx e cancello la lobby
+            deleteLobby(lobbyId); // propagation=REQUIRES_NEW
+            log.info("Lobby {} deleted by host {}", lobbyId, userId);
+            return;
         }
+
+        // 2) Altrimenti sono un semplice partecipante
+        if (!lobby.getUsers().contains(userId)) {
+            throw new NoSuchElementException(
+                    "User " + userId + " is not part of lobby " + lobbyId);
+        }
+
+        // 3) Rimuovo solo lui dalla lista e azzero il link in User
+        lobby.removeUsers(userId);
         user.setLobbyJoined(null);
-        if (user.getLobby()!=null && user.getLobby().getLobbyId().equals(lobbyId)) {
-            deleteLobby(lobbyId, userId);
-            log.info("Lobby with id {} has been deleted", lobbyId);
-        }
+
+        // 4) Salvo il solo partecipante (outer‐Tx)
         userRepository.save(user);
-        userRepository.flush();
     }
 
     public Lobby getLobbyById(Long lobbyId) throws NotFoundException {
@@ -128,19 +144,35 @@ public class LobbyService {
         return lobby.get();
     }
 
-    public void deleteLobby(Long lobbyId, Long userId) throws NotFoundException {
-        checkIfLobbyExists(lobbyId);
-        User user = userService.checkIfUserExists(userId);
-        // delete lobby by removing the user association to the lobby
-        user.setLobby(null);
-        userRepository.save(user);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteLobby(Long lobbyId) throws NotFoundException {
+        // 1) Verify existence
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+
+        // 2) Dissociate each participant
+        for (Long participantId : lobby.getUsers()) {
+            User participant = userService.checkIfUserExists(participantId);
+            participant.setLobbyJoined(null);
+            participant.setLobby(null);
+            userRepository.save(participant);
+        }
+
+        // 3) Dissociate the host
+        User host = lobby.getUser();
+        if (host != null) {
+            host.setLobbyJoined(null);
+            host.setLobby(null);
+            userRepository.save(host);
+        }
+
         userRepository.flush();
-        log.info("Lobby with id {} has been removed from user {}", lobbyId, userId);
-        // forces delete lobby in case some other references to lobby was keeping it alive
-        try {checkIfLobbyExists(lobbyId);
-        lobbyRepository.deleteById(lobbyId);
-    } catch (NotFoundException e) {
-        log.info("Lobby with id {} already deleted", lobbyId);
+
+        // 4) Attempt deletion, but swallow if already gone
+        try {
+            lobbyRepository.deleteById(lobbyId);
+            log.info("Lobby with id {} deleted definitively", lobbyId);
+        } catch (EmptyResultDataAccessException e) {
+            log.info("Lobby with id {} was already deleted (ignored)", lobbyId);
         }
     }
 

@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
@@ -204,12 +205,35 @@ public class GameSessionMapperTest {
         assertNotNull(caps);
         assertEquals(2, caps.size(), "Dovrebbero esserci due carte catturate");
 
-        // verifica ordine
         CardDTO first = caps.get(0), second = caps.get(1);
         assertEquals("SPADE", first.getSuit());
         assertEquals(3, first.getValue());
         assertEquals("DENARI", second.getSuit());
         assertEquals(4, second.getValue());
+    }
+
+    @Test
+    public void testToQuitGameResultDTO() {
+        Long userId = 123L;
+        String outcome = "WON";
+        String message = "You won by forfeit.";
+        QuitGameResultDTO dto = GameSessionMapper.toQuitGameResultDTO(userId, outcome, message);
+        assertNotNull(dto, "DTO should not be null");
+        assertEquals(userId, dto.getUserId(), "UserId should match");
+        assertEquals(outcome, dto.getOutcome(), "Outcome should match");
+        assertEquals(message, dto.getMessage(), "Message should match");
+    }
+
+    @Test
+    public void testToQuitGameResultDTO_LostCase() {
+        Long userId = 456L;
+        String outcome = "LOST";
+        String message = "You lost by forfeit.";
+        QuitGameResultDTO dto = GameSessionMapper.toQuitGameResultDTO(userId, outcome, message);
+        assertNotNull(dto);
+        assertEquals(userId, dto.getUserId());
+        assertEquals(outcome, dto.getOutcome());
+        assertEquals(message, dto.getMessage());
     }
 
 }

@@ -89,7 +89,7 @@ public class LobbyServiceTest {
 
         testUser.setLobbyJoined(1111L);
         String expectedMsg = "409 CONFLICT \"User with id " + testUser.getId() + " already joined lobby "
-                +  testUser.getLobbyJoined() + "\"";
+                + testUser.getLobbyJoined() + "\"";
         Exception expectedException = assertThrows(
                 ResponseStatusException.class, () -> lobbyService
                         .createLobby(testUser));
@@ -131,7 +131,7 @@ public class LobbyServiceTest {
 
     @Test
     public void joinLobby_validInputs_success() throws NotFoundException {
-        //given
+        // given
         assertNull(testUser.getLobbyJoined());
 
         testLobby.addUsers(1L);
@@ -227,12 +227,12 @@ public class LobbyServiceTest {
         Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, ()-> lobbyService.leaveLobby(testLobby.getLobbyId(), 1L));
+        assertThrows(NotFoundException.class, () -> lobbyService.leaveLobby(testLobby.getLobbyId(), 1L));
 
     }
 
     @Test
-    public void leaveLobby_NonExistentUser_noSuccess()  {
+    public void leaveLobby_NonExistentUser_noSuccess() {
         testLobby.addUsers(1L);
 
         Long lobbyId = testLobby.getLobbyId();
@@ -275,7 +275,7 @@ public class LobbyServiceTest {
                 () -> lobbyService.checkIfLobbyExists(999L));
     }
 
-    //TODO delete if useless
+    // TODO delete if useless
     @Test
     void deleteLobby_validInputs_success() throws NotFoundException {
         testLobby.setUser(testUser);
@@ -284,13 +284,12 @@ public class LobbyServiceTest {
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
         Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
 
-        lobbyService.deleteLobby(testLobby.getLobbyId(), testUser.getId());
-        //assert
+        lobbyService.deleteLobby(testLobby.getLobbyId());
+        // assert
         assertNull(testUser.getLobby());
     }
 
-
-    //TODO delete if useless
+    // TODO delete if useless
     @Test
     void deleteLobby_noLobbyFound_throwsException() throws NotFoundException {
         testLobby.setUser(testUser);
@@ -300,9 +299,7 @@ public class LobbyServiceTest {
         Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
 
         assertThrows(NotFoundException.class,
-                () -> lobbyService.deleteLobby(testLobby.getLobbyId(), testUser.getId()));
-
-
+                () -> lobbyService.deleteLobby(testLobby.getLobbyId()));
 
     }
 

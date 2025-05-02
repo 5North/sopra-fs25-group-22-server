@@ -8,161 +8,134 @@ import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.spy;
-
+import static org.mockito.Mockito.doReturn;
 
 /**
- * Test class for the LobbyResource REST resource.
- *
- * @see UserService
+ * Integration tests for LobbyService
  */
 @WebAppConfiguration
 @SpringBootTest
 public class LobbyServiceIntegrationTest {
 
-    @Qualifier("lobbyRepository")
     @Autowired
     private LobbyRepository lobbyRepository;
 
     @Autowired
-    private LobbyService lobbyService;
-
-    @Qualifier("userRepository")
-    @Autowired
     private UserRepository userRepository;
 
-    @InjectMocks
-    private User testUser;
-
-    @InjectMocks
-    private User testUser2;
-
     @SpyBean
-    private LobbyService spyLobbyService;
+    private LobbyService lobbyService;
+
+    private User testUser;
+    private User testUser2;
 
     @BeforeEach
     void setup() {
-        // given
-        MockitoAnnotations.openMocks(this);
-
+        // 1) Pulisci le tabelle USER e LOBBY
         lobbyRepository.deleteAll();
-        testUser.setId(1L);
+        userRepository.deleteAll();
+        lobbyRepository.flush();
+        userRepository.flush();
+
+        // 2) Crea e salva due utenti distinti con token unici
+        testUser = new User();
         testUser.setUsername("testUsername");
         testUser.setPassword("testPassword");
         testUser.setStatus(UserStatus.ONLINE);
-        testUser.setToken("testToken");
+        testUser.setToken("token1");
+        testUser.setWinCount(0);
         testUser.setLossCount(0);
         testUser.setTieCount(0);
-        testUser.setWinCount(0);
-
         testUser = userRepository.save(testUser);
 
-        testUser2.setId(2L);
+        testUser2 = new User();
         testUser2.setUsername("testUsername2");
-        testUser2.setPassword("testPassword");
+        testUser2.setPassword("testPassword2");
         testUser2.setStatus(UserStatus.ONLINE);
-        testUser2.setToken("testToken2");
+        testUser2.setToken("token2");
+        testUser2.setWinCount(0);
         testUser2.setLossCount(0);
         testUser2.setTieCount(0);
-        testUser2.setWinCount(0);
-
         testUser2 = userRepository.save(testUser2);
 
-        // MOcking only a single method of the test class
-        spyLobbyService = spy(lobbyService);
-        Mockito.doReturn(1000L).when(spyLobbyService).generateId();
-
+        // 3) Stub generateId() su 1000
+        doReturn(1000L).when(lobbyService).generateId();
     }
 
     @Test
     void createLobby_success() {
-        // given:
+        // dato che non c'è ancora lobby 1000
         assertTrue(lobbyRepository.findById(1000L).isEmpty());
 
-        // when:
-        Lobby createdLobby = lobbyService.createLobby(testUser);
+        // quando
+        Lobby created = lobbyService.createLobby(testUser);
+        Long id = created.getLobbyId();
 
-        // then:
-        assertNotNull(createdLobby.getLobbyId(), "The id of the lobby was not created");
-        assertEquals(createdLobby.getLobbyId(), testUser.getLobby().getLobbyId(), "The correct db association was not created");
-        assertEquals(createdLobby.getUser().getId(),testUser.getId(), "The correct db association was not created");
-        assertNotNull(lobbyRepository.findById(1000L).get(), "The id of the lobby was not created");
+        // allora
+        assertNotNull(id);
+        assertEquals(1000L, id);
+        assertEquals(id, testUser.getLobby().getLobbyId());
+        assertTrue(lobbyRepository.existsById(id));
     }
 
     @Test
     void joinLobby_success() throws NotFoundException {
-        // given
-        List<Long> emptyList = new ArrayList<>();
-        Lobby createdLobby = lobbyService.createLobby(testUser);
-        assertEquals(emptyList, createdLobby.getUsers());
+        Lobby created = lobbyService.createLobby(testUser);
+        Long id = created.getLobbyId();
 
-        // when:
-        lobbyService.joinLobby(createdLobby.getLobbyId(), testUser.getId());
-        List<Long> userIds = new ArrayList<>();
-        userIds.add(1L);
+        // inizialmente vuota
+        assertTrue(created.getUsers().isEmpty());
 
-        Optional<Lobby> updatedLobby = lobbyRepository.findById(1000L);
-        assertTrue(updatedLobby.isPresent(), "The id of the lobby was not created");
-        assertEquals(userIds.toString(), updatedLobby.get().getUsers().toString());
+        // join
+        lobbyService.joinLobby(id, testUser.getId());
+
+        // controllo
+        Optional<Lobby> updated = lobbyRepository.findById(id);
+        assertTrue(updated.isPresent());
+        assertEquals(1, updated.get().getUsers().size());
+        assertEquals(testUser.getId(), updated.get().getUsers().get(0));
     }
 
     @Test
     void leaveLobby_success() throws NotFoundException {
-        // given
-        List<Long> emptyList = new ArrayList<>();
-        Lobby createdLobby = lobbyService.createLobby(testUser);
-        assertEquals(emptyList, createdLobby.getUsers());
+        Lobby created = lobbyService.createLobby(testUser);
+        Long id = created.getLobbyId();
 
-        // when:
-        createdLobby.addUsers(1L);
-        createdLobby.addUsers(2L);
-        lobbyRepository.save(createdLobby);
+        created.addUsers(testUser.getId());
+        created.addUsers(testUser2.getId());
+        lobbyRepository.save(created);
         lobbyRepository.flush();
 
-        List<Long> userIds = new ArrayList<>();
-        userIds.add(testUser.getId());
-        userIds.add(testUser2.getId());
-        assertEquals(createdLobby.getUsers().toString(), userIds.toString());
+        // testUser2 leaves
+        lobbyService.leaveLobby(id, testUser2.getId());
 
-        lobbyService.leaveLobby(createdLobby.getLobbyId(), testUser2.getId());
-
-        userIds.remove(testUser2.getId());
-        Optional<Lobby> updatedLobby = lobbyRepository.findById(1000L);
-        assertTrue(updatedLobby.isPresent(), "The id of the lobby was not created");
-        assertEquals(updatedLobby.get().getUsers().toString(), userIds.toString());
-
+        // controllo
+        Optional<Lobby> updated = lobbyRepository.findById(id);
+        assertTrue(updated.isPresent());
+        assertEquals(1, updated.get().getUsers().size());
+        assertEquals(testUser.getId(), updated.get().getUsers().get(0));
     }
 
     @Test
     void leaveLobby_andDestroyLobby_success() throws NotFoundException {
-        // given
-        List<Long> emptyList = new ArrayList<>();
-        Lobby createdLobby = lobbyService.createLobby(testUser);
-        assertEquals(emptyList, createdLobby.getUsers());
+        Lobby created = lobbyService.createLobby(testUser);
+        Long id = created.getLobbyId();
 
-        createdLobby.addUsers(testUser.getId());
-        lobbyRepository.save(createdLobby);
+        created.addUsers(testUser.getId());
+        lobbyRepository.save(created);
         lobbyRepository.flush();
 
-        assertEquals(testUser.getLobby(), createdLobby);
+        // host leaves: deve sparire la lobby
+        lobbyService.leaveLobby(id, testUser.getId());
 
-        // when:
-        lobbyService.leaveLobby(createdLobby.getLobbyId(), testUser.getId());
-        assertTrue(lobbyRepository.findById(createdLobby.getLobbyId()).isEmpty());
+        assertFalse(lobbyRepository.existsById(id), "Lobby non è stata cancellata");
     }
-
 }

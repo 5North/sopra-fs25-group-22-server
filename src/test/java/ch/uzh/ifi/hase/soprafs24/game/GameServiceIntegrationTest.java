@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -22,7 +23,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 public class GameServiceIntegrationTest {
 
@@ -168,5 +171,28 @@ public class GameServiceIntegrationTest {
             cards.add(CardFactory.getCard(suit, value));
         }
         return cards;
+    }
+
+    @Test
+    public void testQuitGameIntegration_RemovesSessionAndNotifiesOutcomes() throws Exception {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(99L);
+        lobby.addUsers(9L);
+        lobby.addUsers(8L);
+        Field sessionsField = GameService.class.getDeclaredField("gameSessions");
+        sessionsField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<Long, GameSession> sessions = (Map<Long, GameSession>) sessionsField.get(gameService);
+        GameSession gs = new GameSession(99L, List.of(9L, 8L));
+        sessions.put(99L, gs);
+
+        List<QuitGameResultDTO> results = gameService.quitGame(99L, 9L);
+
+        assertEquals(2, results.size());
+        var byUser = results.stream().collect(Collectors.toMap(QuitGameResultDTO::getUserId, dto -> dto));
+        assertEquals("LOST", byUser.get(9L).getOutcome());
+        assertEquals("WON", byUser.get(8L).getOutcome());
+
+        assertNull(gameService.getGameSessionById(99L));
     }
 }

@@ -19,6 +19,9 @@ import java.util.Optional;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 public class GameStatisticsUtilTest {
@@ -147,5 +150,53 @@ public class GameStatisticsUtilTest {
         assertEquals(1, user2.getWinCount(), "User2 winCount should be incremented.");
         assertEquals(1, user3.getWinCount(), "User3 winCount should be incremented.");
         assertEquals(1, user4.getWinCount(), "User4 winCount should be incremented.");
+    }
+
+    @Test
+    public void testIncrementWin_UserExists() {
+        Long userId = 123L;
+        User user = createDummyUser(userId);
+        assertEquals(0, user.getWinCount());
+
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        GameStatisticsUtil.incrementWin(userId);
+
+        assertEquals(1, user.getWinCount(), "Win count should be incremented");
+        Mockito.verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    public void testIncrementWin_UserNotFound() {
+        Long userId = 999L;
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        GameStatisticsUtil.incrementWin(userId);
+
+        Mockito.verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void testIncrementLoss_UserExists() {
+        Long userId = 456L;
+        User user = createDummyUser(userId);
+        assertEquals(0, user.getLossCount());
+
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        GameStatisticsUtil.incrementLoss(userId);
+
+        assertEquals(1, user.getLossCount(), "Loss count should be incremented");
+        Mockito.verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    public void testIncrementLoss_UserNotFound() {
+        Long userId = 888L;
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        GameStatisticsUtil.incrementLoss(userId);
+
+        Mockito.verify(userRepository, never()).save(any(User.class));
     }
 }

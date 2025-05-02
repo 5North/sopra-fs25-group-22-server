@@ -49,4 +49,22 @@ public class GameStatisticsUtil {
             }
         }
     }
+
+    public static void incrementWin(Long userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.incrementWinCount();
+            userRepository.save(user);
+        });
+    }
+
+    public static void incrementLoss(Long userId) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.incrementLossCount();
+            userRepository.save(user);
+        });
+    }
+
+    public static void setUserRepository(UserRepository repo) {
+        userRepository = repo;
+    }
 }
