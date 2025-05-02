@@ -94,31 +94,29 @@ public class LobbyService {
         User user = userService.checkIfUserExists(userId);
         Lobby lobby = checkIfLobbyExists(lobbyId);
 
-        // 1) Se sono l’host: prima dissocio il mio User nella TX principale
         if (lobby.getUser() != null && lobby.getUser().getId().equals(userId)) {
-            // azzero i riferimenti nel contesto dell’outer‐Tx
             user.setLobby(null);
             user.setLobbyJoined(null);
             userRepository.save(user);
             userRepository.flush();
 
-            // poi apro la nuova tx e cancello la lobby
+
             deleteLobby(lobbyId); // propagation=REQUIRES_NEW
             log.info("Lobby {} deleted by host {}", lobbyId, userId);
             return;
         }
 
-        // 2) Altrimenti sono un semplice partecipante
+
         if (!lobby.getUsers().contains(userId)) {
             throw new NoSuchElementException(
                     "User " + userId + " is not part of lobby " + lobbyId);
         }
 
-        // 3) Rimuovo solo lui dalla lista e azzero il link in User
+
         lobby.removeUsers(userId);
         user.setLobbyJoined(null);
 
-        // 4) Salvo il solo partecipante (outer‐Tx)
+
         userRepository.save(user);
     }
 
