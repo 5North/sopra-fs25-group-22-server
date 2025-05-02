@@ -101,7 +101,6 @@ public class LobbyService {
         if (user.getLobby()!=null && user.getLobby().getLobbyId().equals(lobbyId)) {
             deleteLobby(lobbyId, userId);
             log.info("Lobby with id {} has been deleted", lobbyId);
-            throw new IllegalStateException("Lobby with id " + lobbyId + " has been deleted");
         }
         userRepository.save(user);
         userRepository.flush();
@@ -130,13 +129,19 @@ public class LobbyService {
     }
 
     public void deleteLobby(Long lobbyId, Long userId) throws NotFoundException {
-        Lobby lobby = checkIfLobbyExists(lobbyId);
+        checkIfLobbyExists(lobbyId);
         User user = userService.checkIfUserExists(userId);
-        lobby.setUser(null);
+        // delete lobby by removing the user association to the lobby
         user.setLobby(null);
         userRepository.save(user);
-        lobbyRepository.delete(lobby);
         userRepository.flush();
+        log.info("Lobby with id {} has been removed from user {}", lobbyId, userId);
+        // forces delete lobby in case some other references to lobby was keeping it alive
+        try {checkIfLobbyExists(lobbyId);
+        lobbyRepository.deleteById(lobbyId);
+    } catch (NotFoundException e) {
+        log.info("Lobby with id {} already deleted", lobbyId);
+        }
     }
 
     public Long generateId() {

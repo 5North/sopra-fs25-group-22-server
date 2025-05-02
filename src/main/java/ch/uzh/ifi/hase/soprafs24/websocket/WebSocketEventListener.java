@@ -108,6 +108,15 @@ public class WebSocketEventListener {
                 msg = "Lobby deleted successfully";
             }
 
+            // check if lobby has been deleted and set and broadcast right msg
+            try{lobbyService.checkIfLobbyExists(lobbyId);
+            } catch (NotFoundException e) {
+                msg = "Lobby with id {} has been deleted " + lobbyId;
+                BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+                webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+                msg = "Lobby deleted successfully";
+            }
+
             // notify user
             UserNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
             webSocketService.lobbyNotifications(userId, DTO);
