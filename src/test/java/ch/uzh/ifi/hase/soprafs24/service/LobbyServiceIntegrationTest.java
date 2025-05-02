@@ -148,7 +148,7 @@ public class LobbyServiceIntegrationTest {
     }
 
     @Test
-    void leaveLobby_andDestroyLobby_success() {
+    void leaveLobby_andDestroyLobby_success() throws NotFoundException {
         // given
         List<Long> emptyList = new ArrayList<>();
         Lobby createdLobby = lobbyService.createLobby(testUser);
@@ -161,7 +161,7 @@ public class LobbyServiceIntegrationTest {
         assertEquals(testUser.getLobby(), createdLobby);
 
         // when:
-        assertThrows(IllegalStateException.class, () -> lobbyService.leaveLobby(createdLobby.getLobbyId(), testUser.getId()));
+        lobbyService.leaveLobby(createdLobby.getLobbyId(), testUser.getId());
         assertTrue(lobbyRepository.findById(createdLobby.getLobbyId()).isEmpty());
     }
 

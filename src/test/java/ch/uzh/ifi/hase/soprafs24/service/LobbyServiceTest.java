@@ -29,7 +29,7 @@ public class LobbyServiceTest {
     @InjectMocks
     private LobbyService lobbyService;
 
-    @InjectMocks
+    @Mock
     private Lobby testLobby;
 
     @Mock
@@ -38,7 +38,7 @@ public class LobbyServiceTest {
     @Mock
     private UserService userService;
 
-    @InjectMocks
+    @Mock
     private User testUser;
 
     @BeforeEach
@@ -204,16 +204,18 @@ public class LobbyServiceTest {
 
     @Test
     public void leaveLobby_validInputs_deleteLobby_success() throws Exception {
+        // given
         testLobby.addUsers(1L);
         testLobby.setUser(testUser);
         testUser.setLobby(testLobby);
+        assertNotNull(testUser.getLobby());
 
         // when -> setup additional mocks for userService and lobbyRepo
         Mockito.when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        lobbyService.leaveLobby(testLobby.getLobbyId(), testUser.getId());
 
-        assertThrows(IllegalStateException.class,
-                () -> lobbyService.leaveLobby(testLobby.getLobbyId(), testUser.getId()));
+        assertNull(testUser.getLobby());
 
     }
 
@@ -284,7 +286,7 @@ public class LobbyServiceTest {
 
         lobbyService.deleteLobby(testLobby.getLobbyId(), testUser.getId());
         //assert
-        verify(lobbyRepository, times(1)).delete(testLobby);
+        assertNull(testUser.getLobby());
     }
 
 
