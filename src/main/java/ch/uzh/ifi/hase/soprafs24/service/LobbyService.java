@@ -99,7 +99,7 @@ public class LobbyService {
             userRepository.flush();
 
 
-            deleteLobby(lobbyId); // propagation=REQUIRES_NEW
+            deleteLobby(lobbyId);
             log.info("Lobby {} deleted by host {}", lobbyId, userId);
             return;
         }
