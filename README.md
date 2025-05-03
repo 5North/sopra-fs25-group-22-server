@@ -59,11 +59,14 @@ When a new user join or leave a lobby the following notification will be broadca
         {
          "user": username <string>,
          "status": status <string>
+         "lobby": {
+                   "lobbyId": id <Long>,
+                   "hostId": id <Long>,
+                   "usersIds": ids List<Long>
+                   }
         }
 
-`status` can be either `subscribed`, `unsubscribed` ~or `disconnected`~.
-~Keep in mind that `disconnected` does refer to a disconnection event of the STOMP protocol, and not to a disconnection 
-of the Web Socket session.~
+`status` can be either `subscribed` or `unsubscribed`.
 
 #### Sent to a specific user
 
