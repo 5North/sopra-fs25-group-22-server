@@ -43,7 +43,7 @@ public interface DTOMapper {
   @Mapping(source = "lossCount", target = "lossCount")
   @Mapping(target = "lobby", ignore = true)
   @Mapping(source = "tieCount", target = "tieCount")
-  @Mapping(target = "lobbyJoined", ignore = true)
+  @Mapping(source = "lobbyJoined", target = "lobbyJoined")
   UserGetDTO convertEntityToUserGetDTO(User user);
 
   @Mapping(source="lobbyId", target = "lobbyId")
