@@ -123,46 +123,6 @@ public class WebSocketEventListener {
 
     }
 
-    // TODO investigate
-    /*
-     * @EventListener
-     * public void handleDisconnectEvent(SessionDisconnectEvent event) throws
-     * URISyntaxException {
-     * StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-     * 
-     * Long lobbyId = getLobbyId(event);
-     * 
-     * // Retrieve the userid of the current session, which was saved during auth
-     * before handshake
-     * Object userIdAttr =
-     * Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
-     * Long userId = (Long) userIdAttr;
-     * 
-     * 
-     * String msg = "Lobby left successfully";
-     * boolean success = true;
-     * 
-     * // leave lobby
-     * try {
-     * lobbyService.leaveLobby(lobbyId, userId);
-     * 
-     * // broadcast msg to lobby
-     * UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId,
-     * "subscribed");
-     * webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
-     * 
-     * } catch (NotFoundException | NoSuchElementException e) {
-     * success = false;
-     * msg = e.getMessage();
-     * }
-     * 
-     * // notify user
-     * UserJoinNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
-     * webSocketService.lobbyNotifications(userId, DTO);
-     * 
-     * }
-     */
-
     // Get string destination from event
     private String getSimpDestination(AbstractSubProtocolEvent event) {
         return Objects.requireNonNull(event
