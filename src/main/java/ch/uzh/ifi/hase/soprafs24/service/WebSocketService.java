@@ -51,7 +51,7 @@ public class WebSocketService {
         wsLobbyDTO wsLobbyDTO = wsDTOMapper.INSTANCE.convertLobbyTowsLobbyDTO(lobby);
         DTO.setStatus(status);
         DTO.setUsername(user.getUsername());
-        DTO.setLobbyDTO(wsLobbyDTO);
+        DTO.setLobby(wsLobbyDTO);
         return DTO;
     }
 

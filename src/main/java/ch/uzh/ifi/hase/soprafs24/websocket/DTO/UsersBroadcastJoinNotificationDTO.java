@@ -6,7 +6,7 @@ public class UsersBroadcastJoinNotificationDTO {
 
     private String status;
 
-    private wsLobbyDTO lobbyDTO;
+    private wsLobbyDTO lobby;
 
     public void setUsername(String username) {this.username = username;}
 
@@ -16,7 +16,7 @@ public class UsersBroadcastJoinNotificationDTO {
 
     public String getStatus() {return status;}
 
-    public void setLobbyDTO(wsLobbyDTO lobbyDTO) {this.lobbyDTO = lobbyDTO;}
+    public void setLobby(wsLobbyDTO lobby) {this.lobby = lobby;}
 
-    public wsLobbyDTO getLobbyDTO() {return lobbyDTO;}
+    public wsLobbyDTO getLobby() {return lobby;}
 }
