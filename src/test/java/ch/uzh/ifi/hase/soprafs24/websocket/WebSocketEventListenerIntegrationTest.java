@@ -67,7 +67,7 @@ public class WebSocketEventListenerIntegrationTest {
 
                 // when
                 doNothing().when(lobbyService).joinLobby(anyLong(), anyLong());
-                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyString());
+                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyString());
                 doReturn(UserDTO).when(webSocketService).convertToDTO(Mockito.anyString(), Mockito.anyBoolean());
 
                 // trigger the event listener for the integration test
@@ -97,7 +97,7 @@ public class WebSocketEventListenerIntegrationTest {
 
                 // when
                 doThrow(new NotFoundException("message")).when(lobbyService).joinLobby(anyLong(), anyLong());
-                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyString());
+                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyString());
                 doReturn(UserDTO).when(webSocketService).convertToDTO(Mockito.anyString(), Mockito.anyBoolean());
 
                 // trigger the event listener for the integration test
@@ -127,7 +127,7 @@ public class WebSocketEventListenerIntegrationTest {
                 doNothing().when(lobbyService).leaveLobby(3000L, 42L);
 
                 doReturn(broadcastDTO)
-                                .when(webSocketService).convertToDTO(42L, "unsubscribed");
+                                .when(webSocketService).convertToDTO(42L, 3000L, "unsubscribed");
 
                 doReturn(userDTO)
                                 .when(webSocketService).convertToDTO(anyString(), anyBoolean());

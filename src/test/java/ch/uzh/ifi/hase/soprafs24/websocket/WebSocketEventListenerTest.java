@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +82,7 @@ class WebSocketEventListenerTest {
         userDto.setSuccess(true);
 
         doNothing().when(lobbyService).joinLobby(1234L, 55L);
-        when(webSocketService.convertToDTO(55L, "subscribed")).thenReturn(broadcastDto);
+        when(webSocketService.convertToDTO(55L, 1234L, "subscribed")).thenReturn(broadcastDto);
         when(webSocketService.convertToDTO("Lobby joined successfully", true)).thenReturn(userDto);
 
         listener.handleSubscribeEvent(event);
@@ -122,7 +121,7 @@ class WebSocketEventListenerTest {
         userDto.setSuccess(true);
 
         doNothing().when(lobbyService).leaveLobby(3000L, 88L);
-        when(webSocketService.convertToDTO(88L, "unsubscribed")).thenReturn(broadcastDto);
+        when(webSocketService.convertToDTO(88L, 3000L,"unsubscribed")).thenReturn(broadcastDto);
         when(webSocketService.convertToDTO("Lobby left successfully", true)).thenReturn(userDto);
 
         listener.handleUnsubscribeEvent(event);
@@ -151,7 +150,7 @@ class WebSocketEventListenerTest {
         when(lobbyService.checkIfLobbyExists(anyLong())).thenThrow(new NotFoundException("not found"));
         when(webSocketService.convertToDTO("Lobby with id 3000 has been deleted")).thenReturn(broadcastDto);
         when(webSocketService.convertToDTO("Lobby deleted successfully", true)).thenReturn(userDto);
-        when(webSocketService.convertToDTO(88L, "unsubscribed")).thenReturn(broadcastDtoUnsubscribe);
+        when(webSocketService.convertToDTO(88L, 3000L,"unsubscribed")).thenReturn(broadcastDtoUnsubscribe);
 
         listener.handleUnsubscribeEvent(event);
 

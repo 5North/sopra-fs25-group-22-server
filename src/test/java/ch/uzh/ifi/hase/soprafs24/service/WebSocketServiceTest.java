@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
@@ -21,6 +22,8 @@ public class WebSocketServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private LobbyService lobbyService;
 
     @BeforeEach
     public void setup()  {
@@ -36,12 +39,17 @@ public class WebSocketServiceTest {
         user.setUsername("johnDoe");
         user.setId(userId);
 
+        Lobby lobby = new Lobby();
+        lobby.setUser(user);
+        lobby.setLobbyId(1L);
+
         // when
         when(userService.checkIfUserExists(userId)).thenReturn(user);
+        when(lobbyService.checkIfLobbyExists(lobby.getLobbyId())).thenReturn(lobby);
 
         String status = "subscribed";
 
-        UsersBroadcastJoinNotificationDTO dto = webSocketService.convertToDTO(user.getId(), status);
+        UsersBroadcastJoinNotificationDTO dto = webSocketService.convertToDTO(user.getId(), lobby.getLobbyId(), status);
 
         assertNotNull(dto);
         assertEquals(status, dto.getStatus());
