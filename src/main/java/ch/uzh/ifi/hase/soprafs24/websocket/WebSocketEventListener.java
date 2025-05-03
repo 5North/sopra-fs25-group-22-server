@@ -57,7 +57,7 @@ public class WebSocketEventListener {
                 log.info("Lobby {} joined successfully", lobbyId);
 
                 // broadcast msg to lobby
-                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "subscribed");
+                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, lobbyId, "subscribed");
                 webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
             } catch (NotFoundException | IllegalStateException e) {
                 msg = e.getMessage();
@@ -96,12 +96,15 @@ public class WebSocketEventListener {
                 log.info("Lobby {} left successfully", lobbyId);
 
                 // broadcast msg to lobby
-                UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, "unsubscribed");
-                webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
+                UsersBroadcastJoinNotificationDTO broadcastDTO = webSocketService.convertToDTO(userId, lobbyId, "unsubscribed");
+                webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
             } catch (NotFoundException e) {
                 msg = e.getMessage();
                 success = false;
             }
+            // sent notification to user
+            UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
+            webSocketService.lobbyNotifications(userId, privateDTO);
 
             // check if lobby has been deleted and set and broadcast right msg
             try{lobbyService.checkIfLobbyExists(lobbyId);
@@ -110,11 +113,10 @@ public class WebSocketEventListener {
                 BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
                 webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
                 msg = "Lobby deleted successfully";
+                privateDTO = webSocketService.convertToDTO(msg, success);
+                webSocketService.lobbyNotifications(userId, privateDTO);
             }
 
-            // notify user
-            UserNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
-            webSocketService.lobbyNotifications(userId, DTO);
         } else {
             log.debug("Received other sub protocol event: {}", event.getMessage());
         }
