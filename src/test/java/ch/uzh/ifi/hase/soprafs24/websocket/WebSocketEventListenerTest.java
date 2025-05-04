@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -119,10 +120,12 @@ class WebSocketEventListenerTest {
         UserNotificationDTO userDto = new UserNotificationDTO();
         userDto.setMessage("Lobby left successfully");
         userDto.setSuccess(true);
+        Lobby lobby = new Lobby();
 
         doNothing().when(lobbyService).leaveLobby(3000L, 88L);
         when(webSocketService.convertToDTO(88L, 3000L,"unsubscribed")).thenReturn(broadcastDto);
         when(webSocketService.convertToDTO("Lobby left successfully", true)).thenReturn(userDto);
+        when(lobbyService.checkIfLobbyExists(anyLong())).thenReturn(lobby);
 
         listener.handleUnsubscribeEvent(event);
 
@@ -168,12 +171,16 @@ class WebSocketEventListenerTest {
         userDto.setMessage("No lobby with id <lobbyId> found");
         userDto.setSuccess(false);
 
+        Lobby lobby = new Lobby();
+
         doThrow(new NotFoundException("No lobby with id <lobbyId> found")).when(lobbyService).leaveLobby(3000L, 88L);
         when(webSocketService.convertToDTO("No lobby with id <lobbyId> found", false)).thenReturn(userDto);
+        when(lobbyService.checkIfLobbyExists(anyLong())).thenReturn(lobby);
 
         listener.handleUnsubscribeEvent(event);
 
         verify(lobbyService).leaveLobby(3000L, 88L);
+        verify(webSocketService, never()).broadCastLobbyNotifications(anyLong(), any());
         verify(webSocketService).lobbyNotifications(88L, userDto);
     }
 
@@ -184,9 +191,12 @@ class WebSocketEventListenerTest {
         userDto.setMessage("error!");
         userDto.setSuccess(false);
 
+        Lobby lobby = new Lobby();
+
         doThrow(new NotFoundException("error!"))
                 .when(lobbyService).leaveLobby(4000L, 99L);
         when(webSocketService.convertToDTO("error!", false)).thenReturn(userDto);
+        when(lobbyService.checkIfLobbyExists(anyLong())).thenReturn(lobby);
 
         listener.handleUnsubscribeEvent(event);
 

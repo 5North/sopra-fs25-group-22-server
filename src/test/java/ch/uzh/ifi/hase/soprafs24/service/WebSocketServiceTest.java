@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.wsLobbyDTO;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -32,7 +36,7 @@ public class WebSocketServiceTest {
     }
 
     @Test
-    public void ConvertToDTOForBroadcastSuccess() throws NotFoundException {
+    void ConvertToDTOForBroadcastSuccess() throws NotFoundException {
         // given
         Long userId = 1L;
         User user = new User();
@@ -41,7 +45,17 @@ public class WebSocketServiceTest {
 
         Lobby lobby = new Lobby();
         lobby.setUser(user);
-        lobby.setLobbyId(1L);
+        lobby.setLobbyId(1000L);
+        lobby.addUsers(1L);
+        lobby.addUsers(2L);
+
+        wsLobbyDTO lobbyDTO = new wsLobbyDTO();
+        List<Long> userIds = new ArrayList<>();
+        userIds.add(userId);
+        userIds.add(2L);
+        lobbyDTO.setLobbyId(1000L);
+        lobbyDTO.setHostId(userId);
+        lobbyDTO.setUsersIds(userIds);
 
         // when
         when(userService.checkIfUserExists(userId)).thenReturn(user);
@@ -54,10 +68,13 @@ public class WebSocketServiceTest {
         assertNotNull(dto);
         assertEquals(status, dto.getStatus());
         assertEquals("johnDoe", dto.getUsername());
+        assertEquals(lobbyDTO.getLobbyId(), dto.getLobby().getLobbyId());
+        assertEquals(lobbyDTO.getHostId(), dto.getLobby().getHostId());
+        assertEquals(lobbyDTO.getUsersIds(), dto.getLobby().getUsersIds());
     }
 
     @Test
-    public void ConvertToDTOForUserJoinNotification() {
+    void ConvertToDTOForUserJoinNotification() {
         // given
         String msg = "Joined successfully";
         boolean success = true;
