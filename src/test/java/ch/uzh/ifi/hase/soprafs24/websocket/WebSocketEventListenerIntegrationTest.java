@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.websocket;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
@@ -67,7 +68,7 @@ public class WebSocketEventListenerIntegrationTest {
 
                 // when
                 doNothing().when(lobbyService).joinLobby(anyLong(), anyLong());
-                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyString());
+                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyString());
                 doReturn(UserDTO).when(webSocketService).convertToDTO(Mockito.anyString(), Mockito.anyBoolean());
 
                 // trigger the event listener for the integration test
@@ -97,7 +98,7 @@ public class WebSocketEventListenerIntegrationTest {
 
                 // when
                 doThrow(new NotFoundException("message")).when(lobbyService).joinLobby(anyLong(), anyLong());
-                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyString());
+                doReturn(LobbyDTO).when(webSocketService).convertToDTO(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyString());
                 doReturn(UserDTO).when(webSocketService).convertToDTO(Mockito.anyString(), Mockito.anyBoolean());
 
                 // trigger the event listener for the integration test
@@ -109,7 +110,7 @@ public class WebSocketEventListenerIntegrationTest {
         }
 
         @Test
-        public void testUnsubscribeIntegration_success() throws NotFoundException, URISyntaxException {
+        void testUnsubscribeIntegration_success() throws NotFoundException, URISyntaxException {
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 42L);
                 String destination = "/topic/lobby/3000";
@@ -124,13 +125,17 @@ public class WebSocketEventListenerIntegrationTest {
                 userDTO.setSuccess(true);
                 userDTO.setMessage("Lobby left successfully");
 
+                Lobby lobby = new Lobby();
+
                 doNothing().when(lobbyService).leaveLobby(3000L, 42L);
 
                 doReturn(broadcastDTO)
-                                .when(webSocketService).convertToDTO(42L, "unsubscribed");
+                                .when(webSocketService).convertToDTO(42L, 3000L, "unsubscribed");
 
                 doReturn(userDTO)
                                 .when(webSocketService).convertToDTO(anyString(), anyBoolean());
+
+                when(lobbyService.checkIfLobbyExists(anyLong())).thenReturn(lobby);
 
                 eventListener.handleUnsubscribeEvent(event);
 
@@ -141,7 +146,7 @@ public class WebSocketEventListenerIntegrationTest {
         }
 
         @Test
-        public void testUnsubscribeIntegration_throwsException() throws NotFoundException, URISyntaxException {
+        void testUnsubscribeIntegration_throwsException() throws NotFoundException, URISyntaxException {
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 99L);
                 String destination = "/topic/lobby/4000";
@@ -152,9 +157,13 @@ public class WebSocketEventListenerIntegrationTest {
                 userDTO.setSuccess(false);
                 userDTO.setMessage("oops");
 
+                Lobby lobby = new Lobby();
+
                 doThrow(new NotFoundException("oops"))
                                 .when(lobbyService).leaveLobby(4000L, 99L);
                 doReturn(userDTO).when(webSocketService).convertToDTO(anyString(), anyBoolean());
+
+                when(lobbyService.checkIfLobbyExists(anyLong())).thenReturn(lobby);
 
                 eventListener.handleUnsubscribeEvent(event);
 

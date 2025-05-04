@@ -1,9 +1,12 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.wsLobbyDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.mapper.wsDTOMapper;
 import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -17,10 +20,12 @@ public class WebSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final UserService userService;
+    private final LobbyService lobbyService;
     @Autowired
-    public WebSocketService(SimpMessagingTemplate messagingTemplate, UserService userService) {
+    public WebSocketService(SimpMessagingTemplate messagingTemplate, UserService userService, LobbyService lobbyService) {
         this.messagingTemplate = messagingTemplate;
         this.userService = userService;
+        this.lobbyService = lobbyService;
     }
 
     // broadcast lobby join/leave messages (and other notifications) to lobby users
@@ -39,11 +44,14 @@ public class WebSocketService {
     }
 
     // method for creating DTO to broadcast lobby (joining) notifications
-    public UsersBroadcastJoinNotificationDTO convertToDTO(Long userId, String status) throws NotFoundException {
+    public UsersBroadcastJoinNotificationDTO convertToDTO(Long userId, Long lobbyId, String status) throws NotFoundException {
         User user = userService.checkIfUserExists(userId);
         UsersBroadcastJoinNotificationDTO DTO = new UsersBroadcastJoinNotificationDTO();
+        Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
+        wsLobbyDTO wsLobbyDTO = wsDTOMapper.INSTANCE.convertLobbyTowsLobbyDTO(lobby);
         DTO.setStatus(status);
         DTO.setUsername(user.getUsername());
+        DTO.setLobby(wsLobbyDTO);
         return DTO;
     }
 
@@ -55,6 +63,7 @@ public class WebSocketService {
         return DTO;
     }
 
+    // method overload to create DTO for plain broadcast notification (e.g. lobby deleted)
     public BroadcastNotificationDTO convertToDTO(String msg) {
         BroadcastNotificationDTO DTO = new BroadcastNotificationDTO();
         DTO.setMessage(msg);

@@ -99,7 +99,7 @@ public class LobbyService {
             userRepository.flush();
 
 
-            deleteLobby(lobbyId); // propagation=REQUIRES_NEW
+            deleteLobby(lobbyId);
             log.info("Lobby {} deleted by host {}", lobbyId, userId);
             return;
         }
@@ -166,9 +166,9 @@ public class LobbyService {
         // 4) Attempt deletion, but swallow if already gone
         try {
             lobbyRepository.deleteById(lobbyId);
-            log.info("Lobby with id {} deleted definitively", lobbyId);
+            log.info("Lobby with id {} deleted definitively", lobby.getLobbyId());
         } catch (EmptyResultDataAccessException e) {
-            log.info("Lobby with id {} was already deleted (ignored)", lobbyId);
+            log.info("Lobby with id {} was already deleted (ignored)", lobby.getLobbyId());
         }
     }
 
