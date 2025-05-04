@@ -29,20 +29,29 @@ public class GameService {
     private final Map<Long, GameSession> gameSessions = new ConcurrentHashMap<>();
     private final WebSocketService webSocketService;
     private final AIService aiService;
+    private final TimerService timerService;
 
     @Autowired
-    public GameService(WebSocketService webSocketService, AIService aiService) {
+    public GameService(WebSocketService webSocketService,
+            AIService aiService,
+            TimerService timerService) {
         this.webSocketService = webSocketService;
         this.aiService = aiService;
+        this.timerService = timerService;
     }
 
     public GameSession startGame(Lobby lobby) {
         Long gameId = lobby.getLobbyId();
-        List<Long> playerIds = lobby.getUsers();
+        List<Long> players = lobby.getUsers();
 
-        GameSession gameSession = new GameSession(gameId, playerIds);
+        GameSession gameSession = new GameSession(gameId, players);
         lobby.setGameSession(gameSession);
         gameSessions.put(gameId, gameSession);
+
+        if (timerService != null) {
+            timerService.schedule(gameId);
+        }
+
         return gameSession;
     }
 
@@ -58,19 +67,31 @@ public class GameService {
         if (game == null) {
             throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
         }
+
+        if (timerService != null) {
+            timerService.cancel(gameId);
+        }
+
         Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
         try {
-            Player playingPlayer = game.getCurrentPlayer();
+            Player current = game.getCurrentPlayer();
             game.playTurn(playedCard, null);
-            return Pair.of(game, playingPlayer);
+
+            if (timerService != null) {
+                timerService.schedule(gameId);
+            }
+
+            return Pair.of(game, current);
+
         } catch (IllegalStateException e) {
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
-            List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
-            webSocketService.lobbyNotifications(userId, optionsDTO);
+            List<List<CardDTO>> optsDto = GameSessionMapper.convertCaptureOptionsToDTO(options);
+            webSocketService.lobbyNotifications(userId, optsDto);
+            return Pair.of(game, null);
+
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
         }
-        return Pair.of(game, null);
     }
 
     public void processPlayTurn(Long gameId, List<Card> selectedOption) {
@@ -78,32 +99,44 @@ public class GameService {
         if (game == null) {
             throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
         }
-        Card playedCard = game.getLastCardPlayed();
-        game.playTurn(playedCard, selectedOption);
+
+        if (timerService != null) {
+            timerService.cancel(gameId);
+        }
+
+        Card lastPlayed = game.getLastCardPlayed();
+        game.playTurn(lastPlayed, selectedOption);
+
+        if (timerService != null) {
+            timerService.schedule(gameId);
+        }
     }
 
     public boolean isGameOver(Long gameId) {
         GameSession game = getGameSessionById(gameId);
-        if (game.isGameOver()) {
+        boolean over = game.isGameOver();
+        if (over) {
+            if (timerService != null) {
+                timerService.cancel(gameId);
+            }
+
             List<Card> lastCards = game.getTable().getCards();
             game.finishGame();
 
             Long playerId = game.getLastPickedPlayerId();
-
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
             webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
 
             Result result = game.calculateResult();
-
             game.getPlayers().forEach(player -> {
                 ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
                 webSocketService.lobbyNotifications(player.getUserId(), resultDTO);
             });
+
             gameSessions.remove(gameId);
-            return true;
         }
-        return false;
+        return over;
     }
 
     public AISuggestionDTO aiSuggestion(Long gameId, Long userId) {
@@ -131,13 +164,14 @@ public class GameService {
             String msg = oc.equals("WON")
                     ? "You won by forfeit."
                     : "You lost by forfeit.";
-
-            resultDTOs.add(
-                    GameSessionMapper.toQuitGameResultDTO(userId, oc, msg));
+            resultDTOs.add(GameSessionMapper.toQuitGameResultDTO(userId, oc, msg));
         }
 
+        if (timerService != null) {
+            timerService.cancel(gameId);
+        }
         gameSessions.remove(gameId);
+
         return resultDTOs;
     }
-
 }

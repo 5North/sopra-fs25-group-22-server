@@ -10,6 +10,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeOutNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -234,6 +236,22 @@ public class GameSessionMapperTest {
         assertEquals(userId, dto.getUserId());
         assertEquals(outcome, dto.getOutcome());
         assertEquals(message, dto.getMessage());
+    }
+
+    @Test
+    public void testConvertToTimeLeftDTO() {
+        TimeLeftDTO dto = GameSessionMapper.toTimeLeftDTO(77L, 15L);
+        assertNotNull(dto);
+        assertEquals(77L, dto.getGameId());
+        assertEquals(15L, dto.getRemainingSeconds());
+    }
+
+    @Test
+    public void testConvertToTimeOutNotificationDTO() {
+        TimeOutNotificationDTO dto = GameSessionMapper.toTimeOutNotificationDTO(55L, "Timeout reached");
+        assertNotNull(dto);
+        assertEquals(55L, dto.getTimedOutPlayerId());
+        assertEquals("Timeout reached", dto.getMessage());
     }
 
 }

@@ -13,6 +13,7 @@ import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 import ch.uzh.ifi.hase.soprafs24.service.AIService;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,12 +33,13 @@ public class GameServiceIntegrationTest {
     private GameService gameService;
     private WebSocketService webSocketService;
     private AIService aiService;
+    private TimerService timerService;
 
     @BeforeEach
     public void setup() {
         webSocketService = mock(WebSocketService.class);
         aiService = mock(AIService.class);
-        gameService = new GameService(webSocketService, aiService);
+        gameService = new GameService(webSocketService, aiService, timerService);
     }
 
     @Test

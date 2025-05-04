@@ -183,4 +183,18 @@ public class GameSessionMapper {
         return dto;
     }
 
+    public static TimeLeftDTO toTimeLeftDTO(Long gameId, long remainingSeconds) {
+        TimeLeftDTO dto = new TimeLeftDTO();
+        dto.setGameId(gameId);
+        dto.setRemainingSeconds(remainingSeconds);
+        return dto;
+    }
+
+    public static TimeOutNotificationDTO toTimeOutNotificationDTO(Long timedOutPlayerId, String message) {
+        TimeOutNotificationDTO dto = new TimeOutNotificationDTO();
+        dto.setTimedOutPlayerId(timedOutPlayerId);
+        dto.setMessage(message);
+        return dto;
+    }
+
 }
