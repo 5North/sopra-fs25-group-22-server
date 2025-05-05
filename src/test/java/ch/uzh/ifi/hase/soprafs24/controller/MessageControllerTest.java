@@ -265,7 +265,7 @@ public class MessageControllerTest {
         List<QuitGameResultDTO> results = Arrays.asList(r1, r2);
 
 
-        String msg = "The lobby with id 4000 has been deleted";
+        String msg = "Lobby with id 4000 has been deleted";
 
         BroadcastNotificationDTO broadcastDTO = new BroadcastNotificationDTO();
         broadcastDTO.setMessage(msg);
@@ -313,7 +313,7 @@ public class MessageControllerTest {
         QuitGameDTO dto = new QuitGameDTO();
         dto.setGameId(gameId);
 
-        String msg = "The lobby with id 4000 has been deleted";
+        String msg = "Lobby with id 4000 has been deleted";
 
         BroadcastNotificationDTO broadcastDTO = new BroadcastNotificationDTO();
         broadcastDTO.setMessage(msg);
