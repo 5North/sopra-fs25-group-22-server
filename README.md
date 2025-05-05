@@ -1,4 +1,8 @@
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=5North_sopra-fs25-group-22-server)](https://sonarcloud.io/summary/new_code?id=5North_sopra-fs25-group-22-server)
+
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=5North_sopra-fs25-group-22-server&metric=coverage)](https://sonarcloud.io/summary/new_code?id=5North_sopra-fs25-group-22-server)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=5North_sopra-fs25-group-22-server&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=5North_sopra-fs25-group-22-server)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=5North_sopra-fs25-group-22-server&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=5North_sopra-fs25-group-22-server)
 
 # SoPra RESTful Service Template FS25
 
