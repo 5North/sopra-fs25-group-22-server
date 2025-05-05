@@ -39,8 +39,8 @@
 |      ✅     | **/app/playcard**          | **SEND**        | gameId &lt;string&gt;, card &lt;Card&gt;                                                             | Body (JSON)    | Send played card event to server for in-game processing                                             |
 |      ✅     | **/app/chooseCapture**     | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, chosenOption &lt;List{Card}&gt;, playedCard &lt;Card&gt; | Body (JSON)    | Send chosen capture option when multiple options exist                                              |
 |      ✅     | **/app/ai**                | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, requestFlag &lt;string&gt;                               | Body (JSON)    | Send request for AI assistance (hint) to the server                                                 |
-|      ❌     | **/app/rematch**           | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, confirmRematch &lt;boolean&gt;                           | Body (JSON)    | Send rematch confirmation from the player to the server                                             |
-|      ❌     | **/app/quitGame**          | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;                                                           | Body (JSON)    | Send quit game request to the server                                                                |
+|      ✅     | **/app/rematch**           | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, confirmRematch &lt;boolean&gt;                           | Body (JSON)    | Send rematch confirmation from the player to the server                                             |
+|      ✅     | **/app/quitGame**          | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;                                                           | Body (JSON)    | Send quit game request to the server                                                                |
 |      🚫     | **/game/{gameId}/results** | **SUBSCRIBE**   | gameId &lt;string&gt;                                                                                | Path           | Subscribe to final game results broadcast when the match ends                                       |
 |      ✅     | **/user/queue/reply**      | **SUBSCRIBE**   | --                                                                                                   | --             | Subscribe to private channel for receiving personal notifications (capture options, AI hints, etc.) |
 |      ✅     | **/user/queue/reply**      | **UNSUBSCRIBE** | --                                                                                                   | --             | Unsubscribe from the private channel                                                                |
@@ -94,7 +94,7 @@ so that the client can redirect the user to the right lobby.
 
 ### Lobby deletion
 
-When the host leave the lobby by esplicitly sending an `unsubscribe` request, their lobby is deleted.
+When the host leave the lobby by explicitly sending an `unsubscribe` request, their lobby is deleted.
 
 #### Broadcast to all users in a lobby
 
@@ -112,6 +112,57 @@ The following message is sent to the host of the lobby.
         "success": success <bool>,
         "msg": msg <string>
         }
+
+### Start game
+
+The following message is broadcast to all the participants of this lobby.
+
+        {
+        "success": success <bool>,
+        "msg": msg <string>
+        }
+
+`msg` can be either `"Starting game"` or a string describing the error, e.g. `"Lobby <lobbyId> is not full yet"` or
+`"lobby <lobbyId>: not everyone wants a rematch yet"`
+
+#### Sent to a specific user
+
+The following message is sent to the client who requested a rematch.
+
+        {
+        "success": success <bool>,
+        "msg": msg <string>
+        }
+
+`msg` can be either `"Rematcher has been added to the lobby"` or a string describing the error.
+
+### Rematch
+
+When a user clicks on the rematch button the following messages are sent.
+
+#### Broadcast to all users in a lobby
+
+The following message is broadcast to all the participants of this lobby.
+
+        {
+        "lobbyId": lobbyId <Long>,
+        "hostId": hostId <Long>,
+        "usersIds": List<Long>,
+        "rematchersIds": List<Long>
+        }
+
+`rematchersIds` contains all the user that have selected a rematch.
+
+#### Sent to a specific user
+
+The following message is sent to the client who requested a rematch.
+
+        {
+        "success": success <bool>,
+        "msg": msg <string>
+        }
+
+`msg` can be either `"Rematcher has been added to the lobby"` or a string describing the error.
 
 ## Getting started with Spring Boot
 -   Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
