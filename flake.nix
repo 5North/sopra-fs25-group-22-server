@@ -29,7 +29,6 @@
           [
             jdk
             git
-            docker
           ]
           ++ lib.optionals stdenv.isDarwin [
             xcodes
@@ -47,7 +46,6 @@
             
             export PATH="${pkgs.jdk}/bin:$PATH"
             export PATH="${pkgs.git}/bin:$PATH"
-            export PATH="${pkgs.docker}/bin:$PATH"
             
             XCODE_VERSION_OLD="15.3"
             XCODE_VERSION="16.2"
