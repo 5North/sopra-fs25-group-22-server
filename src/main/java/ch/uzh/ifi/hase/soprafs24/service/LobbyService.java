@@ -126,13 +126,8 @@ public class LobbyService {
     }
 
     public boolean lobbyIsFull(Long lobbyId) throws NotFoundException {
-        // TODO refactor to use checkIfLobbyExists
-        Optional<Lobby> lobby = lobbyRepository.findById(lobbyId);
-        if (lobby.isEmpty()) {
-            String msg = "No lobby with id " + lobbyId;
-            throw new NotFoundException(msg);
-        }
-        return lobby.get().getUsers().size() >= 4;
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        return lobby.getUsers().size() >= 4;
     }
 
     public Lobby checkIfLobbyExists(Long lobbyId) throws NotFoundException {
