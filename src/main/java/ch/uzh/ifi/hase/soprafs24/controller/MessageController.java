@@ -179,12 +179,34 @@ public class MessageController {
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
                 .get("userId");
         Long quittingUserId = (Long) userIdObj;
-        Long gameId = dto.getGameId();
+        User user = userService.checkIfUserExists(quittingUserId);
+        Long lobbyId = user.getLobbyJoined();
 
-        List<QuitGameResultDTO> results = gameService.quitGame(gameId, quittingUserId);
-        for (QuitGameResultDTO result : results) {
-            webSocketService.lobbyNotifications(result.getUserId(), result);
+        if (gameService.getGameSessionById(lobbyId) != null) {
+            Long gameId = dto.getGameId();
+
+            List<QuitGameResultDTO> results = gameService.quitGame(gameId, quittingUserId);
+            for (QuitGameResultDTO result : results) {
+                webSocketService.lobbyNotifications(result.getUserId(), result);
+            }
         }
+
+        // default msg and status
+        String msg = String.format("The lobby with id %s has been deleted", lobbyId);
+        boolean success = true;
+        try {
+            lobbyService.deleteLobby(lobbyId);
+            BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+            webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+        }
+        catch (NotFoundException e) {
+            // msg and status for delete failure
+            msg = String.format("The lobby with id %s was not found", lobbyId);
+            success = false;
+        }
+        UserNotificationDTO privateDTO= webSocketService.convertToDTO(msg, success);
+        webSocketService.broadCastLobbyNotifications(quittingUserId, privateDTO);
+    }
 
     @MessageMapping("/rematch")
     public void rematch(StompHeaderAccessor headerAccessor)  throws NotFoundException {
