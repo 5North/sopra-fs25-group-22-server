@@ -192,7 +192,7 @@ public class MessageController {
         }
 
         // default msg and status
-        String msg = String.format("The lobby with id %s has been deleted", lobbyId);
+        String msg = String.format("Lobby with id %s has been deleted", lobbyId);
         boolean success = true;
         try {
             lobbyService.deleteLobby(lobbyId);
