@@ -83,6 +83,7 @@ public class LobbyService {
         if (!lobby.getUsers().contains(userId)) {
             lobby.addUsers(userId);
             user.setLobbyJoined(lobbyId);
+            lobby.adddRematchers(userId);
         }
         userRepository.save(user);
         userRepository.flush();
@@ -95,6 +96,7 @@ public class LobbyService {
         if (lobby.getUser() != null && lobby.getUser().getId().equals(userId)) {
             user.setLobby(null);
             user.setLobbyJoined(null);
+            lobby.removeRematchers(userId);
             userRepository.save(user);
             userRepository.flush();
 
@@ -112,6 +114,7 @@ public class LobbyService {
 
 
         lobby.removeUsers(userId);
+        lobby.removeRematchers(userId);
         user.setLobbyJoined(null);
 
 
@@ -123,12 +126,8 @@ public class LobbyService {
     }
 
     public boolean lobbyIsFull(Long lobbyId) throws NotFoundException {
-        Optional<Lobby> lobby = lobbyRepository.findById(lobbyId);
-        if (lobby.isEmpty()) {
-            String msg = "No lobby with id " + lobbyId;
-            throw new NotFoundException(msg);
-        }
-        return lobby.get().getUsers().size() >= 4;
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        return lobby.getUsers().size() >= 4;
     }
 
     public Lobby checkIfLobbyExists(Long lobbyId) throws NotFoundException {
@@ -170,6 +169,23 @@ public class LobbyService {
         } catch (EmptyResultDataAccessException e) {
             log.info("Lobby with id {} was already deleted (ignored)", lobby.getLobbyId());
         }
+    }
+
+    public boolean rematchIsFull(Long lobbyId) throws NotFoundException {
+       Lobby lobby = checkIfLobbyExists(lobbyId);
+       // TODO illegalstateException if more than 4 user
+        return lobby.getRematchers().size() >= 4;
+    }
+
+    public void resetRematch(Long lobbyId) throws NotFoundException {
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        lobby.clearRematchers();
+    }
+
+    public void addRematcher(Long lobbyId, Long userId) throws NotFoundException {
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        userService.checkIfUserExists(userId);
+        lobby.adddRematchers(userId);
     }
 
     public Long generateId() {

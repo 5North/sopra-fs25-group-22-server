@@ -10,6 +10,8 @@ public class wsLobbyDTO {
 
     private List<Long> usersIds;
 
+    private List<Long> rematchersIds;
+
     public Long getLobbyId() {return lobbyId;}
 
     public void setLobbyId(Long lobbyId) {this.lobbyId = lobbyId;}
@@ -21,4 +23,8 @@ public class wsLobbyDTO {
     public List<Long> getUsersIds() {return usersIds;}
 
     public void setUsersIds(List<Long> usersIds) {this.usersIds = usersIds;}
+
+    public List<Long> getRematchersIds() {return rematchersIds;}
+
+    public void setRematchersIds(List<Long> rematchersIds) {this.rematchersIds = rematchersIds;}
 }

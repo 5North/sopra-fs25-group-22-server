@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
@@ -14,11 +15,10 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.AiRequestDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.ChosenCaptureDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.PlayCardDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
+import ch.uzh.ifi.hase.soprafs24.websocket.mapper.wsDTOMapper;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +39,13 @@ public class MessageController {
     private final LobbyService lobbyService;
     private final GameService gameService;
     private final WebSocketService webSocketService;
+    private final UserService userService;
 
-    public MessageController(LobbyService lobbyService, GameService gameService, WebSocketService webSocketService) {
+    public MessageController(LobbyService lobbyService, GameService gameService, WebSocketService webSocketService, UserService userService) {
         this.lobbyService = lobbyService;
         this.gameService = gameService;
         this.webSocketService = webSocketService;
+        this.userService = userService;
     }
 
     @MessageMapping("/startGame/{lobbyId}")
@@ -56,7 +58,14 @@ public class MessageController {
             if (!lobbyService.lobbyIsFull(lobbyId)) {
                 throw new IllegalArgumentException("Lobby " + lobbyId + " is not full yet");
             }
+            // check if everyone already clicked rematch
+            if (!lobbyService.rematchIsFull(lobbyId)) {
+                throw new IllegalArgumentException(String.format("lobby %d: not everyone wants a rematch yet", lobbyId));
+            }
             gameService.startGame(lobby);
+            // reset rematch array
+            lobbyService.resetRematch(lobbyId);
+
         } catch (Exception e) {
             log.error(e.getMessage());
             msg = "Error starting game: " + e.getMessage();
@@ -170,14 +179,59 @@ public class MessageController {
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
                 .get("userId");
         Long quittingUserId = (Long) userIdObj;
-        Long gameId = dto.getGameId();
+        User user = userService.checkIfUserExists(quittingUserId);
+        Long lobbyId = user.getLobbyJoined();
 
-        List<QuitGameResultDTO> results = gameService.quitGame(gameId, quittingUserId);
-        for (QuitGameResultDTO result : results) {
-            webSocketService.lobbyNotifications(result.getUserId(), result);
+        if (gameService.getGameSessionById(lobbyId) != null) {
+            Long gameId = dto.getGameId();
+
+            List<QuitGameResultDTO> results = gameService.quitGame(gameId, quittingUserId);
+            for (QuitGameResultDTO result : results) {
+                webSocketService.lobbyNotifications(result.getUserId(), result);
+            }
         }
 
-        lobbyService.deleteLobby(gameId);
+        // default msg and status
+        String msg = String.format("Lobby with id %s has been deleted", lobbyId);
+        boolean success = true;
+        try {
+            lobbyService.deleteLobby(lobbyId);
+            BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+            webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+        }
+        catch (NotFoundException e) {
+            // msg and status for delete failure
+            msg = String.format("The lobby with id %s was not found", lobbyId);
+            success = false;
+        }
+        UserNotificationDTO privateDTO= webSocketService.convertToDTO(msg, success);
+        webSocketService.broadCastLobbyNotifications(quittingUserId, privateDTO);
     }
 
-}
+    @MessageMapping("/rematch")
+    public void rematch(StompHeaderAccessor headerAccessor)  throws NotFoundException {
+        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
+                .get("userId");
+        Long userId = (Long) userIdObj;
+        User user = userService.checkIfUserExists(userId);
+        Long lobbyId = user.getLobbyJoined();
+        Lobby lobby = lobbyService.getLobbyById(lobbyId);
+
+        boolean success = true;
+        String msg = "Rematcher has been added to the lobby";
+
+        try {
+            lobbyService.addRematcher(userId, lobbyId);
+        }
+        catch (NotFoundException e) {
+            success = false;
+            msg = e.getMessage();
+        }
+        UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
+        webSocketService.lobbyNotifications(userId, privateDTO);
+
+        wsLobbyDTO broadcastDTO = wsDTOMapper.INSTANCE.convertLobbyTowsLobbyRematchDTO(lobby);
+        webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+    }
+
+    }
