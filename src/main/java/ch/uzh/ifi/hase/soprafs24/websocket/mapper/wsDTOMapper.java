@@ -16,10 +16,17 @@ public interface wsDTOMapper {
     @Mapping(source = "lobbyId", target = "lobbyId")
     @Mapping(source = "user", target = "hostId", qualifiedByName = "getUserId")
     @Mapping(source = "users", target = "usersIds")
+    @Mapping(target = "rematchersIds", ignore = true)
     wsLobbyDTO convertLobbyTowsLobbyDTO(Lobby lobby);
 
+    @Mapping(source = "lobbyId", target = "lobbyId")
+    @Mapping(source = "user", target = "hostId", qualifiedByName = "getUserId")
+    @Mapping(source = "users", target = "usersIds")
+    @Mapping(source = "rematchers", target = "rematchersIds")
+    wsLobbyDTO convertLobbyTowsLobbyRematchDTO(Lobby lobby);
+
     @Named("getUserId")
-    static Long getUserid(User user) {
+    static Long getUserId(User user) {
         return user.getId();
     }
 }
