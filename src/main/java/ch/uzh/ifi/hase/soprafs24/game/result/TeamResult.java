@@ -140,4 +140,20 @@ public class TeamResult {
     public int getPrimieraRaw() {
         return primieraRaw;
     }
+
+    public int getCartePointsRaw() {
+        return cartePointsRaw;
+    }
+
+    public int getDenariPointsRaw() {
+        return denariPointsRaw;
+    }
+
+    public int getSettebelloRaw() {
+        return settebelloRaw;
+    }
+
+    public int getScopaRaw() {
+        return scopaRaw;
+    }
 }

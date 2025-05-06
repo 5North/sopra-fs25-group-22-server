@@ -1,8 +1,10 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -80,5 +82,22 @@ public class AIServiceTest {
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> aiService.generateAISuggestion(hand, table));
         assertEquals("API error", ex.getMessage());
+    }
+
+    @Test
+    public void testAISuggestionDTO_DefaultConstructorAndSetterGetter() {
+        AISuggestionDTO dto = new AISuggestionDTO();
+        assertNull(dto.getSuggestion());
+        dto.setSuggestion("Try this");
+        assertEquals("Try this", dto.getSuggestion());
+    }
+
+    @Test
+    public void testAISuggestionDTO_ToString() {
+        AISuggestionDTO dto = new AISuggestionDTO("Example");
+        String s = dto.toString();
+        assertTrue(s.startsWith("AISuggestionDTO{"));
+        assertTrue(s.contains("suggestion='Example'"));
+        assertTrue(s.endsWith("}"));
     }
 }

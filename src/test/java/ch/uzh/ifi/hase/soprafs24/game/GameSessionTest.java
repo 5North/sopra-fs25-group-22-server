@@ -2,13 +2,24 @@ package ch.uzh.ifi.hase.soprafs24.game;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.Deck;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 
 public class GameSessionTest {
 
@@ -17,7 +28,11 @@ public class GameSessionTest {
     private GameSession gameSession;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws Exception {
+        Field userRepoField = GameStatisticsUtil.class.getDeclaredField("userRepository");
+        userRepoField.setAccessible(true);
+        userRepoField.set(null, new DummyUserRepository());
+
         gameId = 10L;
         playerIds = List.of(100L, 200L, 300L, 400L);
         gameSession = new GameSession(gameId, playerIds);
@@ -93,9 +108,199 @@ public class GameSessionTest {
 
     @Test
     public void testFinishForfeitThrowsForUnknownUser() {
-        // If user not in session, expect IllegalArgumentException
         assertThrows(IllegalArgumentException.class,
                 () -> gameSession.finishForfeit(999L),
                 "finishForfeit should reject a user ID not in the game");
+    }
+
+    @Test
+    public void testPlayTurnWithSelectedOptionWithoutLastCardThrows() {
+        Card dummy = gameSession.getPlayers().get(0).getHand().get(0);
+        List<Card> fakeOption = List.of(dummy);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> gameSession.playTurn(dummy, fakeOption));
+        assertEquals(
+                "No last card played available for processing capture selection.",
+                ex.getMessage());
+    }
+
+    @Test
+    public void testGetPlayerByIdNotFoundReturnsNull() {
+        assertNull(gameSession.getPlayerById(999L));
+    }
+
+    @Test
+    public void testLastPickedCardsGetterAndSetter() {
+        List<Card> picked = new ArrayList<>();
+        picked.add(gameSession.getPlayers().get(1).getHand().get(0));
+        picked.add(gameSession.getPlayers().get(2).getHand().get(1));
+
+        gameSession.setLastPickedCards(picked);
+        assertEquals(picked, gameSession.getLastCardPickedCards());
+    }
+
+    @Test
+    public void testIsGameOverTrueAfterManuallyIncrementingTurnCounter() throws Exception {
+        Field turnCounterField = GameSession.class.getDeclaredField("turnCounter");
+        turnCounterField.setAccessible(true);
+        turnCounterField.setInt(gameSession, 36);
+        assertTrue(gameSession.isGameOver());
+    }
+
+    @Test
+    public void testFinishGameCollectsRemainingTableCards() throws Exception {
+        assertFalse(gameSession.getTable().getCards().isEmpty());
+        Field lastGetterField = GameSession.class.getDeclaredField("lastGetterIndex");
+        lastGetterField.setAccessible(true);
+        lastGetterField.setInt(gameSession, 2);
+
+        List<Card> remaining = new ArrayList<>(gameSession.getTable().getCards());
+        gameSession.finishGame();
+
+        assertTrue(gameSession.getTable().getCards().isEmpty());
+        Player collector = gameSession.getPlayers().get(2);
+        assertEquals(remaining.size(), collector.getTreasure().size());
+        assertTrue(collector.getTreasure().containsAll(remaining));
+    }
+
+    private static class DummyUserRepository implements UserRepository {
+        @Override
+        public Optional<User> findById(Long id) {
+            User u = new User();
+            u.setId(id);
+            return Optional.of(u);
+        }
+
+        @Override
+        public List<User> findAll() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <S extends User> S save(S entity) {
+            return entity;
+        }
+
+        @Override
+        public boolean existsById(Long id) {
+            return true;
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void deleteById(Long id) {
+        }
+
+        @Override
+        public void delete(User entity) {
+        }
+
+        @Override
+        public void deleteAll() {
+        }
+
+        @Override
+        public List<User> findAllById(Iterable<Long> ids) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <S extends User> List<S> saveAll(Iterable<S> entities) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public <S extends User> S saveAndFlush(S entity) {
+            return entity;
+        }
+
+        @Override
+        public void deleteInBatch(Iterable<User> entities) {
+        }
+
+        @Override
+        public void deleteAllInBatch() {
+        }
+
+        @Override
+        public User getOne(Long id) {
+            throw new UnsupportedOperationException();
+        }
+
+        // ... e così via per gli altri metodi non usati dal test
+        @Override
+        public List<User> findAll(Sort sort) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        }
+
+        @Override
+        public <S extends User> List<S> findAll(Example<S> example) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        }
+
+        @Override
+        public <S extends User> List<S> findAll(Example<S> example, Sort sort) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        }
+
+        @Override
+        public Page<User> findAll(Pageable pageable) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        }
+
+        @Override
+        public void deleteAll(Iterable<? extends User> entities) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'deleteAll'");
+        }
+
+        @Override
+        public <S extends User> Optional<S> findOne(Example<S> example) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findOne'");
+        }
+
+        @Override
+        public <S extends User> Page<S> findAll(Example<S> example, Pageable pageable) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        }
+
+        @Override
+        public <S extends User> long count(Example<S> example) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'count'");
+        }
+
+        @Override
+        public <S extends User> boolean exists(Example<S> example) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'exists'");
+        }
+
+        @Override
+        public User findByUsername(String username) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findByUsername'");
+        }
+
+        @Override
+        public User findByToken(String token) {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'findByToken'");
+        }
     }
 }
