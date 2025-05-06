@@ -29,12 +29,10 @@ public class GameSessionTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        // 1) inietto un DummyUserRepository in GameStatisticsUtil.userRepository
         Field userRepoField = GameStatisticsUtil.class.getDeclaredField("userRepository");
         userRepoField.setAccessible(true);
         userRepoField.set(null, new DummyUserRepository());
 
-        // 2) inizializzo la GameSession come prima
         gameId = 10L;
         playerIds = List.of(100L, 200L, 300L, 400L);
         gameSession = new GameSession(gameId, playerIds);
