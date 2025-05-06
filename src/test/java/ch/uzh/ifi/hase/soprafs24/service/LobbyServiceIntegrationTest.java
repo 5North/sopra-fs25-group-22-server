@@ -147,5 +147,8 @@ public class LobbyServiceIntegrationTest {
         lobbyService.leaveLobby(id, testUser.getId());
 
         assertFalse(lobbyRepository.existsById(id), "Lobby has not been deleted");
+
+        // check that the db has not nuked the host too
+        assertTrue(userRepository.existsById(testUser.getId()));
     }
 }

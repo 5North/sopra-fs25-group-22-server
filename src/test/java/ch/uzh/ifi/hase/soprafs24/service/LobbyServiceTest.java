@@ -63,6 +63,7 @@ public class LobbyServiceTest {
         // when -> any object is being saved in the userRepository -> return the dummy
         // testLobby
         Mockito.when(lobbyRepository.save(Mockito.any())).thenReturn(testLobby);
+        Mockito.when(userRepository.save(Mockito.any())).thenReturn(testUser);
     }
 
     @Test
@@ -262,7 +263,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void getLobbyById_notExists_throwsNoSuchElementException() {
+    void getLobbyById_notExists_throwsNoTFoundException() {
         when(lobbyRepository.findById(123L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
@@ -395,6 +396,29 @@ public class LobbyServiceTest {
         //assert
         assertThrows(NotFoundException.class,
                 () -> lobbyService.addRematcher(testLobby.getLobbyId(), testUser.getId()));
+    }
+
+    @Test
+    void getLobbyByParticipantId_validInputs_success() throws NotFoundException {
+        // given
+        testUser.setLobbyJoined(1000L);
+        // when
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        Long lobbyId = lobbyService.getLobbyIdByParticipantId(testUser.getId());
+        // then
+        assertEquals(1000L, lobbyId);
+    }
+
+    @Test
+    void getLobbyByParticipantId_nonExistingUser_throwsException() throws NotFoundException {
+        // given
+        testUser.setLobbyJoined(1000L);
+        // when
+        when(userService.checkIfUserExists(anyLong())).thenThrow(new NotFoundException(("error")));
+
+        //assert
+        assertThrows(NotFoundException.class,
+                () -> lobbyService.getLobbyIdByParticipantId(testUser.getId()));
     }
 
 }
