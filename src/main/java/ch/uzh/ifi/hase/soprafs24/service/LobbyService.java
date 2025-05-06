@@ -188,6 +188,11 @@ public class LobbyService {
         lobby.adddRematchers(userId);
     }
 
+    public Long getLobbyIdByParticipantId(Long participantId) throws NotFoundException {
+        User user = userService.checkIfUserExists(participantId);
+        return user.getLobbyJoined();
+    }
+
     public Long generateId() {
         Long randomId;
         do {
