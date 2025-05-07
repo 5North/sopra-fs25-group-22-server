@@ -12,6 +12,7 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
@@ -28,6 +29,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.util.Pair;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
+import ch.uzh.ifi.hase.soprafs24.game.items.Card;
+import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
+import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
+import ch.uzh.ifi.hase.soprafs24.game.items.Card;
+import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
+import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -264,7 +276,6 @@ public class MessageControllerTest {
 
         List<QuitGameResultDTO> results = Arrays.asList(r1, r2);
 
-
         String msg = "Lobby with id 4000 has been deleted";
 
         BroadcastNotificationDTO broadcastDTO = new BroadcastNotificationDTO();
@@ -322,7 +333,6 @@ public class MessageControllerTest {
         privateDTO.setMessage(msg);
         privateDTO.setSuccess(Boolean.TRUE);
 
-
         // when
         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
         when(gameService.getGameSessionById(anyLong())).thenReturn(null);
@@ -366,7 +376,6 @@ public class MessageControllerTest {
         privateDTO.setMessage(msg);
         privateDTO.setSuccess(Boolean.TRUE);
 
-
         // when
         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
         doThrow(new NotFoundException(msg))
@@ -409,7 +418,6 @@ public class MessageControllerTest {
         privateDTO.setSuccess(true);
         privateDTO.setMessage("Rematcher has been added to the lobby");
 
-
         StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
 
         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
@@ -451,12 +459,12 @@ public class MessageControllerTest {
         privateDTO.setSuccess(false);
         privateDTO.setMessage("No lobby with id 1000L found");
 
-
         StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
 
         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
         when(lobbyService.getLobbyById(lobbyId)).thenReturn(testLobby);
-        doThrow(new NotFoundException("No lobby with id 1000L found")).when(lobbyService).addRematcher(anyLong(), anyLong());
+        doThrow(new NotFoundException("No lobby with id 1000L found")).when(lobbyService)
+                .addRematcher(anyLong(), anyLong());
         when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(privateDTO);
 
         messageController.rematch(accessor);
@@ -471,6 +479,73 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .broadCastLobbyNotifications(anyLong(), any(wsLobbyDTO.class));
 
+    }
+
+    @Test
+    void testProcessPlayCardExceptionIsCaught() {
+        PlayCardDTO dto = new PlayCardDTO();
+        dto.setLobbyId(123L);
+        dto.setCard(new CardDTO("DENARI", 5));
+        StompHeaderAccessor acc = createHeaderAccessorWithUser(42L);
+
+        when(gameService.playCard(eq(123L), any(CardDTO.class), eq(42L)))
+                .thenThrow(new RuntimeException("boom"));
+
+        assertDoesNotThrow(() -> messageController.processPlayCard(dto, acc));
+
+        verify(webSocketService, never())
+                .broadCastLobbyNotifications(eq(123L), any(MoveActionDTO.class));
+    }
+
+    @Test
+    public void testProcessPlayCardEmitsMoveActionDTO() {
+        GameSession session = spy(new GameSession(500L, List.of(77L)));
+        Player player = new Player(77L, new ArrayList<>());
+
+        Card lastPlayed = CardFactory.getCard(Suit.COPPE, 2);
+        List<Card> lastPicked = List.of(CardFactory.getCard(Suit.DENARI, 7));
+
+        doReturn(lastPlayed).when(session).getLastCardPlayed();
+        doReturn(lastPicked).when(session).getLastCardPickedCards();
+
+        when(gameService.playCard(eq(500L), any(CardDTO.class), eq(77L)))
+                .thenReturn(Pair.of(session, player));
+
+        PlayCardDTO dto = new PlayCardDTO();
+        dto.setLobbyId(500L);
+        dto.setCard(new CardDTO("COPPE", 2));
+
+        StompHeaderAccessor acc = createHeaderAccessorWithUser(77L);
+        messageController.processPlayCard(dto, acc);
+
+        verify(webSocketService).broadCastLobbyNotifications(eq(500L), any(MoveActionDTO.class));
+        verify(webSocketService).lobbyNotifications(eq(77L), any(PrivatePlayerDTO.class));
+        verify(webSocketService, atLeastOnce())
+                .broadCastLobbyNotifications(eq(500L), any(GameSessionDTO.class));
+    }
+
+    @Test
+    public void testProcessChooseCaptureEmitsMoveActionDTO() {
+        GameSession session = spy(new GameSession(600L, List.of(33L)));
+
+        Card lastPlayed = CardFactory.getCard(Suit.SPADE, 3);
+        List<Card> lastPicked = List.of(CardFactory.getCard(Suit.BASTONI, 4));
+
+        doReturn(lastPlayed).when(session).getLastCardPlayed();
+        doReturn(lastPicked).when(session).getLastCardPickedCards();
+
+        when(gameService.getGameSessionById(600L)).thenReturn(session);
+
+        ChosenCaptureDTO cap = new ChosenCaptureDTO();
+        cap.setGameId(600L);
+        cap.setChosenOption(List.of(new CardDTO("SPADE", 3)));
+
+        StompHeaderAccessor acc = createHeaderAccessorWithUser(33L);
+        messageController.processChooseCapture(cap, acc);
+
+        verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(MoveActionDTO.class));
+        verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(GameSessionDTO.class));
+        verify(webSocketService).lobbyNotifications(eq(33L), any(PrivatePlayerDTO.class));
     }
 
 }

@@ -1,8 +1,10 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -264,7 +266,7 @@ public class UserServiceTest {
   }
 
   @Test
-    void getUserById_success() {
+  void getUserById_success() {
       // given -> a first user has already been created
       userService.createUser(testUser);
       Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
@@ -279,10 +281,21 @@ public class UserServiceTest {
         // given
         // no user
 
-
-        //when
+        // when
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
         assertThrows(
                 ResponseStatusException.class, () -> userService.getUserById(1L));
+    }
+
+    @Test
+    void testSetAndGetLobby() {
+        UserGetDTO dto = new UserGetDTO();
+
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(999L);
+
+        dto.setLobby(lobby);
+        assertNotNull(dto.getLobby());
+        assertEquals(999L, dto.getLobby().getLobbyId());
     }
 }

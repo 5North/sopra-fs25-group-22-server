@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import ch.uzh.ifi.hase.soprafs24.game.Player;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -431,6 +432,71 @@ public class ResultTest {
 
         assertEquals(Outcome.LOST, result.getTeam1().getOutcome(), "Team1 should have lost.");
         assertEquals(Outcome.WON, result.getTeam2().getOutcome(), "Team2 should have won.");
+    }
+
+    @Test
+    public void testTeamResultRawGetters() {
+        List<Card> treasure = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            treasure.add(CardFactory.getCard(Suit.COPPE, 2));
+        }
+        for (int i = 0; i < 3; i++) {
+            treasure.add(CardFactory.getCard(Suit.DENARI, i + 1));
+        }
+        treasure.add(CardFactory.getCard(Suit.BASTONI, 7));
+        treasure.add(CardFactory.getCard(Suit.COPPE, 6));
+        treasure.add(CardFactory.getCard(Suit.SPADE, 1));
+        treasure.add(CardFactory.getCard(Suit.DENARI, 7));
+        int scopaCountP1 = 1;
+        int scopaCountP2 = 1;
+
+        Player p1 = createPlayerWithTreasure(900L, treasure, scopaCountP1);
+        Player p2 = createPlayerWithTreasure(901L, treasure, scopaCountP2);
+        TeamResult tr = new TeamResult(p1, p2);
+
+        assertEquals(24, tr.getCartePointsRaw());
+        assertEquals(8, tr.getDenariPointsRaw());
+        int primieraExpected = 21 + 18 + 16 + 21;
+        assertEquals(primieraExpected, tr.getPrimieraRaw());
+        assertEquals(1, tr.getSettebelloRaw());
+        assertEquals(scopaCountP1 + scopaCountP2, tr.getScopaRaw());
+    }
+
+    @Test
+    public void testResultDTO_GettersAndSetters() {
+        ResultDTO dto = new ResultDTO();
+
+        dto.setGameId(123L);
+        dto.setUserId(456L);
+        dto.setOutcome("WON");
+        dto.setMyTotal(15);
+        dto.setOtherTotal(10);
+        dto.setMyCarteResult(7);
+        dto.setMyDenariResult(4);
+        dto.setMyPrimieraResult(20);
+        dto.setMySettebelloResult(1);
+        dto.setMyScopaResult(2);
+        dto.setOtherCarteResult(5);
+        dto.setOtherDenariResult(3);
+        dto.setOtherPrimieraResult(18);
+        dto.setOtherSettebelloResult(0);
+        dto.setOtherScopaResult(1);
+
+        assertEquals(123L, dto.getGameId());
+        assertEquals(456L, dto.getUserId());
+        assertEquals("WON", dto.getOutcome());
+        assertEquals(15, dto.getMyTotal());
+        assertEquals(10, dto.getOtherTotal());
+        assertEquals(7, dto.getMyCarteResult());
+        assertEquals(4, dto.getMyDenariResult());
+        assertEquals(20, dto.getMyPrimieraResult());
+        assertEquals(1, dto.getMySettebelloResult());
+        assertEquals(2, dto.getMyScopaResult());
+        assertEquals(5, dto.getOtherCarteResult());
+        assertEquals(3, dto.getOtherDenariResult());
+        assertEquals(18, dto.getOtherPrimieraResult());
+        assertEquals(0, dto.getOtherSettebelloResult());
+        assertEquals(1, dto.getOtherScopaResult());
     }
 
 }

@@ -59,4 +59,27 @@ class OpenAiClientTest {
 
         assertTrue(ex.getCause() instanceof IOException);
     }
+
+    @Test
+    void testCreateCompletion_InterruptedException() throws Exception {
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenThrow(new InterruptedException("interrupted"));
+
+        Field clientField = OpenAiClient.class.getDeclaredField("client");
+        clientField.setAccessible(true);
+        clientField.set(client, mockHttpClient);
+
+        Thread.interrupted();
+
+        OpenAIClientException ex = assertThrows(
+                OpenAIClientException.class,
+                () -> client.createCompletion("any prompt"));
+        assertEquals("OpenAI API call interrupted", ex.getMessage());
+        assertTrue(ex.getCause() instanceof InterruptedException);
+
+        assertTrue(Thread.currentThread().isInterrupted());
+
+        Thread.interrupted();
+    }
 }

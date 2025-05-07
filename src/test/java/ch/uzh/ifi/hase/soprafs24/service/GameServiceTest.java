@@ -23,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.util.Pair;
+import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -310,6 +311,10 @@ public class GameServiceTest {
 
     @Test
     public void testQuitGameForfeitRemovesSessionAndReturnsCorrectOutcomes() throws Exception {
+        Field urf = GameStatisticsUtil.class.getDeclaredField("userRepository");
+        urf.setAccessible(true);
+        urf.set(null, new DummyUserRepository());
+
         Long gameId = 123L;
         Long playerA = 10L;
         Long playerB = 20L;
@@ -338,6 +343,33 @@ public class GameServiceTest {
         assertEquals("You won by forfeit.", byUser.get(playerB).getMessage());
 
         assertNull(gameService.getGameSessionById(gameId), "Session should be removed after forfeit");
+    }
+
+    @Test
+    public void testPlayCardGameNotFound() {
+        CardDTO dto = new CardDTO("COPPE", 5);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> gameService.playCard(999L, dto, playerA));
+        assertEquals("Game session not found for gameId: 999", ex.getMessage());
+    }
+
+    @Test
+    public void testProcessPlayTurnSessionNotFound() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> gameService.processPlayTurn(999L, List.of()));
+        assertEquals("Game session not found for gameId: 999", ex.getMessage());
+    }
+
+    @Test
+    public void testIsGameOverFalse() {
+        assertFalse(gameService.isGameOver(gameId));
+    }
+
+    @Test
+    public void testQuitGameSessionNotFound() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> gameService.quitGame(999L, playerA));
+        assertEquals("Game session not found for id: 999", ex.getMessage());
     }
 
     private List<Card> createCardsFromValues(List<Integer> values, Suit suit) {
