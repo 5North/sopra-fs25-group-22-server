@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.game;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 
@@ -15,6 +16,10 @@ public class Player {
     public Player(Long userId, List<Card> initialHand) {
         this.userId = userId;
         this.hand = new ArrayList<>(initialHand);
+        this.hand.sort(
+                Comparator.comparing(Card::getValue)
+                        .thenComparing(card -> card.getSuit().ordinal())
+        );
         this.treasure = new ArrayList<>();
         this.scopaCount = 0;
     }
