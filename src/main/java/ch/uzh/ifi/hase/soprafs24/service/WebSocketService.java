@@ -35,6 +35,7 @@ public class WebSocketService {
         messagingTemplate.convertAndSend("/topic/lobby/" + lobbyId, DTO);
     }
 
+    // TODO refactor rename method
     // sent (join) notification back to specific user
     public void lobbyNotifications(Long userId, Object DTO) {
 

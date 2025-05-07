@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.server.ResponseStatusException;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.wsLobbyDTO;
+
 import java.lang.reflect.Field;
 
 import java.util.ArrayList;
@@ -184,7 +185,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void joinLobby_full_noSuccess() {
+    void joinLobby_full_noSuccess() throws NotFoundException {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
         testLobby.addUsers(3L);
@@ -194,6 +195,7 @@ public class LobbyServiceTest {
 
         // when -> setup additional mocks for LobbyRepository and userRepository
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
 
         assertThrows(
                 IllegalStateException.class, () -> lobbyService
@@ -270,7 +272,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void getLobbyById_notExists_throwsNoSuchElementException() {
+    void getLobbyById_notExists_throwsNoTFoundException() {
         when(lobbyRepository.findById(123L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
@@ -404,6 +406,29 @@ public class LobbyServiceTest {
         // assert
         assertThrows(NotFoundException.class,
                 () -> lobbyService.addRematcher(testLobby.getLobbyId(), testUser.getId()));
+    }
+
+    @Test
+    void getLobbyByParticipantId_validInputs_success() throws NotFoundException {
+        // given
+        testUser.setLobbyJoined(1000L);
+        // when
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        Long lobbyId = lobbyService.getLobbyIdByParticipantId(testUser.getId());
+        // then
+        assertEquals(1000L, lobbyId);
+    }
+
+    @Test
+    void getLobbyByParticipantId_nonExistingUser_throwsException() throws NotFoundException {
+        // given
+        testUser.setLobbyJoined(1000L);
+        // when
+        when(userService.checkIfUserExists(anyLong())).thenThrow(new NotFoundException(("error")));
+
+        //assert
+        assertThrows(NotFoundException.class,
+                () -> lobbyService.getLobbyIdByParticipantId(testUser.getId()));
     }
 
     @Test

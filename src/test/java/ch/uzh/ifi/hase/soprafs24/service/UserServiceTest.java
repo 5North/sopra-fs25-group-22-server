@@ -267,35 +267,35 @@ public class UserServiceTest {
 
   @Test
   void getUserById_success() {
-    // given -> a first user has already been created
-    userService.createUser(testUser);
-    Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+      // given -> a first user has already been created
+      userService.createUser(testUser);
+      Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
 
-    User returnedUser = userService.getUserById(testUser.getId());
-    assertNotNull(returnedUser, "Returned user should not be null");
-    assertEquals(testUser, returnedUser, "The returned user should match the test user.");
+      User returnedUser = userService.getUserById(testUser.getId());
+      assertNotNull(returnedUser, "Returned user should not be null");
+      assertEquals(testUser, returnedUser, "The returned user should match the test user.");
   }
 
-  @Test
-  void getUserById_throwsException() {
-    // given
-    // no user
+    @Test
+    void getUserById_throwsException() {
+        // given
+        // no user
 
-    // when
-    Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
-    assertThrows(
-        ResponseStatusException.class, () -> userService.getUserById(1L));
-  }
+        // when
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+        assertThrows(
+                ResponseStatusException.class, () -> userService.getUserById(1L));
+    }
 
-  @Test
-  void testSetAndGetLobby() {
-    UserGetDTO dto = new UserGetDTO();
+    @Test
+    void testSetAndGetLobby() {
+        UserGetDTO dto = new UserGetDTO();
 
-    Lobby lobby = new Lobby();
-    lobby.setLobbyId(999L);
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(999L);
 
-    dto.setLobby(lobby);
-    assertNotNull(dto.getLobby());
-    assertEquals(999L, dto.getLobby().getLobbyId());
-  }
+        dto.setLobby(lobby);
+        assertNotNull(dto.getLobby());
+        assertEquals(999L, dto.getLobby().getLobbyId());
+    }
 }

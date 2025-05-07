@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.game;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -183,6 +184,45 @@ public class PlayerTest {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(666L, initialHand);
         assertEquals(0, player.getScopaCount(), "Initial scopa count should be 0");
+    }
+
+    @Test
+    void testHandSortingAndRemovalWithSixCards() {
+        Long userId = 99L;
+
+        Card spade2 = CardFactory.getCard(Suit.SPADE, 2);
+        Card coppe1 = CardFactory.getCard(Suit.COPPE, 1);
+        Card denari2 = CardFactory.getCard(Suit.DENARI, 2);
+        Card bast1 = CardFactory.getCard(Suit.BASTONI, 1);
+        Card denari1 = CardFactory.getCard(Suit.DENARI, 1);
+        Card coppe2 = CardFactory.getCard(Suit.COPPE, 2);
+
+        List<Card> initialHand = Arrays.asList(
+                spade2, coppe1, denari2, bast1, denari1, coppe2);
+
+        Player player = new Player(userId, initialHand);
+        List<Card> hand = player.getHand();
+
+        assertEquals(6, hand.size());
+        assertEquals(denari1, hand.get(0));
+        assertEquals(coppe1, hand.get(1));
+        assertEquals(bast1, hand.get(2));
+        assertEquals(denari2, hand.get(3));
+        assertEquals(coppe2, hand.get(4));
+        assertEquals(spade2, hand.get(5));
+
+        Card played = player.pickPlayedCard(coppe1);
+        assertEquals(coppe1, played);
+
+        List<Card> remaining = player.getHand();
+        assertEquals(5, remaining.size());
+        assertFalse(remaining.contains(coppe1));
+
+        assertEquals(denari1, remaining.get(0));
+        assertEquals(bast1, remaining.get(1));
+        assertEquals(denari2, remaining.get(2));
+        assertEquals(coppe2, remaining.get(3));
+        assertEquals(spade2, remaining.get(4));
     }
 
     @Test

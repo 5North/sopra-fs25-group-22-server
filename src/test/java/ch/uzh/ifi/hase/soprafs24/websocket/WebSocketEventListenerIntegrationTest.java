@@ -41,7 +41,7 @@ public class WebSocketEventListenerIntegrationTest {
         private WebSocketEventListener eventListener;
 
         // helper to create a dummy message with session attributes and header
-        private Message<byte[]> createMessage(String destination, Map<String, Object> sessionAttributes) {
+        private Message<byte[]> createMessageSubscribe(String destination, Map<String, Object> sessionAttributes) {
                 Map<String, Object> headers = new HashMap<>();
                 headers.put("simpDestination", destination);
                 headers.put("simpSessionAttributes", sessionAttributes);
@@ -49,13 +49,20 @@ public class WebSocketEventListenerIntegrationTest {
                                 new MessageHeaders(headers));
         }
 
+    private Message<byte[]> createMessageUnSubscribe(Map<String, Object> sessionAttributes) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("simpSessionAttributes", sessionAttributes);
+        return new org.springframework.messaging.support.GenericMessage<>(new byte[0],
+                new MessageHeaders(headers));
+    }
+
         @Test
         public void testSubscribeIntegration() throws NotFoundException, URISyntaxException {
                 // given
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 15L);
                 String destination = "/topic/lobby/2000";
-                Message<byte[]> message = createMessage(destination, sessionAttributes);
+            Message<byte[]> message = createMessageSubscribe(destination, sessionAttributes);
                 SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
                 UsersBroadcastJoinNotificationDTO LobbyDTO = new UsersBroadcastJoinNotificationDTO();
@@ -85,7 +92,7 @@ public class WebSocketEventListenerIntegrationTest {
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 15L);
                 String destination = "/topic/lobby/2000";
-                Message<byte[]> message = createMessage(destination, sessionAttributes);
+            Message<byte[]> message = createMessageSubscribe(destination, sessionAttributes);
                 SessionSubscribeEvent event = new SessionSubscribeEvent(this, message);
 
                 UsersBroadcastJoinNotificationDTO LobbyDTO = new UsersBroadcastJoinNotificationDTO();
@@ -110,11 +117,10 @@ public class WebSocketEventListenerIntegrationTest {
         }
 
         @Test
-        void testUnsubscribeIntegration_success() throws NotFoundException, URISyntaxException {
+        void testUnsubscribeIntegration_success() throws NotFoundException {
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 42L);
-                String destination = "/topic/lobby/3000";
-                Message<byte[]> message = createMessage(destination, sessionAttributes);
+            Message<byte[]> message = createMessageUnSubscribe(sessionAttributes);
                 SessionUnsubscribeEvent event = new SessionUnsubscribeEvent(this, message);
 
                 UsersBroadcastJoinNotificationDTO broadcastDTO = new UsersBroadcastJoinNotificationDTO();
@@ -125,8 +131,11 @@ public class WebSocketEventListenerIntegrationTest {
                 userDTO.setSuccess(true);
                 userDTO.setMessage("Lobby left successfully");
 
+            Long lobbyId = 3000L;
                 Lobby lobby = new Lobby();
+            lobby.setLobbyId(lobbyId);
 
+            when(lobbyService.getLobbyIdByParticipantId(42L)).thenReturn(lobbyId);
                 doNothing().when(lobbyService).leaveLobby(3000L, 42L);
 
                 doReturn(broadcastDTO)
@@ -146,11 +155,10 @@ public class WebSocketEventListenerIntegrationTest {
         }
 
         @Test
-        void testUnsubscribeIntegration_throwsException() throws NotFoundException, URISyntaxException {
+        void testUnsubscribeIntegration_throwsException() throws NotFoundException {
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 99L);
-                String destination = "/topic/lobby/4000";
-                Message<byte[]> message = createMessage(destination, sessionAttributes);
+            Message<byte[]> message = createMessageUnSubscribe(sessionAttributes);
                 SessionUnsubscribeEvent event = new SessionUnsubscribeEvent(this, message);
 
                 UserNotificationDTO userDTO = new UserNotificationDTO();
