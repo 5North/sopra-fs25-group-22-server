@@ -178,7 +178,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void joinLobby_full_noSuccess() {
+    void joinLobby_full_noSuccess() throws NotFoundException {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
         testLobby.addUsers(3L);
@@ -188,6 +188,7 @@ public class LobbyServiceTest {
 
         // when -> setup additional mocks for LobbyRepository and userRepository
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
 
         assertThrows(
                 IllegalStateException.class, () -> lobbyService
