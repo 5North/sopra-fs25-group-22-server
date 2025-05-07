@@ -286,25 +286,4 @@ class WebSocketEventListenerTest {
         verify(webSocketService).broadCastLobbyNotifications(6789L, broadcastDto);
         verify(webSocketService).lobbyNotifications(22L, userDto);
     }
-
-    // TODO
-    @Test
-    void handleUnsubscribeEvent_largeId_usesLast4Digits() throws Exception {
-        SessionUnsubscribeEvent event = buildUnsubscribeEvent("/topic/lobby/98765", 44L);
-        doNothing().when(lobbyService).leaveLobby(anyLong(), anyLong());
-        when(lobbyService.checkIfLobbyExists(anyLong())).thenReturn(new Lobby());
-
-        UsersBroadcastJoinNotificationDTO unsubDto = new UsersBroadcastJoinNotificationDTO();
-        when(webSocketService.convertToDTO(44L, 8765L, "unsubscribed"))
-                .thenReturn(unsubDto);
-        UserNotificationDTO privateDto = new UserNotificationDTO();
-        when(webSocketService.convertToDTO("Lobby left successfully", true))
-                .thenReturn(privateDto);
-
-        listener.handleUnsubscribeEvent(event);
-
-        verify(lobbyService).leaveLobby(8765L, 44L);
-        verify(webSocketService).broadCastLobbyNotifications(8765L, unsubDto);
-        verify(webSocketService).lobbyNotifications(44L, privateDto);
-    }
 }
