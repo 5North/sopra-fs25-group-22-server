@@ -50,7 +50,8 @@ public class LobbyService {
 
     public Lobby createLobby(User user) {
         if (user.getLobby() != null) {
-            return user.getLobby();
+            String msg = String.format("User with id %s already has a lobby.", user.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
         } else if (user.getLobbyJoined() != null) {
             String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
             throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
