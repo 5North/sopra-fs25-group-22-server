@@ -78,7 +78,8 @@ public class UserService {
 
     public void isUserAllowedToGetLobby(User user, Lobby lobby) {
         Long lobbyId = lobby.getLobbyId();
-        if (!Objects.equals(user.getLobby().getLobbyId(), lobbyId) || !Objects.equals(user.getLobbyJoined(), lobbyId)) {
+        // TODO refactor into something more understandable
+        if ((user.getLobby() == null || !Objects.equals(user.getLobby().getLobbyId(), lobbyId)) && (user.getLobbyJoined() == null || !Objects.equals(user.getLobbyJoined(), lobbyId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User with id %d is not in the lobby");
         }
     }
