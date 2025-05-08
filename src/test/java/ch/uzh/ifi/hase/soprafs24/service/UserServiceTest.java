@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.repository.LobbyRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import javassist.NotFoundException;
@@ -20,11 +21,15 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 public class UserServiceTest {
 
   @Mock
   private UserRepository userRepository;
+
+    @Mock
+    private LobbyRepository lobbyRepository;
 
   @InjectMocks
   private UserService userService;
@@ -48,7 +53,7 @@ public class UserServiceTest {
 
     // when -> any object is being save in the userRepository -> return the dummy
     // testUser
-    Mockito.when(userRepository.save(Mockito.any())).thenReturn(testUser);
+      when(userRepository.save(Mockito.any())).thenReturn(testUser);
   }
 
   // # 18
@@ -59,7 +64,7 @@ public class UserServiceTest {
     String previousToken = testUser.getToken();
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+      when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
 
     // call userService method
     userService.loginUser(testUser);
@@ -76,7 +81,7 @@ public class UserServiceTest {
     userService.createUser(testUser);
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(null);
+      when(userRepository.findByUsername(Mockito.any())).thenReturn(null);
 
     // then -> attempt to log in with invalid credentials -> check that an error
     // is thrown
@@ -97,7 +102,7 @@ public class UserServiceTest {
     userInput.setPassword("another-password");
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+      when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
 
     // then -> attempt login with invalid password -> check that an error
     // is thrown
@@ -109,7 +114,7 @@ public class UserServiceTest {
   // # 7
   @Test
   public void createUser_existingUser_throwsException() {
-    Mockito.when(userRepository.findByUsername("testUsername")).thenReturn(testUser);
+      when(userRepository.findByUsername("testUsername")).thenReturn(testUser);
 
     User duplicateUser = new User();
     duplicateUser.setUsername("testUsername");
@@ -126,7 +131,7 @@ public class UserServiceTest {
   // #9
   @Test
   public void createUser_validInputs_success() {
-    Mockito.when(userRepository.findByUsername(testUser.getUsername())).thenReturn(null);
+      when(userRepository.findByUsername(testUser.getUsername())).thenReturn(null);
 
     User createdUser = userService.createUser(testUser);
 
@@ -147,7 +152,7 @@ public class UserServiceTest {
     testUser.setStatus(UserStatus.ONLINE);
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
+      when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
 
     // call userService method
     User authUser = userService.authorizeUser("a valid token");
@@ -160,7 +165,7 @@ public class UserServiceTest {
     userService.createUser(testUser);
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(null);
+      when(userRepository.findByToken(Mockito.any())).thenReturn(null);
 
     // then -> attempt logout with invalid token -> check that an error
     // is thrown
@@ -176,7 +181,7 @@ public class UserServiceTest {
     testUser.setStatus(UserStatus.OFFLINE);
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
+      when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
 
     // then -> attempt logout with invalid token -> check that an error
     // is thrown
@@ -191,7 +196,7 @@ public class UserServiceTest {
     userService.createUser(testUser);
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
+      when(userRepository.findByToken(Mockito.any())).thenReturn(testUser);
 
     // call userService method
     userService.logoutUser(testUser);
@@ -212,13 +217,13 @@ public class UserServiceTest {
   }
 
   @Test
-  public void checkIfUserExists_success() throws NotFoundException {
+  void checkIfUserExists_success() {
     // given -> a first user has already been created
     userService.createUser(testUser);
     Optional<User> optionalUser = Optional.of(testUser);
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalUser);
+      when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalUser);
 
     assertDoesNotThrow(() -> userService.checkIfUserExists(testUser.getId()));
 
@@ -231,7 +236,7 @@ public class UserServiceTest {
     Optional<User> optionalEmptyUser = Optional.empty();
 
     // when -> setup additional mocks for UserRepository
-    Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalEmptyUser);
+      when(userRepository.findById(Mockito.anyLong())).thenReturn(optionalEmptyUser);
 
     assertThrows(
         NotFoundException.class, () -> userService.checkIfUserExists(1L));
@@ -239,7 +244,7 @@ public class UserServiceTest {
 
   @Test
   public void testGetUsersReturnsEmpty() {
-    Mockito.when(userRepository.findAll()).thenReturn(new ArrayList<>());
+      when(userRepository.findAll()).thenReturn(new ArrayList<>());
 
     List<User> users = userService.getUsers();
 
@@ -254,7 +259,7 @@ public class UserServiceTest {
     List<User> usersFromRepo = new ArrayList<>();
     usersFromRepo.add(testUser);
 
-    Mockito.when(userRepository.findAll()).thenReturn(usersFromRepo);
+      when(userRepository.findAll()).thenReturn(usersFromRepo);
 
     List<User> returnedUsers = userService.getUsers();
 
@@ -269,7 +274,7 @@ public class UserServiceTest {
   void getUserById_success() {
       // given -> a first user has already been created
       userService.createUser(testUser);
-      Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+      when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
 
       User returnedUser = userService.getUserById(testUser.getId());
       assertNotNull(returnedUser, "Returned user should not be null");
@@ -282,7 +287,7 @@ public class UserServiceTest {
         // no user
 
         // when
-        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
         assertThrows(
                 ResponseStatusException.class, () -> userService.getUserById(1L));
     }
@@ -297,5 +302,113 @@ public class UserServiceTest {
         dto.setLobby(lobby);
         assertNotNull(dto.getLobby());
         assertEquals(999L, dto.getLobby().getLobbyId());
+    }
+
+    @Test
+    void isUserAllowedToGetLobby_userOwnsLobby_success() {
+        // given
+        userService.createUser(testUser);
+        Lobby testLobby = new Lobby();
+        testLobby.setLobbyId(9999L);
+        testLobby.setUser(testUser);
+        testUser.setLobby(testLobby);
+
+
+        // when
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+
+        assertDoesNotThrow(() -> {
+            userService.isUserAllowedToGetLobby(testUser, testLobby);
+        });
+    }
+
+    @Test
+    void isUserAllowedToGetLobby_userJoinedLobby_success() {
+        /// given
+        userService.createUser(testUser);
+        Lobby testLobby = new Lobby();
+        testLobby.setLobbyId(9999L);
+        testLobby.addUsers(testUser.getId());
+        testUser.setLobbyJoined(testLobby.getLobbyId());
+
+        // when
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+
+        assertDoesNotThrow(() -> {
+            userService.isUserAllowedToGetLobby(testUser, testLobby);
+        });
+    }
+
+    @Test
+    void isUserAllowedToGetLobby_OtherLobbyOwned_throwsException() {
+        /// given
+        userService.createUser(testUser);
+        Lobby testLobby = new Lobby();
+        testLobby.setLobbyId(9999L);
+        Lobby testLobby2 = new Lobby();
+        testLobby2.setLobbyId(1111L);
+        testUser.setLobby(testLobby);
+
+        // when
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+
+        assertThrows(
+                ResponseStatusException.class, () -> userService.isUserAllowedToGetLobby(testUser, testLobby2));
+    }
+
+    @Test
+    void isUserAllowedToGetLobby_OtherLobbyJoined_throwsException() {
+        /// given
+        userService.createUser(testUser);
+        Lobby testLobby = new Lobby();
+        testLobby.setLobbyId(9999L);
+        Lobby testLobby2 = new Lobby();
+        testLobby2.setLobbyId(1111L);
+        testUser.setLobbyJoined(testLobby.getLobbyId());
+
+        // when
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+
+        assertThrows(
+                ResponseStatusException.class, () -> userService.isUserAllowedToGetLobby(testUser, testLobby2));
+    }
+
+    @Test
+    void isUserAllowedToGetLobby_NoLobbyOwnedOrJoined_throwsException() {
+        /// given
+        userService.createUser(testUser);
+        Lobby testLobby = new Lobby();
+        testLobby.setLobbyId(9999L);
+
+        // when
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+
+        assertThrows(
+                ResponseStatusException.class, () -> userService.isUserAllowedToGetLobby(testUser, testLobby));
+    }
+
+    @Test
+    void getLobby_success() {
+        // given
+        userService.createUser(testUser);
+        Lobby testLobby = new Lobby();
+        testLobby.setLobbyId(9999L);
+        testUser.setLobby(testLobby);
+        // when
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+        Lobby returnedLobby = userService.getLobby(testUser.getId());
+
+        assertEquals(testLobby, returnedLobby);
+    }
+
+    @Test
+    void getLobby_noLobby_throwsException() {
+        // given
+        userService.createUser(testUser);
+
+        // when
+        when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(testUser));
+        assertThrows(ResponseStatusException.class, () -> userService.getLobby(testUser.getId()));
+
     }
 }
