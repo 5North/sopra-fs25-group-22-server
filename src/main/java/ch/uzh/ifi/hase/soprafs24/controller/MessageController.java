@@ -221,7 +221,7 @@ public class MessageController {
         String msg = "Rematcher has been added to the lobby";
 
         try {
-            lobbyService.addRematcher(userId, lobbyId);
+            lobbyService.addRematcher(lobbyId, userId);
         }
         catch (NotFoundException e) {
             success = false;

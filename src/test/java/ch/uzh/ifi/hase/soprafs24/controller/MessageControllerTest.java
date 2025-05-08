@@ -428,7 +428,7 @@ public class MessageControllerTest {
 
         // verify
         verify(lobbyService, times(1))
-                .addRematcher(anyLong(), anyLong());
+                .addRematcher(lobbyId, userId);
         verify(webSocketService, times(1))
                 .convertToDTO(anyString(), anyBoolean());
         verify(webSocketService, times(1))
