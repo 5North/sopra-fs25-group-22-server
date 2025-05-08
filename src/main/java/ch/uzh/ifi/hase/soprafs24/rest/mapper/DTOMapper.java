@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPostResponseDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
@@ -48,4 +49,22 @@ public interface DTOMapper {
 
   @Mapping(source="lobbyId", target = "lobbyId")
   LobbyPostResponseDTO convertEntityToLobbyPostResponseDTO(Lobby lobby);
+
+    @Mapping(source = "lobbyId", target = "lobbyId")
+    @Mapping(source = "user", target = "hostId", qualifiedByName = "getUserId")
+    @Mapping(source = "users", target = "usersIds")
+    @Mapping(target = "rematchersIds", ignore = true)
+    LobbyDTO convertLobbyToLobbyDTO(Lobby lobby);
+
+    @Mapping(source = "lobbyId", target = "lobbyId")
+
+    @Mapping(source = "user", target = "hostId", qualifiedByName = "getUserId")
+    @Mapping(source = "users", target = "usersIds")
+    @Mapping(source = "rematchers", target = "rematchersIds")
+    LobbyDTO convertLobbyToLobbyRematchDTO(Lobby lobby);
+
+    @Named("getUserId")
+    static Long getUserId(User user) {
+        return user.getId();
+    }
 }
