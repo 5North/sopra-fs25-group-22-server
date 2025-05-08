@@ -2,11 +2,11 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPostResponseDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
-import javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +29,6 @@ public class LobbyController {
 
     @PostMapping("/lobbies")
     @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
     public LobbyPostResponseDTO createLobby(@RequestHeader String token) {
 
         // authenticate user
@@ -43,16 +42,17 @@ public class LobbyController {
     @GetMapping("/lobbies")
     @ResponseStatus(HttpStatus.OK)
 
-    public LobbyPostResponseDTO joinLobby(@RequestHeader String token, @RequestParam Long userId) throws NotFoundException {
+    public LobbyDTO joinLobby(@RequestHeader String token, @RequestParam Long userId) {
 
         // authenticate user
         User user = userService.authorizeUser(token);
 
         Lobby lobby = userService.getLobby(userId);
+
         // check that the user is in the lobby, otherwise 403
         userService.isUserAllowedToGetLobby(user, lobby);
 
-        return DTOMapper.INSTANCE.convertEntityToLobbyPostResponseDTO(lobby);
+        return DTOMapper.INSTANCE.convertLobbyToLobbyDTO(lobby);
     }
 
 }
