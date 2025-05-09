@@ -12,14 +12,13 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
-import ch.uzh.ifi.hase.soprafs24.websocket.mapper.wsDTOMapper;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,11 +34,6 @@ import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.items.Card;
-import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
-import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +56,7 @@ public class MessageControllerTest {
     private WebSocketService webSocketService;
 
     @Mock
-    private wsDTOMapper wsDTOMapper;
+    private DTOMapper DTOMapper;
 
     @InjectMocks
     private MessageController messageController;
@@ -410,7 +404,7 @@ public class MessageControllerTest {
         testLobby.setLobbyId(lobbyId);
         testLobby.setUser(testUser);
 
-        wsLobbyDTO lobbyDTO = new wsLobbyDTO();
+        LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(lobbyId);
         lobbyDTO.setHostId(userId);
 
@@ -428,13 +422,13 @@ public class MessageControllerTest {
 
         // verify
         verify(lobbyService, times(1))
-                .addRematcher(anyLong(), anyLong());
+                .addRematcher(lobbyId, userId);
         verify(webSocketService, times(1))
                 .convertToDTO(anyString(), anyBoolean());
         verify(webSocketService, times(1))
                 .lobbyNotifications(eq(userId), eq(privateDTO));
         verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(anyLong(), any(wsLobbyDTO.class));
+                .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
 
     }
 
@@ -451,7 +445,7 @@ public class MessageControllerTest {
         testLobby.setLobbyId(lobbyId);
         testLobby.setUser(testUser);
 
-        wsLobbyDTO lobbyDTO = new wsLobbyDTO();
+        LobbyDTO lobbyDTO = new LobbyDTO();
         lobbyDTO.setLobbyId(lobbyId);
         lobbyDTO.setHostId(userId);
 
@@ -477,7 +471,7 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .lobbyNotifications(eq(userId), eq(privateDTO));
         verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(anyLong(), any(wsLobbyDTO.class));
+                .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
 
     }
 

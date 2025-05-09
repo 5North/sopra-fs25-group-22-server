@@ -1,12 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.websocket.DTO;
 
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
+
 public class UsersBroadcastJoinNotificationDTO {
 
     private String username;
 
     private String status;
 
-    private wsLobbyDTO lobby;
+    private LobbyDTO lobby;
 
     public void setUsername(String username) {this.username = username;}
 
@@ -16,7 +18,11 @@ public class UsersBroadcastJoinNotificationDTO {
 
     public String getStatus() {return status;}
 
-    public void setLobby(wsLobbyDTO lobby) {this.lobby = lobby;}
+    public void setLobby(LobbyDTO lobby) {
+        this.lobby = lobby;
+    }
 
-    public wsLobbyDTO getLobby() {return lobby;}
+    public LobbyDTO getLobby() {
+        return lobby;
+    }
 }

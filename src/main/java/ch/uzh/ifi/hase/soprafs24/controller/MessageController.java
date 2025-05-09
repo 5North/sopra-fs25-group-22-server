@@ -13,12 +13,13 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
-import ch.uzh.ifi.hase.soprafs24.websocket.mapper.wsDTOMapper;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,7 +222,7 @@ public class MessageController {
         String msg = "Rematcher has been added to the lobby";
 
         try {
-            lobbyService.addRematcher(userId, lobbyId);
+            lobbyService.addRematcher(lobbyId, userId);
         }
         catch (NotFoundException e) {
             success = false;
@@ -230,7 +231,7 @@ public class MessageController {
         UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
         webSocketService.lobbyNotifications(userId, privateDTO);
 
-        wsLobbyDTO broadcastDTO = wsDTOMapper.INSTANCE.convertLobbyTowsLobbyRematchDTO(lobby);
+        LobbyDTO broadcastDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);
         webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
     }
 
