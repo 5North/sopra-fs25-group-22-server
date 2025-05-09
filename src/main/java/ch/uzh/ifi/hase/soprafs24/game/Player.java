@@ -17,8 +17,9 @@ public class Player {
         this.userId = userId;
         this.hand = new ArrayList<>(initialHand);
         this.hand.sort(
-                Comparator.comparingInt(Card::getValue)
-                        .thenComparing(card -> card.getSuit().ordinal()));
+                Comparator.comparing(Card::getValue)
+                        .thenComparing(card -> card.getSuit().ordinal())
+        );
         this.treasure = new ArrayList<>();
         this.scopaCount = 0;
     }

@@ -73,13 +73,10 @@ public class WebSocketEventListener {
     }
 
     @EventListener
-    public void handleUnsubscribeEvent(SessionUnsubscribeEvent event) throws URISyntaxException {
-        Long lobbyId;
+    public void handleUnsubscribeEvent(SessionUnsubscribeEvent event) {
+        Long lobbyId = null;
 
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String simpDestination = getSimpDestination(event);
-
-        if (simpDestination.startsWith("/topic/lobby")) {
 
             // Retrieve the userid of the current session, which was saved during auth
             // before handshake
@@ -89,9 +86,9 @@ public class WebSocketEventListener {
             String msg = "Lobby left successfully";
             boolean success = true;
 
-            lobbyId = getLobbyId(event);
             // leave lobby
             try {
+                lobbyId = lobbyService.getLobbyIdByParticipantId(userId);
                 lobbyService.leaveLobby(lobbyId, userId);
                 log.info("Lobby {} left successfully", lobbyId);
 
@@ -107,8 +104,11 @@ public class WebSocketEventListener {
             webSocketService.lobbyNotifications(userId, privateDTO);
 
             // check if lobby has been deleted and set and broadcast right msg
-            try{lobbyService.checkIfLobbyExists(lobbyId);
-            } catch (NotFoundException e) {
+        if (lobbyId != null) {
+            try {
+                lobbyService.checkIfLobbyExists(lobbyId);
+            }
+            catch (NotFoundException e) {
                 msg = "Lobby with id " + lobbyId + " has been deleted";
                 BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
                 webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
@@ -116,9 +116,6 @@ public class WebSocketEventListener {
                 privateDTO = webSocketService.convertToDTO(msg, success);
                 webSocketService.lobbyNotifications(userId, privateDTO);
             }
-
-        } else {
-            log.debug("Received other sub protocol event: {}", event.getMessage());
         }
 
     }

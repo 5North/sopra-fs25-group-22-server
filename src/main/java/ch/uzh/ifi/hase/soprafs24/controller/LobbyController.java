@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyPostResponseDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
@@ -28,7 +29,6 @@ public class LobbyController {
 
     @PostMapping("/lobbies")
     @ResponseStatus(HttpStatus.CREATED)
-    @ResponseBody
     public LobbyPostResponseDTO createLobby(@RequestHeader String token) {
 
         // authenticate user
@@ -38,30 +38,21 @@ public class LobbyController {
 
         return DTOMapper.INSTANCE.convertEntityToLobbyPostResponseDTO(createdLobby);
     }
-    // TODO remove code
-   /* @GetMapping("/lobbies/{lobbyId}")
 
-    public ResponseEntity<String> joinLobby(@RequestHeader String token, @PathVariable String lobbyId) {
+    @GetMapping("/lobbies")
+    @ResponseStatus(HttpStatus.OK)
+
+    public LobbyDTO joinLobby(@RequestHeader String token, @RequestParam Long userId) {
 
         // authenticate user
-        userService.authorizeUser(token);
+        User user = userService.authorizeUser(token);
 
-        lobbyService.joinLobby(lobbyId);
+        Lobby lobby = userService.getLobby(userId);
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Upgrade", "websocket");
-        responseHeaders.set("Connection", "Upgrade");
-        return new ResponseEntity<>(responseHeaders, HttpStatus.SWITCHING_PROTOCOLS);
+        // check that the user is in the lobby, otherwise 403
+        userService.isUserAllowedToGetLobby(user, lobby);
+
+        return DTOMapper.INSTANCE.convertLobbyToLobbyDTO(lobby);
     }
 
-    @DeleteMapping("/lobbies/{lobbyId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ResponseBody
-    public void exitLobby(@RequestHeader String token, @PathVariable String lobbyId) {
-
-        // authenticate user
-        User authUser = userService.authorizeUser(token);
-
-        lobbyService.leaveLobby(lobbyId, authUser);
-    }*/
 }

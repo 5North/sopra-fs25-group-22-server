@@ -13,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,6 +95,7 @@ public class LobbyServiceIntegrationTest {
 
         // given
         assertTrue(created.getUsers().isEmpty());
+        assertTrue(created.getRematchers().isEmpty());
 
         // when
         lobbyService.joinLobby(id, testUser.getId());
@@ -102,6 +105,7 @@ public class LobbyServiceIntegrationTest {
         assertTrue(updated.isPresent());
         assertEquals(1, updated.get().getUsers().size());
         assertEquals(testUser.getId(), updated.get().getUsers().get(0));
+        assertEquals(testUser.getId(), updated.get().getRematchers().get(0));
     }
 
     @Test
@@ -111,8 +115,13 @@ public class LobbyServiceIntegrationTest {
 
         created.addUsers(testUser.getId());
         created.addUsers(testUser2.getId());
+        created.adddRematchers(testUser.getId());
+        created.adddRematchers(testUser2.getId());
         lobbyRepository.save(created);
         lobbyRepository.flush();
+
+        List<Long> users = new ArrayList<>();
+        users.add(testUser.getId());
 
         // when
         lobbyService.leaveLobby(id, testUser2.getId());
@@ -121,7 +130,8 @@ public class LobbyServiceIntegrationTest {
         Optional<Lobby> updated = lobbyRepository.findById(id);
         assertTrue(updated.isPresent());
         assertEquals(1, updated.get().getUsers().size());
-        assertEquals(testUser.getId(), updated.get().getUsers().get(0));
+        assertEquals(users, updated.get().getUsers());
+        assertEquals(testUser.getId(), updated.get().getRematchers().get(0));
     }
 
     @Test
@@ -137,5 +147,8 @@ public class LobbyServiceIntegrationTest {
         lobbyService.leaveLobby(id, testUser.getId());
 
         assertFalse(lobbyRepository.existsById(id), "Lobby has not been deleted");
+
+        // check that the db has not nuked the host too
+        assertTrue(userRepository.existsById(testUser.getId()));
     }
 }

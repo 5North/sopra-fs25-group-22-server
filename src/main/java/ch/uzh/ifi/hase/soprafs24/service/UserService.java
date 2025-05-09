@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import javassist.NotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -74,6 +76,15 @@ public class UserService {
     return userByToken;
   }
 
+    public void isUserAllowedToGetLobby(User user, Lobby lobby) {
+        Long lobbyId = lobby.getLobbyId();
+        // TODO refactor into something more understandable
+        if ((user.getLobby() == null || !Objects.equals(user.getLobby().getLobbyId(), lobbyId)) && (user.getLobbyJoined() == null || !Objects.equals(user.getLobbyJoined(), lobbyId))) {
+            String msg = String.format("User with id %d is not in the lobby", lobbyId);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
+        }
+    }
+
   public User createUser(User newUser) {
     if (userRepository.findByUsername(newUser.getUsername()) != null) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "User creation failed because username already exists");
@@ -87,15 +98,24 @@ public class UserService {
     return userRepository.save(newUser);
   }
 
+    public Lobby getLobby(Long userId) {
+        User user = getUserById(userId);
+        if (user.getLobby() == null) {
+            String msg = String.format("User with id %s does not have a lobby", userId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+        }
+        return user.getLobby();
+    }
+
     // TODO eventually refactor better to avoid duplicate code
     public User checkIfUserExists(long userId) throws NotFoundException {
-      User user = userRepository.findById(userId).orElse(null);
+        Optional<User> user = userRepository.findById(userId);
 
-      if(user == null) {
+        if (user.isEmpty()) {
           String msg = "User with id " + userId + " does not exist";
           throw new NotFoundException(msg);
       }
-      return user;
+        return user.get();
     }
 
 }

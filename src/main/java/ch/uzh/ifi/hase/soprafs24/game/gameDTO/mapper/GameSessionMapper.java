@@ -92,59 +92,50 @@ public class GameSessionMapper {
         dto.setGameId(result.getGameId());
         TeamResult team1 = result.getTeam1();
         TeamResult team2 = result.getTeam2();
+
         if (team1.getPlayerIds().contains(userId)) {
             dto.setUserId(userId);
             dto.setOutcome(team1.getOutcome().name());
             dto.setMyTotal(team1.getTotal());
             dto.setOtherTotal(team2.getTotal());
-            dto.setMyCarteResult(team1.getCarteResult());
-            dto.setMyDenariResult(team1.getDenariResult());
-            dto.setMyPrimieraResult(team1.getPrimieraResult());
-            dto.setMySettebelloResult(team1.getSettebelloResult());
-            dto.setMyScopaResult(team1.getScopaResult());
-            dto.setOtherCarteResult(team2.getCarteResult());
-            dto.setOtherDenariResult(team2.getDenariResult());
-            dto.setOtherPrimieraResult(team2.getPrimieraResult());
-            dto.setOtherSettebelloResult(team2.getSettebelloResult());
-            dto.setOtherScopaResult(team2.getScopaResult());
+
+            dto.setMyCarteResult(team1.getCartePointsRaw());
+            dto.setMyDenariResult(team1.getDenariPointsRaw());
+            dto.setMyPrimieraResult(team1.getPrimieraRaw());
+            dto.setMySettebelloResult(team1.getSettebelloRaw());
+            dto.setMyScopaResult(team1.getScopaRaw());
+
+            dto.setOtherCarteResult(team2.getCartePointsRaw());
+            dto.setOtherDenariResult(team2.getDenariPointsRaw());
+            dto.setOtherPrimieraResult(team2.getPrimieraRaw());
+            dto.setOtherSettebelloResult(team2.getSettebelloRaw());
+            dto.setOtherScopaResult(team2.getScopaRaw());
+
         } else if (team2.getPlayerIds().contains(userId)) {
             dto.setUserId(userId);
             dto.setOutcome(team2.getOutcome().name());
             dto.setMyTotal(team2.getTotal());
             dto.setOtherTotal(team1.getTotal());
-            dto.setMyCarteResult(team2.getCarteResult());
-            dto.setMyDenariResult(team2.getDenariResult());
-            dto.setMyPrimieraResult(team2.getPrimieraResult());
-            dto.setMySettebelloResult(team2.getSettebelloResult());
-            dto.setMyScopaResult(team2.getScopaResult());
-            dto.setOtherCarteResult(team1.getCarteResult());
-            dto.setOtherDenariResult(team1.getDenariResult());
-            dto.setOtherPrimieraResult(team1.getPrimieraResult());
-            dto.setOtherSettebelloResult(team1.getSettebelloResult());
-            dto.setOtherScopaResult(team1.getScopaResult());
+
+            dto.setMyCarteResult(team2.getCartePointsRaw());
+            dto.setMyDenariResult(team2.getDenariPointsRaw());
+            dto.setMyPrimieraResult(team2.getPrimieraRaw());
+            dto.setMySettebelloResult(team2.getSettebelloRaw());
+            dto.setMyScopaResult(team2.getScopaRaw());
+
+            dto.setOtherCarteResult(team1.getCartePointsRaw());
+            dto.setOtherDenariResult(team1.getDenariPointsRaw());
+            dto.setOtherPrimieraResult(team1.getPrimieraRaw());
+            dto.setOtherSettebelloResult(team1.getSettebelloRaw());
+            dto.setOtherScopaResult(team1.getScopaRaw());
+
         } else {
             dto.setUserId(userId);
             dto.setOutcome("UNKNOWN");
         }
+
         return dto;
     }
-
-    // public static MoveActionDTO convertToMoveActionDTO(Long playerId, Card
-    // playedCard, List<Card> capturedCards) {
-    // MoveActionDTO dto = new MoveActionDTO();
-    // dto.setPlayerId(playerId);
-    // dto.setPlayedCard(convertToCardDTO(playedCard));
-
-    // List<CardDTO> capturedCardsDTO = new ArrayList<>();
-    // if (capturedCards != null) {
-    // for (Card card : capturedCards) {
-    // capturedCardsDTO.add(convertToCardDTO(card));
-    // }
-    // }
-    // dto.setCapturedCards(capturedCardsDTO);
-
-    // return dto;
-    // }
 
     public static LastCardsDTO convertToLastCardsDTO(Long userId, List<Card> lastCards) {
         LastCardsDTO dto = new LastCardsDTO();

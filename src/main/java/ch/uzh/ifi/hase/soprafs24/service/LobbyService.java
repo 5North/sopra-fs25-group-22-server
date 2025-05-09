@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
@@ -49,7 +50,8 @@ public class LobbyService {
 
     public Lobby createLobby(User user) {
         if (user.getLobby() != null) {
-            return user.getLobby();
+            String msg = String.format("User with id %s already has a lobby.", user.getId());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
         } else if (user.getLobbyJoined() != null) {
             String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
             throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
@@ -67,15 +69,16 @@ public class LobbyService {
         Lobby lobby = checkIfLobbyExists(lobbyId);
         User user = userService.checkIfUserExists(userId);
 
-        // check if lobby is already full
-        if (lobbyIsFull(lobbyId)) {
-            String msg = "The lobby is already full";
+        //TODO refactor this and next if block
+        // check if user is already in another lobby
+        if (user.getLobbyJoined() != null && !Objects.equals(user.getLobbyJoined(), lobbyId)) {
+            String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
             throw new IllegalStateException(msg);
         }
 
-        // check if user is already in another lobby
-        if (user.getLobbyJoined() != null) {
-            String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
+        // check if lobby is already full
+        if (lobbyIsFull(lobbyId)) {
+            String msg = "The lobby is already full";
             throw new IllegalStateException(msg);
         }
 
@@ -83,6 +86,7 @@ public class LobbyService {
         if (!lobby.getUsers().contains(userId)) {
             lobby.addUsers(userId);
             user.setLobbyJoined(lobbyId);
+            lobby.adddRematchers(userId);
         }
         userRepository.save(user);
         userRepository.flush();
@@ -95,6 +99,7 @@ public class LobbyService {
         if (lobby.getUser() != null && lobby.getUser().getId().equals(userId)) {
             user.setLobby(null);
             user.setLobbyJoined(null);
+            lobby.removeRematchers(userId);
             userRepository.save(user);
             userRepository.flush();
 
@@ -112,23 +117,21 @@ public class LobbyService {
 
 
         lobby.removeUsers(userId);
+        lobby.removeRematchers(userId);
         user.setLobbyJoined(null);
 
 
         userRepository.save(user);
     }
 
+    // TODO refactor this unnecessary method
     public Lobby getLobbyById(Long lobbyId) throws NotFoundException {
         return checkIfLobbyExists(lobbyId);
     }
 
     public boolean lobbyIsFull(Long lobbyId) throws NotFoundException {
-        Optional<Lobby> lobby = lobbyRepository.findById(lobbyId);
-        if (lobby.isEmpty()) {
-            String msg = "No lobby with id " + lobbyId;
-            throw new NotFoundException(msg);
-        }
-        return lobby.get().getUsers().size() >= 4;
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        return lobby.getUsers().size() >= 4;
     }
 
     public Lobby checkIfLobbyExists(Long lobbyId) throws NotFoundException {
@@ -172,6 +175,30 @@ public class LobbyService {
         }
     }
 
+    public boolean rematchIsFull(Long lobbyId) throws NotFoundException {
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        // TODO illegalstateException if more than 4 user
+        return lobby.getRematchers().size() >= 4;
+    }
+
+    public void resetRematch(Long lobbyId) throws NotFoundException {
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        lobby.clearRematchers();
+    }
+
+    public void addRematcher(Long lobbyId, Long userId) throws NotFoundException {
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        userService.checkIfUserExists(userId);
+        lobby.adddRematchers(userId);
+    }
+
+    public Long getLobbyIdByParticipantId(Long participantId) throws NotFoundException {
+        User user = userService.checkIfUserExists(participantId);
+        return user.getLobbyJoined();
+    }
+
+
+    //TODO set private
     public Long generateId() {
         Long randomId;
         do {

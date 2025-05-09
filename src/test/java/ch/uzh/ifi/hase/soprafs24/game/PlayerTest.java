@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 
 public class PlayerTest {
 
@@ -186,7 +187,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testHandSortingAndRemovalWithSixCards() {
+    void testHandSortingAndRemovalWithSixCards() {
         Long userId = 99L;
 
         Card spade2 = CardFactory.getCard(Suit.SPADE, 2);
@@ -222,5 +223,21 @@ public class PlayerTest {
         assertEquals(denari2, remaining.get(2));
         assertEquals(coppe2, remaining.get(3));
         assertEquals(spade2, remaining.get(4));
+    }
+
+    @Test
+    public void testPlayerInfoDTOGettersSetters() {
+        PlayerInfoDTO dto = new PlayerInfoDTO();
+        assertNull(dto.getUserId());
+        assertEquals(0, dto.getHandSize());
+        assertEquals(0, dto.getScopaCount());
+
+        dto.setUserId(789L);
+        dto.setHandSize(6);
+        dto.setScopaCount(3);
+
+        assertEquals(789L, dto.getUserId());
+        assertEquals(6, dto.getHandSize());
+        assertEquals(3, dto.getScopaCount());
     }
 }

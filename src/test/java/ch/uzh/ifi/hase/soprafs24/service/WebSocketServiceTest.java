@@ -2,16 +2,16 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.wsLobbyDTO;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public class WebSocketServiceTest {
     private LobbyService lobbyService;
 
     @BeforeEach
-    public void setup()  {
+    public void setup() {
         MockitoAnnotations.openMocks(this);
 
     }
@@ -49,7 +49,7 @@ public class WebSocketServiceTest {
         lobby.addUsers(1L);
         lobby.addUsers(2L);
 
-        wsLobbyDTO lobbyDTO = new wsLobbyDTO();
+        LobbyDTO lobbyDTO = new LobbyDTO();
         List<Long> userIds = new ArrayList<>();
         userIds.add(userId);
         userIds.add(2L);
@@ -84,6 +84,19 @@ public class WebSocketServiceTest {
         assertNotNull(dto);
         assertEquals(msg, dto.getMessage());
         assertTrue(dto.getSuccess());
+    }
+
+    @Test
+    void convertToDTOForBroadcastNotification() {
+        // given
+        String msg = "Lobby has been deleted";
+
+        // when
+        BroadcastNotificationDTO dto = webSocketService.convertToDTO(msg);
+
+        // then
+        assertNotNull(dto);
+        assertEquals(msg, dto.getMessage());
     }
 
 }

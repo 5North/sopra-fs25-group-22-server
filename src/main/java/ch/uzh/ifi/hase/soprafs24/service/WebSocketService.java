@@ -2,11 +2,11 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.wsLobbyDTO;
-import ch.uzh.ifi.hase.soprafs24.websocket.mapper.wsDTOMapper;
 import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -35,6 +35,7 @@ public class WebSocketService {
         messagingTemplate.convertAndSend("/topic/lobby/" + lobbyId, DTO);
     }
 
+    // TODO refactor rename method
     // sent (join) notification back to specific user
     public void lobbyNotifications(Long userId, Object DTO) {
 
@@ -48,10 +49,10 @@ public class WebSocketService {
         User user = userService.checkIfUserExists(userId);
         UsersBroadcastJoinNotificationDTO DTO = new UsersBroadcastJoinNotificationDTO();
         Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
-        wsLobbyDTO wsLobbyDTO = wsDTOMapper.INSTANCE.convertLobbyTowsLobbyDTO(lobby);
+        LobbyDTO LobbyDTO = DTOMapper.INSTANCE.convertLobbyToLobbyDTO(lobby);
         DTO.setStatus(status);
         DTO.setUsername(user.getUsername());
-        DTO.setLobby(wsLobbyDTO);
+        DTO.setLobby(LobbyDTO);
         return DTO;
     }
 

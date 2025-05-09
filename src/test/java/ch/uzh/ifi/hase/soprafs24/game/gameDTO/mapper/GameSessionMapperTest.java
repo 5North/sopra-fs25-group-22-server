@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
+import ch.uzh.ifi.hase.soprafs24.game.Table;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
@@ -15,6 +16,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeOutNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
+import ch.uzh.ifi.hase.soprafs24.game.result.Result;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -236,6 +239,59 @@ public class GameSessionMapperTest {
         assertEquals(userId, dto.getUserId());
         assertEquals(outcome, dto.getOutcome());
         assertEquals(message, dto.getMessage());
+    }
+
+    @Test
+    public void testConvertToLastCardsDTO_nullList() {
+        LastCardsDTO dto = GameSessionMapper.convertToLastCardsDTO(42L, null);
+        assertEquals(42L, dto.getUserId());
+        assertNotNull(dto.getCards());
+        assertTrue(dto.getCards().isEmpty());
+    }
+
+    @Test
+    public void testConvertResultToDTO_secondTeamAndUnknown() {
+        List<Player> players = Arrays.asList(
+                new Player(1L, Collections.emptyList()),
+                new Player(2L, Collections.emptyList()),
+                new Player(3L, Collections.emptyList()),
+                new Player(4L, Collections.emptyList()));
+        Result result = new Result(77L, players);
+
+        Long user2 = 3L;
+        ResultDTO dto2 = GameSessionMapper.convertResultToDTO(result, user2);
+        assertEquals(user2, dto2.getUserId());
+        assertEquals(result.getTeam2().getOutcome().name(), dto2.getOutcome());
+        assertEquals(result.getTeam2().getTotal(), dto2.getMyTotal());
+        assertEquals(result.getTeam1().getTotal(), dto2.getOtherTotal());
+
+        Long unknown = 999L;
+        ResultDTO dtoU = GameSessionMapper.convertResultToDTO(result, unknown);
+        assertEquals(unknown, dtoU.getUserId());
+        assertEquals("UNKNOWN", dtoU.getOutcome());
+    }
+
+    @Test
+    public void testConvertToGameSessionDTO_whenTableIsNullAndNoPlayers() {
+        GameSession stub = new GameSession(55L, Collections.emptyList()) {
+            @Override
+            public Table getTable() {
+                return null;
+            }
+
+            @Override
+            public List<Player> getPlayers() {
+                return Collections.emptyList();
+            }
+        };
+
+        GameSessionDTO dto = GameSessionMapper.convertToGameSessionDTO(stub);
+        assertEquals(55L, dto.getGameId());
+        assertNotNull(dto.getTableCards());
+        assertTrue(dto.getTableCards().isEmpty());
+        assertNotNull(dto.getPlayers());
+        assertTrue(dto.getPlayers().isEmpty());
+        assertNull(dto.getCurrentPlayerId());
     }
 
     @Test

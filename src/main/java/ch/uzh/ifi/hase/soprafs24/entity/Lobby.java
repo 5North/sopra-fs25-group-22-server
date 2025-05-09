@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Fetch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,12 @@ public class Lobby implements Serializable {
 
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     private List<Long> users = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<Long> rematchers = new ArrayList<>();
 
     @Transient
     private GameSession gameSession;
@@ -37,6 +44,22 @@ public class Lobby implements Serializable {
     public void addUsers(Long userId) {users.add(userId);}
 
     public boolean removeUsers(Long userId) {return users.remove(userId);}
+
+    public List<Long> getRematchers() {
+        return rematchers;
+    }
+
+    public void adddRematchers(Long userId) {
+        rematchers.add(userId);
+    }
+
+    public boolean removeRematchers(Long userId) {
+        return rematchers.remove(userId);
+    }
+
+    public void clearRematchers() {
+        rematchers.clear();
+    }
 
     public GameSession getGameSession() {return gameSession;}
 
