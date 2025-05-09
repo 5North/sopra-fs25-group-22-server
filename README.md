@@ -5,7 +5,31 @@
 ![CI](https://img.shields.io/github/actions/workflow/status/5north/sopra-fs25-group-22-server/main.yml?label=Build%20and%20Deploy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# Scopa for beginners 🧹:
+```
+  █████████                                              ██████                       
+ ███░░░░░███                                            ███░░███                      
+░███    ░░░   ██████   ██████  ████████   ██████       ░███ ░░░   ██████  ████████    
+░░█████████  ███░░███ ███░░███░░███░░███ ░░░░░███     ███████    ███░░███░░███░░███   
+ ░░░░░░░░███░███ ░░░ ░███ ░███ ░███ ░███  ███████    ░░░███░    ░███ ░███ ░███ ░░░    
+ ███    ░███░███  ███░███ ░███ ░███ ░███ ███░░███      ░███     ░███ ░███ ░███        
+░░█████████ ░░██████ ░░██████  ░███████ ░░████████     █████    ░░██████  █████       
+ ░░░░░░░░░   ░░░░░░   ░░░░░░   ░███░░░   ░░░░░░░░     ░░░░░      ░░░░░░  ░░░░░        
+                               ░███                                                   
+                               █████                                                  
+                              ░░░░░                                                   
+ ███████████                     ███                                                  
+░░███░░░░░███                   ░░░                                                   
+ ░███    ░███  ██████   ███████ ████  ████████   ████████    ██████  ████████   █████ 
+ ░██████████  ███░░███ ███░░███░░███ ░░███░░███ ░░███░░███  ███░░███░░███░░███ ███░░  
+ ░███░░░░░███░███████ ░███ ░███ ░███  ░███ ░███  ░███ ░███ ░███████  ░███ ░░░ ░░█████ 
+ ░███    ░███░███░░░  ░███ ░███ ░███  ░███ ░███  ░███ ░███ ░███░░░   ░███      ░░░░███
+ ███████████ ░░██████ ░░███████ █████ ████ █████ ████ █████░░██████  █████     ██████ 
+░░░░░░░░░░░   ░░░░░░   ░░░░░███░░░░░ ░░░░ ░░░░░ ░░░░ ░░░░░  ░░░░░░  ░░░░░     ░░░░░░  
+                       ███ ░███                                                       
+                      ░░██████                                                        
+                       ░░░░░░                                                                                                                                                                              
+
+```
 
 <details>
 <summary>Click to expand</summary>
@@ -22,16 +46,37 @@ This is the content inside the dropdown.
     * [Websocket](#websocket-specs)
     * [Stomp](#stomp-notifications)
 * [Launch & Deployment](#launch--deployment)
-
 * [Roadmap](#roadmap)
-* [Authors and Acknowledgments](#authors-and-acknowledgements)
+* [Authors & Acknowledgments](#authors--acknowledgements)
 * [License](#license)
 
 ## Introduction
 
+🧹**Scopa for Beginners**🧹 aims to bring the beloved traditional italian cards game [Scopa](https://en.wikipedia.org/wiki/Scopa) 
+to an international audience by creating an accessible digital version of the 2 versus 2 variant. The goal of this project is to create a user and 
+beginner-friendly application client-server to allow both newcomers and hardcore fans of the game to conveniently play 
+Scopa in their browser. To make it easier for beginners to learn the rules and achieve some flow, an integrated LLM 
+assistant can suggest some possible options to play if help requested by the player. Real time communication via Websockets
+allows to play this timeless classic with your friends without noticeable hiccups on a simple and no-fuss application,
+that propose itself as an open source alternative to the usually paywalled or ads-filled commercial versions. 
+
+
 ## Illustrations
 
+// TODO once application is final
+
 ## Technologies
+
+* [Spring Boot](https://spring.io/projects/spring-boot) - Open-source Java framework to create Spring-based applications.
+* [Gradle](https://gradle.org/) - a fast, dependable, and adaptable open-source build automation tool.
+* [JPA](https://spring.io/projects/spring-data-jpa) - a persistence API used to map the application's *entities* to the database tables.
+* [H2 Database](https://h2database.com/html/main.html) - a Java SQL database.
+* [Websocket](https://docs.spring.io/spring-framework/reference/web/websocket.html) - To enable a two-way interactive communication session between the server and the client, for a realtime 
+update of the game state among the participants during a match. 
+* [STOMP](https://stomp.github.io/) protocol - To easily send and forward messages over websockets using Spring’s integrated STOMP support.
+* [Google App Engine](https://cloud.google.com/) - cloud computing platform used to deploy our server.
+* [SonarQube](https://www.sonarsource.com/products/sonarqube/) - open-source platform for continuous inspection of code quality.
+* [OpenAi API](https://openai.com/) - API used for the game helping assistant.
 
 ## High-level components
 
@@ -40,24 +85,24 @@ This is the content inside the dropdown.
 <details>
 <summary>See table...</summary>
 
-| Supported | Mapping             | Method   | Parameter(s)                                                      | Parameter Type     | Status Code | Response                                            | Response Type | Description                                                       |
-|-----------|---------------------|----------|-------------------------------------------------------------------|--------------------|-------------|-----------------------------------------------------|---------------|-------------------------------------------------------------------|
-| ✅         | **/login**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 200         | Token &lt;string&gt;                                | Header        | Log in user and return an authentication token                    |
-| ✅         | **/login**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 403         | Error: reason &lt;string&gt;                        | Body          | Login failed due to invalid credentials                           |
-| ✅         | **/logout**         | **POST** | Token &lt;string&gt;                                              | Header             | 204         | --                                                  | Header        | Log out the user (invalidate token)                               |
-| ✅         | **/logout**         | **POST** | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Logout failed due to unauthenticated request                      |
-| ✅         | **/users**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 201         | Token &lt;string&gt;; User(*)                       | Header; Body  | Create new user and auto-login                                    |
-| ✅         | **/users**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 409         | Error: reason &lt;string&gt;                        | Body          | User creation failed because username already exists              |
-| ✅         | **/users**          | **GET**  | Token &lt;string&gt;                                              | Header             | 200         | list&lt;User(*)&gt;                                 | Body          | Retrieve all users (for scoreboard)                               |
-| ✅         | **/users**          | **GET**  | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for users list                            |
-| ✅         | **/users/{userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 200         | User(*)                                             | Body          | Retrieve specific user profile                                    |
-| ✅         | **/users/{userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for user profile                          |
-| ✅         | **/users/{userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
-| ❌         | **/users/{userId}** | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 204         | --                                                  | --            | Update user profile                                               |
-| ❌         | **/users/{userId}** | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
-| ✅         | **/lobbies**        | **POST** | Token &lt;string&gt;                                              | Header; Body       | 201         | Lobby(*) (includes lobbyId, PIN, roomName, players) | Body          | Create new lobby; persist via LobbyRepository ensuring unique PIN |
-| ✅         | **/lobbies**        | **POST** | Token &lt;string&gt;                                              | Header; Body       | 401         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user is not authenticated           |
-| ✅         | **/lobbies**        | **POST** | Token &lt;string&gt;                                              | Header; Body       | 409         | Error: reason and id of lobby joined &lt;string&gt; | Body          | Lobby creation failed because user already joined a lobby         |
+|  Mapping             | Method   | Parameter(s)                                                      | Parameter Type     | Status Code | Response                                            | Response Type | Description                                                       |
+|----------------------|----------|-------------------------------------------------------------------|--------------------|-------------|-----------------------------------------------------|---------------|-------------------------------------------------------------------|
+|  **/login**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 200         | Token &lt;string&gt;                                | Header        | Log in user and return an authentication token                    |
+|  **/login**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 403         | Error: reason &lt;string&gt;                        | Body          | Login failed due to invalid credentials                           |
+|  **/logout**         | **POST** | Token &lt;string&gt;                                              | Header             | 204         | --                                                  | Header        | Log out the user (invalidate token)                               |
+|  **/logout**         | **POST** | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Logout failed due to unauthenticated request                      |
+|  **/users**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 201         | Token &lt;string&gt;; User(*)                       | Header; Body  | Create new user and auto-login                                    |
+|  **/users**          | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body               | 409         | Error: reason &lt;string&gt;                        | Body          | User creation failed because username already exists              |
+|  **/users**          | **GET**  | Token &lt;string&gt;                                              | Header             | 200         | list&lt;User(*)&gt;                                 | Body          | Retrieve all users (for scoreboard)                               |
+|  **/users**          | **GET**  | Token &lt;string&gt;                                              | Header             | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for users list                            |
+|  **/users/{userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 200         | User(*)                                             | Body          | Retrieve specific user profile                                    |
+|  **/users/{userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for user profile                          |
+|  **/users/{userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path       | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
+|  **/users/{userId}** | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 204         | --                                                  | --            | Update user profile                                               |
+|  **/users/{userId}** | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                        |
+|  **/lobbies**        | **POST** | Token &lt;string&gt;                                              | Header; Body       | 201         | Lobby(*) (includes lobbyId, PIN, roomName, players) | Body          | Create new lobby; persist via LobbyRepository ensuring unique PIN |
+|  **/lobbies**        | **POST** | Token &lt;string&gt;                                              | Header; Body       | 401         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user is not authenticated           |
+|  **/lobbies**        | **POST** | Token &lt;string&gt;                                              | Header; Body       | 409         | Error: reason and id of lobby joined &lt;string&gt; | Body          | Lobby creation failed because user already joined a lobby         |
 
 </details>
 
@@ -222,8 +267,6 @@ Download your IDE of choice (e.g., IntelliJ, Visual Studio Code, or Eclipse). Ma
 system (for Windows, please make sure your JAVA_HOME environment variable is set to the correct version of Java).
 IntelliJ
 
-If you consider to use IntelliJ as your IDE of choice, you can make use of your free educational license here.
-
     File -> Open... -> SoPra server template
     Accept to import the project as a gradle project
     To build right click the build.gradle file and choose Run Build
@@ -253,16 +296,16 @@ You can use the local Gradle Wrapper to build the application.
 
 Build
 
-./gradlew build
+`./gradlew build`
 
 Run
 
-./gradlew bootRun
+`./gradlew bootRun`
 
 You can verify that the server is running by visiting localhost:8080 in your browser.
 Test
 
-./gradlew test
+`./gradlew test`
 
 Development Mode
 
@@ -271,18 +314,15 @@ once the content of a file has been changed.
 
 Start two terminal windows and run:
 
-./gradlew build --continuous
+`./gradlew build --continuous`
 
 and in the other one:
 
-./gradlew bootRun
+`./gradlew bootRun`
 
 If you want to avoid running all tests with every change, use the following command instead:
 
-./gradlew build --continuous -xtest
-
-</details>
-
+`./gradlew build --continuous -xtest`
 
 To configure a debugger for SpringBoot's Tomcat servlet (i.e. the process you start with ./gradlew bootRun command), do
 the following:
@@ -294,18 +334,39 @@ the following:
     Set breakpoints in the application where you need it
     Step through the process one step at a time
 
+</details>
+
 Testing
 
 Have a look here: https://www.baeldung.com/spring-boot-testing
 
-## Authors and Acknowledgements
+### Release
+
+New contributions to the main branch are continuously build, tested, analyzed and deployed to Google Engine using 
+GitHub actions.
+
+Code releases are done at the end of each sprint by manually creating a GitHub release with a new tag.
+
+## Roadmap
+
+## Authors & Acknowledgements
 
 ### Authors
 
+* [5North](https://github.com/5North)
+* Author 2
+* Author 3
+* Author 4
+
 ### Acknowledgements
+
+We would like to thank our tutor [] for his support during this course.
 
 ## License
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This project is licensed under the MIT License - see the LICENSE.md file for details
+This work is licensed under the MIT License - see the LICENSE.md file for details.
+
+The project is based on the [sopra-fs25-template-server](https://github.com/HASEL-UZH/sopra-fs25-template-server)
+, which is licensed under the Apache 2.0 license.
