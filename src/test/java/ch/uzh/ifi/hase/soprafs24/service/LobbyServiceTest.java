@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.server.ResponseStatusException;
-import ch.uzh.ifi.hase.soprafs24.websocket.DTO.wsLobbyDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 
 import java.lang.reflect.Field;
 
@@ -85,12 +85,15 @@ public class LobbyServiceTest {
     }
 
     @Test
-    void createLobby_alreadyExists_success() {
+    void createLobby_alreadyExists_throwsException() {
+        // given
+        assertNull(testUser.getLobby());
 
-        Lobby createdLobby = lobbyService.createLobby(testUser);
-        Lobby createdLobby2 = lobbyService.createLobby(testUser);
+        lobbyService.createLobby(testUser);
+        assertNotNull(testUser.getLobby());
 
-        assertEquals(createdLobby.getLobbyId(), createdLobby2.getLobbyId());
+        // assert
+        assertThrows(ResponseStatusException.class, () -> lobbyService.createLobby(testUser));
     }
 
     @Test
@@ -433,7 +436,7 @@ public class LobbyServiceTest {
 
     @Test
     void wsLobbyDTO_rematchersIdsGetterAndSetter() {
-        wsLobbyDTO dto = new wsLobbyDTO();
+        LobbyDTO dto = new LobbyDTO();
         List<Long> rematchers = Arrays.asList(10L, 20L, 30L);
         dto.setRematchersIds(rematchers);
         assertEquals(rematchers, dto.getRematchersIds());
