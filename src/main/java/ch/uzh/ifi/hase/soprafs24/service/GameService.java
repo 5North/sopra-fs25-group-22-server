@@ -11,6 +11,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Transactional
 public class GameService {
 
+    private static final Logger log = LoggerFactory.getLogger(GameService.class);
     private final Map<Long, GameSession> gameSessions = new ConcurrentHashMap<>();
     private final WebSocketService webSocketService;
     private final AIService aiService;
@@ -67,6 +70,7 @@ public class GameService {
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.lobbyNotifications(userId, optionsDTO);
+            log.info("Message sent to user {}: card options", userId);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
         }
@@ -93,12 +97,14 @@ public class GameService {
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
             webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
+            log.info("Message broadcasted to lobby {}: lastcards picked by {}", gameId, playerId);
 
             Result result = game.calculateResult();
 
             game.getPlayers().forEach(player -> {
                 ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
                 webSocketService.lobbyNotifications(player.getUserId(), resultDTO);
+                log.info("Message sent to user {}: result", playerId);
             });
             gameSessions.remove(gameId);
             return true;
