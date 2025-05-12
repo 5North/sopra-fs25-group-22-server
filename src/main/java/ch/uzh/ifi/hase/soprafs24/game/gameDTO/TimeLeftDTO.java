@@ -1,4 +1,3 @@
-// src/main/java/ch/uzh/ifi/hase/soprafs24/game/gameDTO/TimeLeftDTO.java
 package ch.uzh.ifi.hase.soprafs24.game.gameDTO;
 
 public class TimeLeftDTO {
