@@ -85,7 +85,7 @@ public class MessageControllerTest {
         dummyNotificationDTO.setSuccess(Boolean.TRUE);
         dummyNotificationDTO.setMessage(msg);
 
-        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
+        when(lobbyService.checkIfLobbyExists(100L)).thenReturn(lobby);
         when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
         when(lobbyService.rematchIsFull(lobby.getLobbyId())).thenReturn(true);
         when(gameService.startGame(lobby)).thenReturn(dummyGame);
@@ -116,7 +116,7 @@ public class MessageControllerTest {
         dummyNotificationDTO.setMessage(msg);
 
         // when
-        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
+        when(lobbyService.checkIfLobbyExists(100L)).thenReturn(lobby);
         when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(false);
         when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
 
@@ -145,7 +145,7 @@ public class MessageControllerTest {
         dummyNotificationDTO.setMessage(msg);
 
         // when
-        when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
+        when(lobbyService.checkIfLobbyExists(100L)).thenReturn(lobby);
         when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
         when(lobbyService.rematchIsFull(lobby.getLobbyId())).thenReturn(false);
         when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
@@ -415,7 +415,7 @@ public class MessageControllerTest {
         StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
 
         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
-        when(lobbyService.getLobbyById(lobbyId)).thenReturn(testLobby);
+        when(lobbyService.checkIfLobbyExists(lobbyId)).thenReturn(testLobby);
         when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(privateDTO);
 
         messageController.rematch(accessor);
@@ -456,7 +456,7 @@ public class MessageControllerTest {
         StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
 
         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
-        when(lobbyService.getLobbyById(lobbyId)).thenReturn(testLobby);
+        when(lobbyService.checkIfLobbyExists(lobbyId)).thenReturn(testLobby);
         doThrow(new NotFoundException("No lobby with id 1000L found")).when(lobbyService)
                 .addRematcher(anyLong(), anyLong());
         when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(privateDTO);

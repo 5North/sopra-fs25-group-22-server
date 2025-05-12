@@ -56,7 +56,7 @@ public class MessageController {
         String msg = "Starting game";
         boolean success = true;
         try {
-            Lobby lobby = lobbyService.getLobbyById(lobbyId);
+            Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
             // check if lobby is full
             if (!lobbyService.lobbyIsFull(lobbyId)) {
                 log.info("Lobby {} is not full yet", lobbyId);
@@ -241,7 +241,7 @@ public class MessageController {
         Long userId = (Long) userIdObj;
         User user = userService.checkIfUserExists(userId);
         Long lobbyId = user.getLobbyJoined();
-        Lobby lobby = lobbyService.getLobbyById(lobbyId);
+        Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
 
         boolean success = true;
         String msg = "Rematcher has been added to the lobby";

@@ -312,7 +312,7 @@ public class LobbyServiceTest {
         when(lobbyRepository.findById(123L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
-                () -> lobbyService.getLobbyById(123L));
+                () -> lobbyService.checkIfLobbyExists(123L));
     }
 
     @Test
@@ -480,7 +480,7 @@ public class LobbyServiceTest {
         when(lobbyRepository.findById(testLobby.getLobbyId()))
                 .thenReturn(Optional.of(testLobby));
 
-        Lobby found = lobbyService.getLobbyById(testLobby.getLobbyId());
+        Lobby found = lobbyService.checkIfLobbyExists(testLobby.getLobbyId());
         assertSame(testLobby, found);
     }
 

@@ -69,7 +69,6 @@ public class LobbyService {
         Lobby lobby = checkIfLobbyExists(lobbyId);
         User user = userService.checkIfUserExists(userId);
 
-        //TODO refactor this and next if block
         // check if user is already in another lobby
         if (user.getLobbyJoined() != null && !Objects.equals(user.getLobbyJoined(), lobbyId)) {
             String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
@@ -123,11 +122,6 @@ public class LobbyService {
         userRepository.save(user);
     }
 
-    // TODO refactor this unnecessary method
-    public Lobby getLobbyById(Long lobbyId) throws NotFoundException {
-        return checkIfLobbyExists(lobbyId);
-    }
-
     public boolean lobbyIsFull(Long lobbyId) throws NotFoundException {
         Lobby lobby = checkIfLobbyExists(lobbyId);
         return lobby.getUsers().size() >= 4;
@@ -176,7 +170,11 @@ public class LobbyService {
 
     public boolean rematchIsFull(Long lobbyId) throws NotFoundException {
        Lobby lobby = checkIfLobbyExists(lobbyId);
-       // TODO illegalstateException if more than 4 user
+       if (lobby.getUsers().size() > 4) {
+           String msg = "The lobby is more than 4 users full";
+           log.error(msg);
+           throw new IllegalArgumentException(msg);
+       }
         return lobby.getRematchers().size() >= 4;
     }
 
@@ -196,9 +194,7 @@ public class LobbyService {
         return user.getLobbyJoined();
     }
 
-
-    //TODO set private
-    public Long generateId() {
+    Long generateId() {
         Long randomId;
         do {
             randomId = (long) (random.nextInt(9000) + 1000);
