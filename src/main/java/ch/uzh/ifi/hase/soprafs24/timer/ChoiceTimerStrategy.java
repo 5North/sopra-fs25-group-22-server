@@ -1,4 +1,3 @@
-// src/main/java/ch/uzh/ifi/hase/soprafs24/timer/ChoiceTimerStrategy.java
 package ch.uzh.ifi.hase.soprafs24.timer;
 
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
@@ -48,12 +47,10 @@ public class ChoiceTimerStrategy implements TimerStrategy {
         if (game == null || game.isGameOver() || forUserId == null)
             return;
 
-        // 1) Chi stava scegliendo?
         Player chooser = game.getPlayerById(forUserId);
         if (chooser == null)
             return;
 
-        // 2) Provo a selezionare un’opzione casuale
         try {
             List<List<Card>> opts = game.getTable().getCaptureOptions(game.getLastCardPlayed());
             if (!opts.isEmpty()) {
@@ -62,18 +59,14 @@ public class ChoiceTimerStrategy implements TimerStrategy {
         } catch (Exception ignored) {
         }
 
-        // 3) Stato aggiornato
         GameSession updated = gameService.getGameSessionById(gameId);
 
-        // 4) Broadcast stato pubblico
         GameSessionDTO publicDto = GameSessionMapper.convertToGameSessionDTO(updated);
         webSocketService.broadCastLobbyNotifications(gameId, publicDto);
 
-        // 5) Notifica privata mano aggiornata
         PrivatePlayerDTO privateDto = GameSessionMapper.convertToPrivatePlayerDTO(chooser);
         webSocketService.lobbyNotifications(forUserId, privateDto);
 
-        // 6) Broadcast azione di cattura (safe guard su NPE)
         MoveActionDTO moveDto;
         try {
             moveDto = GameSessionMapper.convertToMoveActionDTO(
@@ -90,11 +83,9 @@ public class ChoiceTimerStrategy implements TimerStrategy {
             return;
         }
 
-        // 7) Rischedulo subito play‐phase (30s)
         var playStrat = timerService.getPlayStrategy();
         timerService.schedule(gameId, playStrat, null);
 
-        // 8) Broadcast timer rimanente
         long rem = timerService.getRemainingSeconds(gameId, playStrat);
         TimeLeftDTO timeDto = GameSessionMapper.toTimeToPlayDTO(gameId, rem);
         webSocketService.broadCastLobbyNotifications(gameId, timeDto);
