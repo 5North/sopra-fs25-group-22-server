@@ -40,10 +40,17 @@ public class WebSocketAuth implements HandshakeInterceptor {
              token = params.getFirst("token");
         }
         catch (NullPointerException e) {
-            // return 400 if no token header was present
+            // return 400 if no token param was present
+            response.setStatusCode(HttpStatus.BAD_REQUEST);
+            log.info("Handshake failed: {}", e.getMessage());
+            return false;
+        }
+
+        if (token == null) {
             response.setStatusCode(HttpStatus.BAD_REQUEST);
             log.info("Handshake failed: no token provided");
             return false;
+
         }
 
         try {
@@ -54,6 +61,7 @@ public class WebSocketAuth implements HandshakeInterceptor {
             return true;
         }
         catch (ResponseStatusException e) {
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
             log.info("Handshake failed: unauthorized");
             return false;
         }
