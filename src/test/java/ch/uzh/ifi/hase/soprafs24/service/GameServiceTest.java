@@ -39,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-// disabilita l’errore su stubbing non usati
+
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class GameServiceTest {
 

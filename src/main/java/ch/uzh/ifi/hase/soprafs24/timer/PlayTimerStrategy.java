@@ -1,4 +1,3 @@
-// src/main/java/ch/uzh/ifi/hase/soprafs24/timer/PlayTimerStrategy.java
 package ch.uzh.ifi.hase.soprafs24.timer;
 
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
@@ -47,11 +46,9 @@ public class PlayTimerStrategy implements TimerStrategy {
         if (game == null || game.isGameOver())
             return;
 
-        // 1) Identifico il player corrente
         Player current = game.getCurrentPlayer();
         Long currentUserId = current.getUserId();
 
-        // 2) Provo a giocare una carta casuale (swallow eventuali exception di mock)
         try {
             var hand = current.getHand();
             if (!hand.isEmpty()) {
@@ -63,19 +60,15 @@ public class PlayTimerStrategy implements TimerStrategy {
         } catch (Exception ignored) {
         }
 
-        // 3) Recupero stato aggiornato
         GameSession updated = gameService.getGameSessionById(gameId);
 
-        // 4) Broadcast stato pubblico
         GameSessionDTO publicDto = GameSessionMapper.convertToGameSessionDTO(updated);
         webSocketService.broadCastLobbyNotifications(gameId, publicDto);
 
-        // 5) Notifica privata mano aggiornata
         PrivatePlayerDTO privateDto = GameSessionMapper.convertToPrivatePlayerDTO(
                 updated.getPlayerById(currentUserId));
         webSocketService.lobbyNotifications(currentUserId, privateDto);
 
-        // 6) Broadcast MoveActionDTO (safe guard su NPE)
         MoveActionDTO moveDto;
         try {
             moveDto = GameSessionMapper.convertToMoveActionDTO(
@@ -92,10 +85,8 @@ public class PlayTimerStrategy implements TimerStrategy {
             return;
         }
 
-        // 7) Rischedulo play‐phase subito
         timerService.schedule(gameId, this, null);
 
-        // 8) Broadcast timer rimanente
         long rem = timerService.getRemainingSeconds(gameId, this);
         TimeLeftDTO timeDto = GameSessionMapper.toTimeToPlayDTO(gameId, rem);
         webSocketService.broadCastLobbyNotifications(gameId, timeDto);

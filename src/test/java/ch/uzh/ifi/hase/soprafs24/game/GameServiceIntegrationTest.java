@@ -47,21 +47,21 @@ public class GameServiceIntegrationTest {
         webSocketService = mock(WebSocketService.class);
         aiService = mock(AIService.class);
         timerService = mock(TimerService.class);
-        // mock delle strategie richieste da timerService
+
         TimerStrategy playStrat = mock(TimerStrategy.class);
         TimerStrategy choiceStrat = mock(TimerStrategy.class);
         when(timerService.getPlayStrategy()).thenReturn(playStrat);
         when(timerService.getChoiceStrategy()).thenReturn(choiceStrat);
 
-        // MOCK del UserRepository e iniezione in GameStatisticsUtil
+
         userRepository = mock(UserRepository.class);
-        // ogni findById restituisce un utente dummy (per evitare NPE)
+
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
         Field repoField = GameStatisticsUtil.class.getDeclaredField("userRepository");
         repoField.setAccessible(true);
         repoField.set(null, userRepository);
 
-        // infine istanzi il service con tutti i mock
+
         gameService = new GameService(webSocketService, aiService, timerService);
     }
 

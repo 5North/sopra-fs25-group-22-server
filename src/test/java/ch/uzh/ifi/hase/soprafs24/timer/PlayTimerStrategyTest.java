@@ -34,24 +34,24 @@ class PlayTimerStrategyTest {
     void onTimeout_validGame_broadcastsAndReschedules() {
         Long gameId = 1L;
 
-        // sessione con 4 giocatori
+
         GameSession session = new GameSession(gameId, List.of(10L, 20L, 30L, 40L));
 
-        // stub per getGameSessionById
+
         when(gameService.getGameSessionById(gameId)).thenReturn(session);
-        // stub per playCard → restituisce sempre Pair(session, currentPlayer)
+
         when(gameService.playCard(eq(gameId), any(CardDTO.class), isNull()))
                 .thenReturn(Pair.of(session, session.getCurrentPlayer()));
-        // stub per remaining seconds > 0
+
         when(timerService.getRemainingSeconds(gameId, strategy)).thenReturn(15L);
 
-        // eseguo la strategy
+
         strategy.onTimeout(gameId, null);
 
-        // verifico 3 broadcast (stato, azione, timer)
+
         verify(webSocketService, times(3))
                 .broadCastLobbyNotifications(eq(gameId), any());
-        // verifico rischedule
+
         verify(timerService).schedule(eq(gameId), eq(strategy), isNull());
     }
 

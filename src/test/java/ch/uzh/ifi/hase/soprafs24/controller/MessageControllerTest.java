@@ -557,16 +557,16 @@ public class MessageControllerTest {
                 Long userId = 42L;
                 StompHeaderAccessor header = createHeaderAccessorWithUser(userId);
 
-                // spy della sessione
+                // spy of session
                 GameSession session = spy(new GameSession(123L, List.of(userId, 99L)));
 
-                // mock del player “di turno”
+                // mock of player that has the turn
                 Player mockPlayer = mock(Player.class);
                 doReturn(userId).when(mockPlayer).getUserId();
                 doReturn(mockPlayer).when(session).getCurrentPlayer();
                 doReturn(true).when(session).isChoosing();
 
-                // mock della tabella e delle opzioni di cattura
+                // mock of table and capture options
                 Table mockTable = mock(Table.class);
                 Card lastPlayed = CardFactory.getCard(Suit.COPPE, 5);
                 List<List<Card>> opts = List.of(List.of(lastPlayed));
@@ -580,9 +580,9 @@ public class MessageControllerTest {
 
                 verify(webSocketService).lobbyNotifications(eq(userId), any(PrivatePlayerDTO.class));
                 verify(webSocketService).lobbyNotifications(eq(userId), any(GameSessionDTO.class));
-                // in choosing mode invia le options
+                // in choosing mode send options
                 verify(webSocketService).lobbyNotifications(eq(userId), anyList());
-                // timerService viene interrogato due volte: remChoice e remPlay
+                // timerService get interrogated 2 times: remChoice and remPlay
                 verify(timerService, times(2))
                                 .getRemainingSeconds(eq(123L), any());
         }

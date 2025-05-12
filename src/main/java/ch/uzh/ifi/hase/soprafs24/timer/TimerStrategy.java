@@ -1,20 +1,19 @@
-// src/main/java/ch/uzh/ifi/hase/soprafs24/timer/TimerStrategy.java
 package ch.uzh.ifi.hase.soprafs24.timer;
 
 /**
- * Interfaccia per le due strategie di timeout.
+ * Interface for the two strategies of timeout.
  */
 public interface TimerStrategy {
     /**
-     * @return durata del timer (in secondi)
+     * @return length of timer (seconds)
      */
     long getTimeoutSeconds();
 
     /**
-     * Invocato al timeout: contiene il fallback specifico.
+     * Invoked at timeout: contains only specific fallback.
      *
-     * @param gameId    id della partita
-     * @param forUserId opzionale: id del giocatore (solo per ChoiceTimer)
+     * @param gameId    id game
+     * @param forUserId optional: id of player (only for ChoiceTimer)
      */
     void onTimeout(Long gameId, Long forUserId);
 }

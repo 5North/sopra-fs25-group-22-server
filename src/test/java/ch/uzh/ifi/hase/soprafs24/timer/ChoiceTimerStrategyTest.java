@@ -1,4 +1,3 @@
-// src/test/java/ch/uzh/ifi/hase/soprafs24/timer/ChoiceTimerStrategyTest.java
 package ch.uzh.ifi.hase.soprafs24.timer;
 
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
@@ -32,7 +31,7 @@ class ChoiceTimerStrategyTest {
         webSocketService = mock(WebSocketService.class);
         timerService = mock(TimerService.class);
 
-        // play‐strategy per reschedule
+        // play‐strategy for reschedule
         fakePlay = mock(TimerStrategy.class);
         when(timerService.getPlayStrategy()).thenReturn(fakePlay);
         when(timerService.getChoiceStrategy())
@@ -45,33 +44,31 @@ class ChoiceTimerStrategyTest {
     void onTimeout_validGame_broadcastsAndReschedules() {
         Long gameId = 3L;
 
-        // sessione con 4 giocatori
         GameSession session = new GameSession(gameId, List.of(userId, 2L, 3L, 4L));
 
-        // preparo una Table pulita
         Table table = session.getTable();
         table.clearTable();
-        // aggiungo 4 carte in modo che per playedCard=5 ci sia sempre un'opzione valida
+
         table.addCard(CardFactory.getCard(Suit.COPPE, 2));
         table.addCard(CardFactory.getCard(Suit.COPPE, 3));
         table.addCard(CardFactory.getCard(Suit.COPPE, 6));
         table.addCard(CardFactory.getCard(Suit.COPPE, 5));
 
-        // imposto lastCardPlayed = 5
+
         session.setLastCardPlayed(CardFactory.getCard(Suit.COPPE, 5));
 
-        // stub per il service
+
         when(gameService.getGameSessionById(gameId)).thenReturn(session);
 
-        // eseguo la strategy
+
         strategy.onTimeout(gameId, userId);
 
-        // verifico 3 broadcast (stato, azione, timer)
+
         verify(webSocketService, times(3))
                 .broadCastLobbyNotifications(eq(gameId), any());
-        // verifico notifica privata
+
         verify(webSocketService).lobbyNotifications(eq(userId), any());
-        // verifico reschedule
+
         verify(timerService).schedule(eq(gameId), eq(fakePlay), isNull());
     }
 
