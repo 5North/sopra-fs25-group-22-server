@@ -301,7 +301,7 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .convertToDTO(msg, true);
         verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
+                .sentLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
     }
 
     @Test
@@ -344,7 +344,7 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .convertToDTO(msg, true);
         verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
+                .sentLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
     }
 
     @Test
@@ -388,7 +388,7 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .convertToDTO(msg, false);
         verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
+                .sentLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
     }
 
     @Test
