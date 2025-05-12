@@ -39,7 +39,7 @@ public class GameService {
         this.timerService = timerService;
     }
 
-    /** Espone il TimerService per permettere alle strategie di accedervi */
+    /** Expose TimerService to allow the strategies to access it */
     public TimerService getTimerService() {
         return this.timerService;
     }
@@ -52,7 +52,7 @@ public class GameService {
         lobby.setGameSession(gameSession);
         gameSessions.put(gameId, gameSession);
 
-        // avvia il timer di turno (30s)
+        // start turn timer (30s)
         timerService.schedule(gameId,
                 timerService.getPlayStrategy(),
                 null);
@@ -73,7 +73,7 @@ public class GameService {
             throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
         }
 
-        // cancella il timer in corso
+        // abort current timer
         timerService.cancel(gameId, timerService.getPlayStrategy());
 
         Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
@@ -111,13 +111,13 @@ public class GameService {
             throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
         }
 
-        // cancella choice-timer se presente
+        // delete choice-timer if present
         timerService.cancel(gameId, timerService.getChoiceStrategy());
 
         Card lastPlayed = game.getLastCardPlayed();
         game.playTurn(lastPlayed, selectedOption);
 
-        // dopo la scelta, rischedula turno
+        // schedule again the turn, after the choice
         timerService.schedule(gameId,
                 timerService.getPlayStrategy(),
                 null);
@@ -127,7 +127,7 @@ public class GameService {
         GameSession game = getGameSessionById(gameId);
         boolean over = game.isGameOver();
         if (over) {
-            // cancella ogni timer
+            // delete every timer
             timerService.cancel(gameId, timerService.getPlayStrategy());
             timerService.cancel(gameId, timerService.getChoiceStrategy());
 
@@ -173,7 +173,7 @@ public class GameService {
             resultDTOs.add(GameSessionMapper.toQuitGameResultDTO(uid, oc, msg));
         });
 
-        // cancella ogni timer
+        // delete every timer
         timerService.cancel(gameId, timerService.getPlayStrategy());
         timerService.cancel(gameId, timerService.getChoiceStrategy());
 
