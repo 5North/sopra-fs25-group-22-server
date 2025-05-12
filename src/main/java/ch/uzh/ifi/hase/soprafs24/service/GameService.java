@@ -81,7 +81,6 @@ public class GameService {
             Player current = game.getCurrentPlayer();
             game.playTurn(playedCard, null);
 
-            // dopo la mossa deterministica, rischedula turno
             timerService.schedule(gameId,
                     timerService.getPlayStrategy(),
                     null);
@@ -89,7 +88,7 @@ public class GameService {
             return Pair.of(game, current);
 
         } catch (IllegalStateException e) {
-            // più opzioni di cattura: invia le choice options e avvia timer di scelta
+            
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optsDto = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.lobbyNotifications(userId, optsDto);
