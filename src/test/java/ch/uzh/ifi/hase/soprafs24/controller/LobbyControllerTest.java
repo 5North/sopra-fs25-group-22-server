@@ -4,8 +4,12 @@ import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
+import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,7 +25,6 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 /**
  * LobbyControllerTest
@@ -33,204 +36,208 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(LobbyController.class)
 class LobbyControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @MockBean
-    private LobbyService lobbyService;
+        @MockBean
+        private LobbyService lobbyService;
 
-    @MockBean
-    private UserService userService;
+        @MockBean
+        private UserService userService;
 
-    @Test
-    void createLobby_lobbyCreated() throws Exception {
-        //given
-        Long userId = 1L;
+        @Mock
+        private TimerService timerService;
+        @Mock
+        private TimerStrategy playTimerStrategy;
+        @Mock
+        private TimerStrategy choiceTimerStrategy;
 
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("testUser");
-        user.setStatus(UserStatus.OFFLINE);
-        user.setToken("IamAToken");
-        user.setWinCount(0);
-        user.setLossCount(0);
-        user.setTieCount(0);
+        @Test
+        void createLobby_lobbyCreated() throws Exception {
+                // given
+                Long userId = 1L;
 
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(1225L);
-        lobby.setUser(user);
+                User user = new User();
+                user.setId(userId);
+                user.setUsername("testUser");
+                user.setStatus(UserStatus.OFFLINE);
+                user.setToken("IamAToken");
+                user.setWinCount(0);
+                user.setLossCount(0);
+                user.setTieCount(0);
 
+                Lobby lobby = new Lobby();
+                lobby.setLobbyId(1225L);
+                lobby.setUser(user);
 
-        given(userService.authorizeUser("placeholder-token")).willReturn(user);
-        given(lobbyService.createLobby(Mockito.any(User.class))).willReturn(lobby);
+                given(userService.authorizeUser("placeholder-token")).willReturn(user);
+                given(lobbyService.createLobby(Mockito.any(User.class))).willReturn(lobby);
 
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder postRequest = post("/lobbies")
-                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder postRequest = post("/lobbies")
+                                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
 
-        // then
-        mockMvc.perform(postRequest)
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.lobbyId", is(lobby.getLobbyId().intValue())));
-    }
+                // then
+                mockMvc.perform(postRequest)
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.lobbyId", is(lobby.getLobbyId().intValue())));
+        }
 
     @Test
     void createLobby_invalidAuth_lobbyNotCreated() throws Exception {
         //given
 
-       Lobby lobby = new Lobby();
-       lobby.setLobbyId(1225L);
+                Lobby lobby = new Lobby();
+                lobby.setLobbyId(1225L);
 
-        given(userService.authorizeUser("placeholder-token"))
-                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token"));
+                given(userService.authorizeUser("placeholder-token"))
+                                .willThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token"));
 
-       // when/then -> do the request + validate the result
-    MockHttpServletRequestBuilder postRequest = post("/lobbies")
-               .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder postRequest = post("/lobbies")
+                                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
 
-       // then
-      mockMvc.perform(postRequest)
-              .andExpect(status().isUnauthorized());
-    }
+                // then
+                mockMvc.perform(postRequest)
+                                .andExpect(status().isUnauthorized());
+        }
 
-    @Test
-    void createLobby_conflict() throws Exception {
-        //given
+        @Test
+        void createLobby_conflict() throws Exception {
+                // given
 
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(1225L);
+                Lobby lobby = new Lobby();
+                lobby.setLobbyId(1225L);
 
-        given(lobbyService.createLobby(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
+                given(lobbyService.createLobby(Mockito.any()))
+                                .willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
 
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder postRequest = post("/lobbies")
-                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder postRequest = post("/lobbies")
+                                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
 
-        // then
-        mockMvc.perform(postRequest)
-                .andExpect(status().isConflict());
-    }
+                // then
+                mockMvc.perform(postRequest)
+                                .andExpect(status().isConflict());
+        }
 
-    @Test
-    void createLobby_lobbyAlreadyExists_throwsException() throws Exception {
-        //given
-        Long userId = 1L;
+        @Test
+        void createLobby_lobbyAlreadyExists_throwsException() throws Exception {
+                // given
+                Long userId = 1L;
 
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("testUser");
-        user.setStatus(UserStatus.OFFLINE);
-        user.setToken("IamAToken");
-        user.setWinCount(0);
-        user.setLossCount(0);
-        user.setTieCount(0);
+                User user = new User();
+                user.setId(userId);
+                user.setUsername("testUser");
+                user.setStatus(UserStatus.OFFLINE);
+                user.setToken("IamAToken");
+                user.setWinCount(0);
+                user.setLossCount(0);
+                user.setTieCount(0);
 
+                given(userService.authorizeUser("placeholder-token")).willReturn(user);
+                given(lobbyService.createLobby(Mockito.any(User.class)))
+                                .willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
 
-        given(userService.authorizeUser("placeholder-token")).willReturn(user);
-        given(lobbyService.createLobby(Mockito.any(User.class))).willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder postRequest = post("/lobbies")
+                                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
 
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder postRequest = post("/lobbies")
-                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
+                // then
+                mockMvc.perform(postRequest)
+                                .andExpect(status().isConflict());
+        }
 
-        // then
-        mockMvc.perform(postRequest)
-                .andExpect(status().isConflict());
-    }
+        @Test
+        void getLobby_Success() throws Exception {
+                // given
+                Long userId = 1L;
 
-    @Test
-    void getLobby_Success() throws Exception {
-        //given
-        Long userId = 1L;
+                User user = new User();
+                user.setId(userId);
+                user.setUsername("testUser");
+                user.setStatus(UserStatus.OFFLINE);
+                user.setToken("IamAToken");
+                user.setWinCount(0);
+                user.setLossCount(0);
+                user.setTieCount(0);
 
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("testUser");
-        user.setStatus(UserStatus.OFFLINE);
-        user.setToken("IamAToken");
-        user.setWinCount(0);
-        user.setLossCount(0);
-        user.setTieCount(0);
+                Lobby lobby = new Lobby();
+                lobby.setLobbyId(1111L);
+                lobby.setUser(user);
 
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(1111L);
-        lobby.setUser(user);
+                given(userService.authorizeUser("placeholder-token")).willReturn(user);
+                given(userService.getLobby(userId)).willReturn(lobby);
 
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder getRequest = get("/lobbies?userId=" + userId)
+                                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
 
-        given(userService.authorizeUser("placeholder-token")).willReturn(user);
-        given(userService.getLobby(userId)).willReturn(lobby);
+                // then
+                mockMvc.perform(getRequest)
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.lobbyId", is(lobby.getLobbyId().intValue())))
+                                .andExpect(jsonPath("$.hostId", is(lobby.getUser().getId().intValue())))
+                                .andExpect(jsonPath("$.usersIds", is(lobby.getUsers())));
+        }
 
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder getRequest = get("/lobbies?userId=" + userId)
-                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
+        @Test
+        void getLobby_lobbyNotFound_throwsException() throws Exception {
+                // given
+                Long userId = 1L;
 
-        // then
-        mockMvc.perform(getRequest)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.lobbyId", is(lobby.getLobbyId().intValue())))
-                .andExpect(jsonPath("$.hostId", is(lobby.getUser().getId().intValue())))
-                .andExpect(jsonPath("$.usersIds", is(lobby.getUsers())));
-    }
+                User user = new User();
+                user.setId(userId);
+                user.setUsername("testUser");
+                user.setStatus(UserStatus.OFFLINE);
+                user.setToken("IamAToken");
+                user.setWinCount(0);
+                user.setLossCount(0);
+                user.setTieCount(0);
 
-    @Test
-    void getLobby_lobbyNotFound_throwsException() throws Exception {
-        //given
-        Long userId = 1L;
+                Lobby lobby = new Lobby();
+                lobby.setLobbyId(1111L);
+                lobby.setUser(user);
 
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("testUser");
-        user.setStatus(UserStatus.OFFLINE);
-        user.setToken("IamAToken");
-        user.setWinCount(0);
-        user.setLossCount(0);
-        user.setTieCount(0);
+                given(userService.authorizeUser("placeholder-token")).willReturn(user);
+                given(userService.getLobby(userId)).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(1111L);
-        lobby.setUser(user);
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder getRequest = get("/lobbies?userId=" + userId)
+                                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
 
+                // then
+                mockMvc.perform(getRequest)
+                                .andExpect(status().isNotFound());
+        }
 
-        given(userService.authorizeUser("placeholder-token")).willReturn(user);
-        given(userService.getLobby(userId)).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        @Test
+        void getLobby_notAllowed_throwsException() throws Exception {
+                // given
+                Long userId = 1L;
 
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder getRequest = get("/lobbies?userId=" + userId)
-                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
+                User user = new User();
+                user.setId(userId);
+                user.setUsername("testUser");
+                user.setStatus(UserStatus.OFFLINE);
+                user.setToken("IamAToken");
+                user.setWinCount(0);
+                user.setLossCount(0);
+                user.setTieCount(0);
 
-        // then
-        mockMvc.perform(getRequest)
-                .andExpect(status().isNotFound());
-    }
+                Lobby lobby = new Lobby();
+                lobby.setLobbyId(1111L);
+                lobby.setUser(user);
 
-    @Test
-    void getLobby_notAllowed_throwsException() throws Exception {
-        //given
-        Long userId = 1L;
+                given(userService.authorizeUser("placeholder-token")).willReturn(user);
+                given(userService.getLobby(userId)).willThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
 
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("testUser");
-        user.setStatus(UserStatus.OFFLINE);
-        user.setToken("IamAToken");
-        user.setWinCount(0);
-        user.setLossCount(0);
-        user.setTieCount(0);
+                // when/then -> do the request + validate the result
+                MockHttpServletRequestBuilder getRequest = get("/lobbies?userId=" + userId)
+                                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
 
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(1111L);
-        lobby.setUser(user);
-
-
-        given(userService.authorizeUser("placeholder-token")).willReturn(user);
-        given(userService.getLobby(userId)).willThrow(new ResponseStatusException(HttpStatus.FORBIDDEN));
-
-        // when/then -> do the request + validate the result
-        MockHttpServletRequestBuilder getRequest = get("/lobbies?userId=" + userId)
-                .contentType(MediaType.APPLICATION_JSON).header("Token", "placeholder-token");
-
-        // then
-        mockMvc.perform(getRequest)
-                .andExpect(status().isForbidden());
-    }
+                // then
+                mockMvc.perform(getRequest)
+                                .andExpect(status().isForbidden());
+        }
 }

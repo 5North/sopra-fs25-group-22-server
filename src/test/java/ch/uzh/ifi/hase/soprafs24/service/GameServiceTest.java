@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.util.Pair;
 import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
+import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -34,17 +35,27 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 @ExtendWith(MockitoExtension.class)
- class GameServiceTest {
+
+@MockitoSettings(strictness = Strictness.LENIENT)
+class GameServiceTest {
 
     @Mock
     private WebSocketService webSocketService;
+    @Mock
+    private AIService aiService;
+    @Mock
+    private TimerService timerService;
+    @Mock
+    private TimerStrategy playTimerStrategy;
+    @Mock
+    private TimerStrategy choiceTimerStrategy;
 
     @InjectMocks
     private GameService gameService;
-
-    @Mock
-    private AIService aiService;
 
     private Lobby lobby;
     private Long gameId;
@@ -61,6 +72,8 @@ import java.util.stream.Collectors;
         gameId = lobby.getLobbyId();
         playerA = 100L;
         playerB = 200L;
+        when(timerService.getPlayStrategy()).thenReturn(playTimerStrategy);
+        when(timerService.getChoiceStrategy()).thenReturn(choiceTimerStrategy);
     }
 
     @Test

@@ -11,6 +11,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeOutNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -290,6 +292,49 @@ import static org.junit.jupiter.api.Assertions.*;
         assertNotNull(dto.getPlayers());
         assertTrue(dto.getPlayers().isEmpty());
         assertNull(dto.getCurrentPlayerId());
+    }
+
+    @Test
+    public void testToTimeLeftDTO() {
+        TimeLeftDTO dto = GameSessionMapper.toTimeLeftDTO(77L, 15L, "Custom Message");
+        assertNotNull(dto);
+        assertEquals(77L, dto.getGameId());
+        assertEquals(15L, dto.getRemainingSeconds());
+        assertEquals("Custom Message", dto.getMessage());
+    }
+
+    @Test
+    public void testToTimeToPlayDTO() {
+        TimeLeftDTO dto = GameSessionMapper.toTimeToPlayDTO(42L, 30L);
+        assertNotNull(dto);
+        assertEquals(42L, dto.getGameId());
+        assertEquals(30L, dto.getRemainingSeconds());
+        assertEquals("Time to Play", dto.getMessage());
+    }
+
+    @Test
+    public void testToTimeToChooseDTO() {
+        TimeLeftDTO dto = GameSessionMapper.toTimeToChooseDTO(99L, 10L);
+        assertNotNull(dto);
+        assertEquals(99L, dto.getGameId());
+        assertEquals(10L, dto.getRemainingSeconds());
+        assertEquals("Time to Choose", dto.getMessage());
+    }
+
+    @Test
+    public void testToTimeOutNotificationDTO() {
+        TimeOutNotificationDTO dto = GameSessionMapper.toTimeOutNotificationDTO(123L, "Timeout occurred");
+        assertNotNull(dto);
+        assertEquals(123L, dto.getTimedOutPlayerId());
+        assertEquals("Timeout occurred", dto.getMessage());
+    }
+
+    @Test
+    public void testConvertToTimeOutNotificationDTO() {
+        TimeOutNotificationDTO dto = GameSessionMapper.toTimeOutNotificationDTO(55L, "Timeout reached");
+        assertNotNull(dto);
+        assertEquals(55L, dto.getTimedOutPlayerId());
+        assertEquals("Timeout reached", dto.getMessage());
     }
 
 }

@@ -18,7 +18,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,20 +31,35 @@ public class GameService {
     private final Map<Long, GameSession> gameSessions = new ConcurrentHashMap<>();
     private final WebSocketService webSocketService;
     private final AIService aiService;
+    private final TimerService timerService;
 
     @Autowired
-    public GameService(WebSocketService webSocketService, AIService aiService) {
+    public GameService(WebSocketService webSocketService,
+            AIService aiService,
+            TimerService timerService) {
         this.webSocketService = webSocketService;
         this.aiService = aiService;
+        this.timerService = timerService;
+    }
+
+    /** Expose TimerService to allow the strategies to access it */
+    public TimerService getTimerService() {
+        return this.timerService;
     }
 
     public GameSession startGame(Lobby lobby) {
         Long gameId = lobby.getLobbyId();
-        List<Long> playerIds = lobby.getUsers();
+        List<Long> players = lobby.getUsers();
 
-        GameSession gameSession = new GameSession(gameId, playerIds);
+        GameSession gameSession = new GameSession(gameId, players);
         lobby.setGameSession(gameSession);
         gameSessions.put(gameId, gameSession);
+
+        // start turn timer (30s)
+        timerService.schedule(gameId,
+                timerService.getPlayStrategy(),
+                null);
+
         return gameSession;
     }
 
@@ -61,20 +75,37 @@ public class GameService {
         if (game == null) {
             throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
         }
+
+        // abort current timer
+        timerService.cancel(gameId, timerService.getPlayStrategy());
+
         Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
         try {
-            Player playingPlayer = game.getCurrentPlayer();
+            Player current = game.getCurrentPlayer();
             game.playTurn(playedCard, null);
-            return Pair.of(game, playingPlayer);
+
+            timerService.schedule(gameId,
+                    timerService.getPlayStrategy(),
+                    null);
+
+            return Pair.of(game, current);
+
         } catch (IllegalStateException e) {
+
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.sentLobbyNotifications(userId, optionsDTO);
             log.info("Message sent to user {}: card options", userId);
+
+            timerService.schedule(gameId,
+                    timerService.getChoiceStrategy(),
+                    userId);
+
+            return Pair.of(game, null);
+
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
         }
-        return Pair.of(game, null);
     }
 
     public void processPlayTurn(Long gameId, List<Card> selectedOption) {
@@ -82,13 +113,27 @@ public class GameService {
         if (game == null) {
             throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
         }
-        Card playedCard = game.getLastCardPlayed();
-        game.playTurn(playedCard, selectedOption);
+
+        // delete choice-timer if present
+        timerService.cancel(gameId, timerService.getChoiceStrategy());
+
+        Card lastPlayed = game.getLastCardPlayed();
+        game.playTurn(lastPlayed, selectedOption);
+
+        // schedule again the turn, after the choice
+        timerService.schedule(gameId,
+                timerService.getPlayStrategy(),
+                null);
     }
 
     public boolean isGameOver(Long gameId) {
         GameSession game = getGameSessionById(gameId);
-        if (game.isGameOver()) {
+        boolean over = game.isGameOver();
+        if (over) {
+            // delete every timer
+            timerService.cancel(gameId, timerService.getPlayStrategy());
+            timerService.cancel(gameId, timerService.getChoiceStrategy());
+
             List<Card> lastCards = game.getTable().getCards();
             game.finishGame();
 
@@ -106,10 +151,10 @@ public class GameService {
                 webSocketService.sentLobbyNotifications(player.getUserId(), resultDTO);
                 log.info("Message sent to user {}: result", playerId);
             });
+
             gameSessions.remove(gameId);
-            return true;
         }
-        return false;
+        return over;
     }
 
     public AISuggestionDTO aiSuggestion(Long gameId, Long userId) {
@@ -130,20 +175,16 @@ public class GameService {
 
         Map<Long, String> outcomes = game.finishForfeit(quittingUserId);
         List<QuitGameResultDTO> resultDTOs = new ArrayList<>();
+        outcomes.forEach((uid, oc) -> {
+            String msg = oc.equals("WON") ? "You won by forfeit." : "You lost by forfeit.";
+            resultDTOs.add(GameSessionMapper.toQuitGameResultDTO(uid, oc, msg));
+        });
 
-        for (Map.Entry<Long, String> e : outcomes.entrySet()) {
-            Long userId = e.getKey();
-            String oc = e.getValue();
-            String msg = oc.equals("WON")
-                    ? "You won by forfeit."
-                    : "You lost by forfeit.";
-
-            resultDTOs.add(
-                    GameSessionMapper.toQuitGameResultDTO(userId, oc, msg));
-        }
+        // delete every timer
+        timerService.cancel(gameId, timerService.getPlayStrategy());
+        timerService.cancel(gameId, timerService.getChoiceStrategy());
 
         gameSessions.remove(gameId);
         return resultDTOs;
     }
-
 }
