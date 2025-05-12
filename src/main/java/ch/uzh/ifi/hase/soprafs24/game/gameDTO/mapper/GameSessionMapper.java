@@ -174,4 +174,28 @@ public class GameSessionMapper {
         return dto;
     }
 
+    public static TimeLeftDTO toTimeLeftDTO(Long gameId, long remainingSeconds, String message) {
+        return new TimeLeftDTO(gameId, remainingSeconds, message);
+    }
+
+    /** Shortcut per la fase “play turn”. */
+    public static TimeLeftDTO toTimeToPlayDTO(Long gameId, long remainingSeconds) {
+        return toTimeLeftDTO(gameId, remainingSeconds, "Time to Play");
+    }
+
+    /** Shortcut per la fase “choose capture”. */
+    public static TimeLeftDTO toTimeToChooseDTO(Long gameId, long remainingSeconds) {
+        return toTimeLeftDTO(gameId, remainingSeconds, "Time to Choose");
+    }
+
+    /**
+     * Notifica quando il timer è scaduto.
+     */
+    public static TimeOutNotificationDTO toTimeOutNotificationDTO(Long timedOutPlayerId, String message) {
+        TimeOutNotificationDTO dto = new TimeOutNotificationDTO();
+        dto.setTimedOutPlayerId(timedOutPlayerId);
+        dto.setMessage(message);
+        return dto;
+    }
+
 }

@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
+import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import javassist.NotFoundException;
@@ -28,6 +29,12 @@ public class WebSocketServiceTest {
 
     @Mock
     private LobbyService lobbyService;
+    @Mock
+    private TimerService timerService;
+    @Mock
+    private TimerStrategy playTimerStrategy;
+    @Mock
+    private TimerStrategy choiceTimerStrategy;
 
     @BeforeEach
     public void setup() {

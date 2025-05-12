@@ -4,21 +4,15 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
-import ch.uzh.ifi.hase.soprafs24.game.items.Card;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.*;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.LobbyService;
-import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
@@ -36,203 +30,244 @@ import java.util.Objects;
 @Controller
 public class MessageController {
 
-    private final Logger log = LoggerFactory.getLogger(MessageController.class);
-    private final LobbyService lobbyService;
-    private final GameService gameService;
-    private final WebSocketService webSocketService;
-    private final UserService userService;
+        private final Logger log = LoggerFactory.getLogger(MessageController.class);
+        private final LobbyService lobbyService;
+        private final GameService gameService;
+        private final WebSocketService webSocketService;
+        private final UserService userService;
+        private final TimerService timerService;
 
-    public MessageController(LobbyService lobbyService, GameService gameService, WebSocketService webSocketService, UserService userService) {
-        this.lobbyService = lobbyService;
-        this.gameService = gameService;
-        this.webSocketService = webSocketService;
-        this.userService = userService;
-    }
-
-    @MessageMapping("/startGame/{lobbyId}")
-    public void processStartGame(@DestinationVariable Long lobbyId) {
-        String msg = "Starting game";
-        boolean success = true;
-        try {
-            Lobby lobby = lobbyService.getLobbyById(lobbyId);
-            // check if lobby is full
-            if (!lobbyService.lobbyIsFull(lobbyId)) {
-                throw new IllegalArgumentException("Lobby " + lobbyId + " is not full yet");
-            }
-            // check if everyone already clicked rematch
-            if (!lobbyService.rematchIsFull(lobbyId)) {
-                throw new IllegalArgumentException(String.format("lobby %d: not everyone wants a rematch yet", lobbyId));
-            }
-            gameService.startGame(lobby);
-            // reset rematch array
-            lobbyService.resetRematch(lobbyId);
-
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            msg = "Error starting game: " + e.getMessage();
-            success = false;
+        public MessageController(LobbyService lobbyService,
+                        GameService gameService,
+                        WebSocketService webSocketService,
+                        UserService userService,
+                        TimerService timerService) {
+                this.lobbyService = lobbyService;
+                this.gameService = gameService;
+                this.webSocketService = webSocketService;
+                this.userService = userService;
+                this.timerService = timerService;
         }
 
-        UserNotificationDTO notificationDTO = webSocketService.convertToDTO(msg, success);
-        webSocketService.broadCastLobbyNotifications(lobbyId, notificationDTO);
-    }
-
-    @MessageMapping("/updateGame/{gameId}")
-    public void receiveUpdateGame(@DestinationVariable Long gameId,
-            StompHeaderAccessor headerAccessor) {
-
-        GameSession game = gameService.getGameSessionById(gameId);
-
-        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
-        Long userId = (Long) userIdObj;
-
-        GameSessionDTO publicGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
-
-        Player player = game.getPlayerById(userId);
-
-        PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(player);
-        webSocketService.lobbyNotifications(userId, privateDTO);
-        webSocketService.lobbyNotifications(userId, publicGameDTO);
-    }
-
-    @MessageMapping("/playCard")
-    public void processPlayCard(@Payload PlayCardDTO DTO,
-            StompHeaderAccessor headerAccessor) {
-        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
-        Long userId = (Long) userIdObj;
-
-        CardDTO cardDTO = DTO.getCard();
-        Long gameId = DTO.getLobbyId();
-
-        try {
-            Pair<GameSession, Player> pairDTO = gameService.playCard(gameId, cardDTO, userId);
-            GameSession game = pairDTO.getFirst();
-            Player currentPlayer = pairDTO.getSecond();
-
-            if (currentPlayer != null) {
-                Card lastPlayed = game.getLastCardPlayed();
-                if (lastPlayed != null) {
-                    List<Card> lastPicked = game.getLastCardPickedCards();
-                    MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(userId, lastPlayed, lastPicked);
-                    webSocketService.broadCastLobbyNotifications(gameId, moveDto);
+        @MessageMapping("/startGame/{lobbyId}")
+        public void processStartGame(@DestinationVariable Long lobbyId) {
+                String msg = "Starting game";
+                boolean success = true;
+                try {
+                        Lobby lobby = lobbyService.getLobbyById(lobbyId);
+                        if (!lobbyService.lobbyIsFull(lobbyId)) {
+                                throw new IllegalArgumentException("Lobby " + lobbyId + " is not full yet");
+                        }
+                        if (!lobbyService.rematchIsFull(lobbyId)) {
+                                throw new IllegalArgumentException(
+                                                String.format("lobby %d: not everyone wants a rematch yet", lobbyId));
+                        }
+                        gameService.startGame(lobby);
+                        lobbyService.resetRematch(lobbyId);
+                } catch (Exception e) {
+                        log.error(e.getMessage());
+                        msg = "Error starting game: " + e.getMessage();
+                        success = false;
                 }
-                GameSessionDTO updateGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
-                PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
+                // private outcome notification
+                UserNotificationDTO outcomeDTO = webSocketService.convertToDTO(msg, success);
+                webSocketService.broadCastLobbyNotifications(lobbyId, outcomeDTO);
 
-                webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
-                webSocketService.broadCastLobbyNotifications(gameId, updateGameDTO);
-                gameService.isGameOver(gameId);
-            }
-
-        } catch (Exception e) {
-            log.error(e.getMessage());
+                // broadcast initial play-phase timer
+                long remPlay = timerService.getRemainingSeconds(lobbyId, timerService.getPlayStrategy());
+                TimeLeftDTO playTimeDTO = GameSessionMapper.toTimeToPlayDTO(lobbyId, remPlay);
+                webSocketService.broadCastLobbyNotifications(lobbyId, playTimeDTO);
         }
 
-    }
+        @MessageMapping("/updateGame/{gameId}")
+        public void receiveUpdateGame(@DestinationVariable Long gameId,
+                        StompHeaderAccessor headerAccessor) {
+                Long userId = (Long) Objects.requireNonNull(
+                                headerAccessor.getSessionAttributes()).get("userId");
 
-    @MessageMapping("/chooseCapture")
-    public void processChooseCapture(@Payload ChosenCaptureDTO DTO,
-            StompHeaderAccessor headerAccessor) {
-        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
-        Long userId = (Long) userIdObj;
+                GameSession game = gameService.getGameSessionById(gameId);
 
-        List<CardDTO> chosenOption = DTO.getChosenOption();
-        Long gameId = DTO.getGameId();
+                // 1) stato privato e pubblico
+                PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(
+                                game.getPlayerById(userId));
+                GameSessionDTO publicDTO = GameSessionMapper.convertToGameSessionDTO(game);
+                webSocketService.lobbyNotifications(userId, privateDTO);
+                webSocketService.lobbyNotifications(userId, publicDTO);
 
-        List<Card> selectedOption = GameSessionMapper.convertCardDTOListToEntity(chosenOption);
+                // 2) se siamo in “choosing mode” e siamo proprio il giocatore di turno,
+                // rimandiamo le opzioni
+                if (game.isChoosing() && userId.equals(game.getCurrentPlayer().getUserId())) {
+                        var options = game.getTable().getCaptureOptions(game.getLastCardPlayed());
+                        var optsDto = GameSessionMapper.convertCaptureOptionsToDTO(options);
+                        webSocketService.lobbyNotifications(userId, optsDto);
+                        // non usciamo però, così l’UI può ancora ragionare sul timer
+                }
 
-        try {
-            GameSession gameBefore = gameService.getGameSessionById(gameId);
-            Player currentPlayer = gameBefore.getPlayers().get(gameBefore.getCurrentPlayerIndex());
-            gameService.processPlayTurn(gameId, selectedOption);
-
-            GameSession game = gameService.getGameSessionById(gameId);
-            Card lastPlayed = game.getLastCardPlayed();
-            if (lastPlayed != null) {
-                List<Card> lastPicked = game.getLastCardPickedCards();
-                MoveActionDTO moveDto = GameSessionMapper.convertToMoveActionDTO(userId, lastPlayed, lastPicked);
-                webSocketService.broadCastLobbyNotifications(gameId, moveDto);
-            }
-            GameSessionDTO updatedGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
-            webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
-            PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
-            webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
-
-            gameService.isGameOver(gameId);
-
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    @MessageMapping("/ai")
-    public void processAISuggestion(@Payload AiRequestDTO aiReq,
-            StompHeaderAccessor header) {
-        Long gameId = aiReq.getGameId();
-        Long userId = (Long) Objects.requireNonNull(header.getSessionAttributes()).get("userId");
-        AISuggestionDTO aiDto = gameService.aiSuggestion(gameId, userId);
-        webSocketService.lobbyNotifications(userId, aiDto);
-    }
-
-    @MessageMapping("/quitGame")
-    public void processQuitGame(@Payload QuitGameDTO dto,
-            StompHeaderAccessor headerAccessor) throws NotFoundException {
-        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
-                .get("userId");
-        Long quittingUserId = (Long) userIdObj;
-        User user = userService.checkIfUserExists(quittingUserId);
-        Long lobbyId = user.getLobbyJoined();
-
-        if (gameService.getGameSessionById(lobbyId) != null) {
-            Long gameId = dto.getGameId();
-
-            List<QuitGameResultDTO> results = gameService.quitGame(gameId, quittingUserId);
-            for (QuitGameResultDTO result : results) {
-                webSocketService.lobbyNotifications(result.getUserId(), result);
-            }
+                // 3) sincronizzazione timer: choice‐phase se attivo, altrimenti play‐phase
+                long remChoice = timerService.getRemainingSeconds(gameId, timerService.getChoiceStrategy());
+                if (remChoice > 0) {
+                        TimeLeftDTO choiceDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
+                        webSocketService.lobbyNotifications(userId, choiceDTO);
+                } else {
+                        long remPlay = timerService.getRemainingSeconds(gameId, timerService.getPlayStrategy());
+                        TimeLeftDTO playDTO = GameSessionMapper.toTimeToPlayDTO(gameId, remPlay);
+                        webSocketService.lobbyNotifications(userId, playDTO);
+                }
         }
 
-        // default msg and status
-        String msg = String.format("Lobby with id %s has been deleted", lobbyId);
-        boolean success = true;
-        try {
-            lobbyService.deleteLobby(lobbyId);
-            BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
-            webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+        @MessageMapping("/playCard")
+        public void processPlayCard(@Payload PlayCardDTO dto,
+                        StompHeaderAccessor headerAccessor) {
+                Long userId = (Long) Objects.requireNonNull(
+                                headerAccessor.getSessionAttributes()).get("userId");
+                Long gameId = dto.getLobbyId();
+
+                try {
+                        Pair<GameSession, Player> result = gameService.playCard(gameId, dto.getCard(), userId);
+                        GameSession game = result.getFirst();
+                        Player current = result.getSecond();
+
+                        if (current != null) {
+                                // public state update
+                                GameSessionDTO sessionDTO = GameSessionMapper.convertToGameSessionDTO(game);
+                                webSocketService.broadCastLobbyNotifications(gameId, sessionDTO);
+
+                                // private state update
+                                PrivatePlayerDTO playerDTO = GameSessionMapper.convertToPrivatePlayerDTO(current);
+                                webSocketService.lobbyNotifications(userId, playerDTO);
+
+                                // broadcast move action only if a card was played
+                                if (game.getLastCardPlayed() != null) {
+                                        MoveActionDTO moveDTO = GameSessionMapper.convertToMoveActionDTO(
+                                                        userId,
+                                                        game.getLastCardPlayed(),
+                                                        game.getLastCardPickedCards());
+                                        webSocketService.broadCastLobbyNotifications(gameId, moveDTO);
+                                }
+
+                                // check for game over
+                                gameService.isGameOver(gameId);
+
+                                // broadcast next play-phase timer
+                                long remPlay = timerService.getRemainingSeconds(gameId, timerService.getPlayStrategy());
+                                TimeLeftDTO nextPlayDTO = GameSessionMapper.toTimeToPlayDTO(gameId, remPlay);
+                                webSocketService.broadCastLobbyNotifications(gameId, nextPlayDTO);
+
+                        } else {
+                                // multiple-capture: sync choose-phase timer
+                                long remChoice = timerService.getRemainingSeconds(gameId,
+                                                timerService.getChoiceStrategy());
+                                TimeLeftDTO chooseDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
+                                webSocketService.broadCastLobbyNotifications(gameId, chooseDTO);
+                        }
+                } catch (Exception e) {
+                        log.error(e.getMessage());
+                }
         }
-        catch (NotFoundException e) {
-            // msg and status for delete failure
-            msg = String.format("The lobby with id %s was not found", lobbyId);
-            success = false;
+
+        @MessageMapping("/chooseCapture")
+        public void processChooseCapture(@Payload ChosenCaptureDTO dto,
+                        StompHeaderAccessor headerAccessor) {
+                Long userId = (Long) Objects.requireNonNull(
+                                headerAccessor.getSessionAttributes()).get("userId");
+                Long gameId = dto.getGameId();
+
+                try {
+                        gameService.processPlayTurn(
+                                        gameId,
+                                        GameSessionMapper.convertCardDTOListToEntity(dto.getChosenOption()));
+                        GameSession game = gameService.getGameSessionById(gameId);
+                        Player current = game.getPlayerById(userId);
+
+                        // public state update
+                        GameSessionDTO sessionDTO = GameSessionMapper.convertToGameSessionDTO(game);
+                        webSocketService.broadCastLobbyNotifications(gameId, sessionDTO);
+
+                        // private state update
+                        PrivatePlayerDTO playerDTO = GameSessionMapper.convertToPrivatePlayerDTO(current);
+                        webSocketService.lobbyNotifications(userId, playerDTO);
+
+                        // broadcast move action
+                        MoveActionDTO moveDTO = GameSessionMapper.convertToMoveActionDTO(
+                                        userId,
+                                        game.getLastCardPlayed(),
+                                        game.getLastCardPickedCards());
+                        webSocketService.broadCastLobbyNotifications(gameId, moveDTO);
+
+                        // check for game over
+                        gameService.isGameOver(gameId);
+
+                        // broadcast next play-phase timer
+                        long remPlay = timerService.getRemainingSeconds(gameId, timerService.getPlayStrategy());
+                        TimeLeftDTO nextPlayDTO = GameSessionMapper.toTimeToPlayDTO(gameId, remPlay);
+                        webSocketService.broadCastLobbyNotifications(gameId, nextPlayDTO);
+
+                } catch (Exception e) {
+                        log.error(e.getMessage());
+                }
         }
-        UserNotificationDTO privateDTO= webSocketService.convertToDTO(msg, success);
-        webSocketService.broadCastLobbyNotifications(quittingUserId, privateDTO);
-    }
 
-    @MessageMapping("/rematch")
-    public void rematch(StompHeaderAccessor headerAccessor)  throws NotFoundException {
-        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
-                .get("userId");
-        Long userId = (Long) userIdObj;
-        User user = userService.checkIfUserExists(userId);
-        Long lobbyId = user.getLobbyJoined();
-        Lobby lobby = lobbyService.getLobbyById(lobbyId);
-
-        boolean success = true;
-        String msg = "Rematcher has been added to the lobby";
-
-        try {
-            lobbyService.addRematcher(lobbyId, userId);
+        @MessageMapping("/ai")
+        public void processAISuggestion(@Payload AiRequestDTO aiReq,
+                        StompHeaderAccessor headerAccessor) {
+                Long userId = (Long) Objects.requireNonNull(
+                                headerAccessor.getSessionAttributes()).get("userId");
+                AISuggestionDTO aiDTO = gameService.aiSuggestion(aiReq.getGameId(), userId);
+                webSocketService.lobbyNotifications(userId, aiDTO);
         }
-        catch (NotFoundException e) {
-            success = false;
-            msg = e.getMessage();
+
+        @MessageMapping("/quitGame")
+        public void processQuitGame(@Payload QuitGameDTO dto,
+                        StompHeaderAccessor headerAccessor) throws NotFoundException {
+                Long quittingUserId = (Long) Objects.requireNonNull(
+                                headerAccessor.getSessionAttributes()).get("userId");
+                User user = userService.checkIfUserExists(quittingUserId);
+                Long lobbyId = user.getLobbyJoined();
+
+                // forfeit if game in progress
+                GameSession game = gameService.getGameSessionById(lobbyId);
+                if (game != null) {
+                        List<QuitGameResultDTO> results = gameService.quitGame(dto.getGameId(), quittingUserId);
+                        results.forEach(r -> webSocketService.lobbyNotifications(r.getUserId(), r));
+                }
+
+                // delete lobby
+                String msg = String.format("Lobby with id %s has been deleted", lobbyId);
+                boolean success = true;
+                try {
+                        lobbyService.deleteLobby(lobbyId);
+                        BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+                        webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+                } catch (NotFoundException e) {
+                        msg = String.format("The lobby with id %s was not found", lobbyId);
+                        success = false;
+                }
+                // private deletion outcome
+                UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
+                webSocketService.broadCastLobbyNotifications(quittingUserId, privateDTO);
         }
-        UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
-        webSocketService.lobbyNotifications(userId, privateDTO);
 
-        LobbyDTO broadcastDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);
-        webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
-    }
+        @MessageMapping("/rematch")
+        public void rematch(StompHeaderAccessor headerAccessor) throws NotFoundException {
+                Long userId = (Long) Objects.requireNonNull(
+                                headerAccessor.getSessionAttributes()).get("userId");
+                User user = userService.checkIfUserExists(userId);
+                Long lobbyId = user.getLobbyJoined();
+                Lobby lobby = lobbyService.getLobbyById(lobbyId);
 
-    }
+                boolean success = true;
+                String msg = "Rematcher has been added to the lobby";
+                try {
+                        lobbyService.addRematcher(lobbyId, userId);
+                } catch (NotFoundException e) {
+                        success = false;
+                        msg = e.getMessage();
+                }
+                // private rematch notification
+                UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
+                webSocketService.lobbyNotifications(userId, privateDTO);
+                // broadcast rematch status
+                LobbyDTO broadcastDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);
+                webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
+        }
+}

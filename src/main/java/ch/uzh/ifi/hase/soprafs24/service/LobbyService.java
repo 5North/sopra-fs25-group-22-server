@@ -175,8 +175,8 @@ public class LobbyService {
     }
 
     public boolean rematchIsFull(Long lobbyId) throws NotFoundException {
-       Lobby lobby = checkIfLobbyExists(lobbyId);
-       // TODO illegalstateException if more than 4 user
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        // TODO illegalstateException if more than 4 user
         return lobby.getRematchers().size() >= 4;
     }
 
