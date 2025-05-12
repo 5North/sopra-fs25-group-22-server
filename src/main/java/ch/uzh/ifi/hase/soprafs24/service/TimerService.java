@@ -1,143 +1,93 @@
+// src/main/java/ch/uzh/ifi/hase/soprafs24/service/TimerService.java
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import java.util.Collections;
-import java.util.List;
+import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
-import ch.uzh.ifi.hase.soprafs24.game.GameSession;
-import ch.uzh.ifi.hase.soprafs24.game.Player;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeOutNotificationDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
-import ch.uzh.ifi.hase.soprafs24.game.items.Card;
-
 @Service
+@Transactional
 public class TimerService {
-
-    static final long TURN_TIMEOUT_SECONDS = 30;
-
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-
+    private final TimerStrategy playStrategy;
+    private final TimerStrategy choiceStrategy;
     private final GameService gameService;
     private final WebSocketService webSocketService;
 
-    private final Map<Long, ScheduledFuture<?>> tasks = new ConcurrentHashMap<>();
-    private final Map<Long, Long> expirations = new ConcurrentHashMap<>();
+    private final Map<Long, Map<TimerStrategy, ScheduledFuture<?>>> tasks = new ConcurrentHashMap<>();
+    private final Map<Long, Map<TimerStrategy, Long>> expirations = new ConcurrentHashMap<>();
 
     @Autowired
-    public TimerService(@Lazy GameService gameService,
+    public TimerService(
+            @Lazy GameService gameService,
+            @Qualifier("playTimerStrategy") TimerStrategy playStrategy,
+            @Qualifier("choiceTimerStrategy") TimerStrategy choiceStrategy,
             WebSocketService webSocketService) {
         this.gameService = gameService;
+        this.playStrategy = playStrategy;
+        this.choiceStrategy = choiceStrategy;
         this.webSocketService = webSocketService;
     }
 
-    /**
-     * Schedule a timeout for the given gameId.
-     * Cancels any existing timeout for that game first.
-     */
-    public void schedule(Long gameId) {
-        cancel(gameId);
-        long expireAt = System.currentTimeMillis() + TURN_TIMEOUT_SECONDS * 1000;
-        expirations.put(gameId, expireAt);
-
-        ScheduledFuture<?> future = scheduler.schedule(
-                () -> timeoutAction(gameId),
-                TURN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        tasks.put(gameId, future);
+    public void schedule(Long gameId, TimerStrategy strategy, Long forUserId) {
+        // cancel any existing
+        cancel(gameId, strategy);
+        long timeout = strategy.getTimeoutSeconds();
+        ScheduledFuture<?> f = scheduler.schedule(
+                () -> strategy.onTimeout(gameId, forUserId),
+                timeout, TimeUnit.SECONDS);
+        tasks.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>()).put(strategy, f);
+        expirations.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
+                .put(strategy, System.currentTimeMillis() + timeout * 1000);
     }
 
-    /**
-     * Cancel any pending timeout for the given gameId.
-     */
-    public void cancel(Long gameId) {
-        expirations.remove(gameId);
-        Optional.ofNullable(tasks.remove(gameId))
-                .ifPresent(f -> f.cancel(false));
-    }
-
-    /**
-     * Return the remaining seconds until timeout for the given gameId,
-     * or 0 if none is scheduled or it's already expired.
-     */
-    public long getRemainingSeconds(Long gameId) {
-        Long exp = expirations.get(gameId);
-        if (exp == null) {
-            return 0;
+    public void cancel(Long gameId, TimerStrategy strategy) {
+        var map = tasks.get(gameId);
+        if (map != null && map.containsKey(strategy)) {
+            map.get(strategy).cancel(true);
+            map.remove(strategy);
         }
-        long rem = (exp - System.currentTimeMillis()) / 1000;
-        return Math.max(rem, 0);
+        var taskMap = tasks.get(gameId);
+        if (taskMap != null && taskMap.containsKey(strategy)) {
+            taskMap.get(strategy).cancel(true);
+            taskMap.remove(strategy);
+        }
+        // rimuovo anche l’expiration per far tornare 0 getRemainingSeconds
+        var expMap = expirations.get(gameId);
+        if (expMap != null && expMap.containsKey(strategy)) {
+            expMap.remove(strategy);
+        }
     }
 
-    /**
-     * Called when a timeout fires: performs an automatic play,
-     * broadcasts the usual turn messages plus a timeout notification,
-     * then checks for game end and either reschedules or cleans up.
-     */
-    private void timeoutAction(Long gameId) {
-        GameSession game = gameService.getGameSessionById(gameId);
-        if (game == null) {
-            cancel(gameId);
-            return;
-        }
-
-        synchronized (game) {
-            if (game.isGameOver()) {
-                cancel(gameId);
-                return;
+    public long getRemainingSeconds(Long gameId, TimerStrategy strategy) {
+        var map = expirations.get(gameId);
+        if (map != null && map.containsKey(strategy)) {
+            long millis = map.get(strategy) - System.currentTimeMillis();
+            if (millis <= 0) {
+                return 0;
             }
-
-            Player current = game.getCurrentPlayer();
-            List<Card> hand = current.getHand();
-            Card randomCard = hand.get(new Random().nextInt(hand.size()));
-
-            List<List<Card>> options = game.getTable().getCaptureOptions(randomCard);
-            List<Card> choice = options.isEmpty()
-                    ? Collections.emptyList()
-                    : options.get(0);
-
-            game.playTurn(randomCard, choice);
-
-            MoveActionDTO moveDto = GameSessionMapper
-                    .convertToMoveActionDTO(
-                            current.getUserId(),
-                            randomCard,
-                            game.getLastCardPickedCards());
-            webSocketService.broadCastLobbyNotifications(gameId, moveDto);
-
-            GameSessionDTO publicDto = GameSessionMapper
-                    .convertToGameSessionDTO(game);
-            webSocketService.broadCastLobbyNotifications(gameId, publicDto);
-
-            PrivatePlayerDTO privateDto = GameSessionMapper
-                    .convertToPrivatePlayerDTO(game.getCurrentPlayer());
-            webSocketService.lobbyNotifications(
-                    game.getCurrentPlayer().getUserId(),
-                    privateDto);
-
-            TimeOutNotificationDTO timeoutDto = new TimeOutNotificationDTO(
-                    current.getUserId(),
-                    "Time expired: automatic move executed");
-            webSocketService.broadCastLobbyNotifications(gameId, timeoutDto);
-
-            boolean ended = gameService.isGameOver(gameId);
-            if (!ended) {
-                schedule(gameId);
-            } else {
-                cancel(gameId);
-            }
+            // arrotondo per eccesso per evitare 0 se il timer è ancora attivo
+            return (millis + 999) / 1000;
         }
+        return 0;
+    }
+
+    // --- compatibility for existing tests ---
+    public TimerStrategy getPlayStrategy() {
+        return playStrategy;
+    }
+
+    public TimerStrategy getChoiceStrategy() {
+        return choiceStrategy;
     }
 }

@@ -2,19 +2,24 @@ package ch.uzh.ifi.hase.soprafs24.game;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.service.AIService;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class GameServiceIntegrationTest {
@@ -34,11 +40,28 @@ public class GameServiceIntegrationTest {
     private WebSocketService webSocketService;
     private AIService aiService;
     private TimerService timerService;
+    private UserRepository userRepository;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws Exception {
         webSocketService = mock(WebSocketService.class);
         aiService = mock(AIService.class);
+        timerService = mock(TimerService.class);
+        // mock delle strategie richieste da timerService
+        TimerStrategy playStrat = mock(TimerStrategy.class);
+        TimerStrategy choiceStrat = mock(TimerStrategy.class);
+        when(timerService.getPlayStrategy()).thenReturn(playStrat);
+        when(timerService.getChoiceStrategy()).thenReturn(choiceStrat);
+
+        // MOCK del UserRepository e iniezione in GameStatisticsUtil
+        userRepository = mock(UserRepository.class);
+        // ogni findById restituisce un utente dummy (per evitare NPE)
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
+        Field repoField = GameStatisticsUtil.class.getDeclaredField("userRepository");
+        repoField.setAccessible(true);
+        repoField.set(null, userRepository);
+
+        // infine istanzi il service con tutti i mock
         gameService = new GameService(webSocketService, aiService, timerService);
     }
 
