@@ -27,7 +27,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
- class GameSessionMapperTest {
+class GameSessionMapperTest {
 
     @Test
      void testConvertToCardDTO() {
@@ -295,7 +295,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-    public void testToTimeLeftDTO() {
+     void testToTimeLeftDTO() {
         TimeLeftDTO dto = GameSessionMapper.toTimeLeftDTO(77L, 15L, "Custom Message");
         assertNotNull(dto);
         assertEquals(77L, dto.getGameId());
@@ -304,7 +304,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-    public void testToTimeToPlayDTO() {
+     void testToTimeToPlayDTO() {
         TimeLeftDTO dto = GameSessionMapper.toTimeToPlayDTO(42L, 30L);
         assertNotNull(dto);
         assertEquals(42L, dto.getGameId());
@@ -313,7 +313,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-    public void testToTimeToChooseDTO() {
+     void testToTimeToChooseDTO() {
         TimeLeftDTO dto = GameSessionMapper.toTimeToChooseDTO(99L, 10L);
         assertNotNull(dto);
         assertEquals(99L, dto.getGameId());
@@ -322,7 +322,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-    public void testToTimeOutNotificationDTO() {
+     void testToTimeOutNotificationDTO() {
         TimeOutNotificationDTO dto = GameSessionMapper.toTimeOutNotificationDTO(123L, "Timeout occurred");
         assertNotNull(dto);
         assertEquals(123L, dto.getTimedOutPlayerId());
@@ -330,7 +330,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-    public void testConvertToTimeOutNotificationDTO() {
+     void testConvertToTimeOutNotificationDTO() {
         TimeOutNotificationDTO dto = GameSessionMapper.toTimeOutNotificationDTO(55L, "Timeout reached");
         assertNotNull(dto);
         assertEquals(55L, dto.getTimedOutPlayerId());
