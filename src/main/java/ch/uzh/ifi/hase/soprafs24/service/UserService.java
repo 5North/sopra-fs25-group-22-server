@@ -116,7 +116,6 @@ public class UserService {
         return user.getLobby();
     }
 
-    // TODO eventually refactor better to avoid duplicate code
     public User checkIfUserExists(long userId) throws NotFoundException {
       Optional<User> user = userRepository.findById(userId);
 
