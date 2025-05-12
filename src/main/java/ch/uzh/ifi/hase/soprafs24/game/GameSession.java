@@ -1,4 +1,3 @@
-
 package ch.uzh.ifi.hase.soprafs24.game;
 
 import java.util.ArrayList;
@@ -26,23 +25,25 @@ public class GameSession {
     private Card lastCardPlayed;
     private List<Card> lastPickedCards;
 
+    // new flag to track if we're waiting on a choice
+    private boolean choosing = false;
+
     public GameSession(Long gameId, List<Long> playerIds) {
         this.gameId = gameId;
         this.deck = new Deck();
 
         List<Card> deckCards = new ArrayList<>(deck.getCards());
-
         List<Card> tableCards = new ArrayList<>(deckCards.subList(0, 4));
-        this.table = new Table(tableCards);
 
+        this.table = new Table(tableCards);
         this.players = new ArrayList<>();
+
         int cardIndex = 4;
         int cardsPerPlayer = 9;
         for (Long playerId : playerIds) {
             List<Card> hand = new ArrayList<>(deckCards.subList(cardIndex, cardIndex + cardsPerPlayer));
             cardIndex += cardsPerPlayer;
-            Player player = new Player(playerId, hand);
-            players.add(player);
+            players.add(new Player(playerId, hand));
         }
 
         this.currentPlayerIndex = 0;
@@ -50,7 +51,7 @@ public class GameSession {
         this.turnCounter = 0;
     }
 
-    // Getters
+    // existing getters...
     public Long getGameId() {
         return gameId;
     }
@@ -108,38 +109,24 @@ public class GameSession {
     }
 
     public Player getPlayerById(Long playerId) {
-        for (Player player : players) {
-            if (player.getUserId().equals(playerId)) {
-                return player;
-            }
-        }
-        return null;
+        return players.stream()
+                .filter(p -> p.getUserId().equals(playerId))
+                .findFirst()
+                .orElse(null);
     }
 
-    /**
-     * Processes a single turn.
-     *
-     * The flow is:
-     * 1. The current player plays the card (removing it from their hand).
-     * 2. The Table is queried for capture options for the played card.
-     * - If there are capture options:
-     * * If only one option exists, it is applied automatically.
-     * * If multiple options exist, the GameService must supply the selectedOption
-     * based on the client’s choice.
-     * - If no capture option exists, the played card is added to the Table.
-     * 3. If a capture occurred, the current player collects the played card plus
-     * the captured cards.
-     * * If the Table becomes empty, this counts as a scopa, except in the last
-     * turn.
-     * 4. The turnCounter is incremented and the turn passes to the next player.
-     *
-     * @param playedCard     The card that the current player wants to play.
-     * @param selectedOption The capture option chosen by the client (if multiple
-     *                       options exist); can be null if only one option exists.
-     */
+    // new getter for choosing state
+    public boolean isChoosing() {
+        return choosing;
+    }
+
     public void playTurn(Card playedCard, List<Card> selectedOption) {
         Player currentPlayer = players.get(currentPlayerIndex);
         Card cardPlayed;
+
+        // reset choosing each time we enter
+        choosing = false;
+
         if (selectedOption == null || selectedOption.isEmpty()) {
             cardPlayed = currentPlayer.pickPlayedCard(playedCard);
             this.setLastCardPlayed(cardPlayed);
@@ -161,18 +148,13 @@ public class GameSession {
                 optionToApply = captureOptions.get(0);
                 this.setLastPickedCards(optionToApply);
             } else if (selectedOption != null && !selectedOption.isEmpty()) {
-                boolean valid = false;
-                for (List<Card> option : captureOptions) {
-                    if (option.equals(selectedOption)) {
-                        valid = true;
-                        optionToApply = option;
-                        break;
-                    }
-                }
-                if (!valid) {
+                boolean valid = captureOptions.stream().anyMatch(opt -> opt.equals(selectedOption));
+                if (!valid)
                     throw new IllegalArgumentException("Selected capture option is not valid.");
-                }
+                optionToApply = selectedOption;
             } else {
+                // now waiting for client choice
+                choosing = true;
                 throw new IllegalStateException("Multiple capture options exist; a selection must be provided.");
             }
 
@@ -198,8 +180,6 @@ public class GameSession {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
     }
 
-    // finish game, clear table
-
     public void finishGame() {
         if (!table.isEmpty() && lastGetterIndex != -1) {
             Player lastGetter = players.get(lastGetterIndex);
@@ -208,8 +188,6 @@ public class GameSession {
             lastGetter.collectCards(remainingCards, false);
         }
     }
-
-    // Calculate result and update user stats
 
     public Result calculateResult() {
         Result result = new Result(this.gameId, this.players);
@@ -235,7 +213,6 @@ public class GameSession {
             boolean sameTeam = ((i % 2 == 0) == quittingTeamEven);
             String outcome = sameTeam ? Outcome.LOST.name() : Outcome.WON.name();
             outcomes.put(uid, outcome);
-            // update stats immediately
             if (Outcome.WON.name().equals(outcome)) {
                 GameStatisticsUtil.incrementWin(uid);
             } else {
@@ -244,5 +221,4 @@ public class GameSession {
         }
         return outcomes;
     }
-
 }

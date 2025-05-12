@@ -86,12 +86,24 @@ public class MessageController {
                                 headerAccessor.getSessionAttributes()).get("userId");
 
                 GameSession game = gameService.getGameSessionById(gameId);
-                PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(game.getPlayerById(userId));
+
+                // 1) stato privato e pubblico
+                PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(
+                                game.getPlayerById(userId));
                 GameSessionDTO publicDTO = GameSessionMapper.convertToGameSessionDTO(game);
                 webSocketService.lobbyNotifications(userId, privateDTO);
                 webSocketService.lobbyNotifications(userId, publicDTO);
 
-                // sync timer: choice-phase if still active, otherwise play-phase
+                // 2) se siamo in “choosing mode” e siamo proprio il giocatore di turno,
+                // rimandiamo le opzioni
+                if (game.isChoosing() && userId.equals(game.getCurrentPlayer().getUserId())) {
+                        var options = game.getTable().getCaptureOptions(game.getLastCardPlayed());
+                        var optsDto = GameSessionMapper.convertCaptureOptionsToDTO(options);
+                        webSocketService.lobbyNotifications(userId, optsDto);
+                        // non usciamo però, così l’UI può ancora ragionare sul timer
+                }
+
+                // 3) sincronizzazione timer: choice‐phase se attivo, altrimenti play‐phase
                 long remChoice = timerService.getRemainingSeconds(gameId, timerService.getChoiceStrategy());
                 if (remChoice > 0) {
                         TimeLeftDTO choiceDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);

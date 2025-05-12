@@ -7,6 +7,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
 import ch.uzh.ifi.hase.soprafs24.game.Player;
+import ch.uzh.ifi.hase.soprafs24.game.Table;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
@@ -549,6 +550,41 @@ public class MessageControllerTest {
                 verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(MoveActionDTO.class));
                 verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(GameSessionDTO.class));
                 verify(webSocketService).lobbyNotifications(eq(33L), any(PrivatePlayerDTO.class));
+        }
+
+        @Test
+        void testReceiveUpdateGame_WhenChoosing_SendsCaptureOptions() {
+                Long userId = 42L;
+                StompHeaderAccessor header = createHeaderAccessorWithUser(userId);
+
+                // spy della sessione
+                GameSession session = spy(new GameSession(123L, List.of(userId, 99L)));
+
+                // mock del player “di turno”
+                Player mockPlayer = mock(Player.class);
+                doReturn(userId).when(mockPlayer).getUserId();
+                doReturn(mockPlayer).when(session).getCurrentPlayer();
+                doReturn(true).when(session).isChoosing();
+
+                // mock della tabella e delle opzioni di cattura
+                Table mockTable = mock(Table.class);
+                Card lastPlayed = CardFactory.getCard(Suit.COPPE, 5);
+                List<List<Card>> opts = List.of(List.of(lastPlayed));
+                when(mockTable.getCaptureOptions(lastPlayed)).thenReturn(opts);
+                doReturn(mockTable).when(session).getTable();
+                doReturn(lastPlayed).when(session).getLastCardPlayed();
+
+                when(gameService.getGameSessionById(123L)).thenReturn(session);
+
+                messageController.receiveUpdateGame(123L, header);
+
+                verify(webSocketService).lobbyNotifications(eq(userId), any(PrivatePlayerDTO.class));
+                verify(webSocketService).lobbyNotifications(eq(userId), any(GameSessionDTO.class));
+                // in choosing mode invia le options
+                verify(webSocketService).lobbyNotifications(eq(userId), anyList());
+                // timerService viene interrogato due volte: remChoice e remPlay
+                verify(timerService, times(2))
+                                .getRemainingSeconds(eq(123L), any());
         }
 
 }
