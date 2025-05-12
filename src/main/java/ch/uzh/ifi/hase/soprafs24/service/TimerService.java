@@ -1,4 +1,3 @@
-// src/main/java/ch/uzh/ifi/hase/soprafs24/service/TimerService.java
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
@@ -62,7 +61,7 @@ public class TimerService {
             taskMap.get(strategy).cancel(true);
             taskMap.remove(strategy);
         }
-        // rimuovo anche l’expiration per far tornare 0 getRemainingSeconds
+    
         var expMap = expirations.get(gameId);
         if (expMap != null && expMap.containsKey(strategy)) {
             expMap.remove(strategy);
@@ -76,13 +75,13 @@ public class TimerService {
             if (millis <= 0) {
                 return 0;
             }
-            // arrotondo per eccesso per evitare 0 se il timer è ancora attivo
+          
             return (millis + 999) / 1000;
         }
         return 0;
     }
 
-    // --- compatibility for existing tests ---
+    // compatibility for existing tests
     public TimerStrategy getPlayStrategy() {
         return playStrategy;
     }
