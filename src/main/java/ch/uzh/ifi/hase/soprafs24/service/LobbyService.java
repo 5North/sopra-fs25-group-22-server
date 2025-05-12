@@ -76,20 +76,19 @@ public class LobbyService {
             throw new IllegalStateException(msg);
         }
 
-        // check if lobby is already full
-        if (lobbyIsFull(lobbyId)) {
-            String msg = "The lobby is already full";
-            throw new IllegalStateException(msg);
-        }
-
         // check if user is already in the lobby
         if (!lobby.getUsers().contains(userId)) {
+            // check if lobby is already full
+            if (lobbyIsFull(lobbyId)) {
+                String msg = "The lobby is already full";
+                throw new IllegalStateException(msg);
+            }
             lobby.addUsers(userId);
             user.setLobbyJoined(lobbyId);
             lobby.adddRematchers(userId);
+            userRepository.save(user);
+            userRepository.flush();
         }
-        userRepository.save(user);
-        userRepository.flush();
     }
 
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {

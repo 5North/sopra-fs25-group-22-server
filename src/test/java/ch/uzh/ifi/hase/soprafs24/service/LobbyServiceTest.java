@@ -200,9 +200,42 @@ public class LobbyServiceTest {
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
         when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
 
+        assertEquals(4, testLobby.getUsers().size());
         assertThrows(
                 IllegalStateException.class, () -> lobbyService
                         .joinLobby(lobbyId, 5L));
+
+    }
+
+    @Test
+    void joinLobby_full_UserAlreadyIn_doesNotThrowException() throws NotFoundException {
+        testLobby.addUsers(1L);
+        testLobby.addUsers(2L);
+        testLobby.addUsers(3L);
+        testLobby.addUsers(4L);
+
+        Long lobbyId = testLobby.getLobbyId();
+
+        // when -> setup additional mocks for LobbyRepository and userRepository
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
+        assertEquals(4, testLobby.getUsers().size());
+        assertDoesNotThrow(()->lobbyService.joinLobby(lobbyId, 4L));
+
+    }
+
+    @Test
+    void joinLobby_UserAlreadyIn_doesNothing() throws NotFoundException {
+        testLobby.addUsers(1L);
+        testLobby.addUsers(2L);
+
+        Long lobbyId = testLobby.getLobbyId();
+
+        // when -> setup additional mocks for LobbyRepository and userRepository
+        Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
+        lobbyService.joinLobby(lobbyId, 2L);
+        assertEquals(2, testLobby.getUsers().size());
 
     }
 
