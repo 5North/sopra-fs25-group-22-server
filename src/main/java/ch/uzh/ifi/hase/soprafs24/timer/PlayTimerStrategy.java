@@ -87,6 +87,11 @@ public class PlayTimerStrategy implements TimerStrategy {
         }
         webSocketService.broadCastLobbyNotifications(gameId, moveDto);
 
+        // check if game is over
+        if(gameService.isGameOver(gameId)){
+            return;
+        }
+
         // 7) Rischedulo play‐phase subito
         timerService.schedule(gameId, this, null);
 

@@ -85,6 +85,11 @@ public class ChoiceTimerStrategy implements TimerStrategy {
         }
         webSocketService.broadCastLobbyNotifications(gameId, moveDto);
 
+        // check if game is over
+        if(gameService.isGameOver(gameId)){
+            return;
+        }
+
         // 7) Rischedulo subito play‐phase (30s)
         var playStrat = timerService.getPlayStrategy();
         timerService.schedule(gameId, playStrat, null);
