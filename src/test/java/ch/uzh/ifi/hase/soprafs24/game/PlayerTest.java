@@ -13,7 +13,7 @@ import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 
-public class PlayerTest {
+ class PlayerTest {
 
     private List<Card> createInitialHand() {
         List<Card> initialHand = new ArrayList<>();
@@ -24,7 +24,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testPlayerUserIdLong() {
+     void testPlayerUserIdLong() {
         Long userId = 123L;
         List<Card> initialHand = createInitialHand();
         Player player = new Player(userId, initialHand);
@@ -32,7 +32,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testPlayerUserIdNotEqual() {
+     void testPlayerUserIdNotEqual() {
         Long userId = 123L;
         List<Card> initialHand = createInitialHand();
         Player player = new Player(userId, initialHand);
@@ -40,7 +40,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testGetHand() {
+     void testGetHand() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(123L, initialHand);
         List<Card> hand = player.getHand();
@@ -51,7 +51,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testPickPlayedCardSuccess() {
+     void testPickPlayedCardSuccess() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(123L, initialHand);
         Card cardToPlay = CardFactory.getCard(Suit.COPPE, 5);
@@ -62,7 +62,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testPickPlayedCardNotInHand() {
+     void testPickPlayedCardNotInHand() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(234L, initialHand);
 
@@ -78,7 +78,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testGetHandUnmodifiable() {
+     void testGetHandUnmodifiable() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(234L, initialHand);
         List<Card> hand = player.getHand();
@@ -89,7 +89,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testGetHandAfterPlayingSomeCards() {
+     void testGetHandAfterPlayingSomeCards() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(234L, initialHand);
         for (int i = 1; i <= 7; i++) {
@@ -102,7 +102,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testInitialTreasureIsEmpty() {
+     void testInitialTreasureIsEmpty() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(345L, initialHand);
 
@@ -111,7 +111,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testCollectCardsWithoutScopa() {
+     void testCollectCardsWithoutScopa() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(234L, initialHand);
 
@@ -126,7 +126,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testCollectCardsWithScopa() {
+     void testCollectCardsWithScopa() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(545L, initialHand);
 
@@ -141,7 +141,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testMultipleCollectCardsCalls() {
+     void testMultipleCollectCardsCalls() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(333L, initialHand);
 
@@ -165,7 +165,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testGetTreasureUnmodifiable() {
+     void testGetTreasureUnmodifiable() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(555L, initialHand);
 
@@ -180,7 +180,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testInitialScopaCountIsZero() {
+     void testInitialScopaCountIsZero() {
         List<Card> initialHand = createInitialHand();
         Player player = new Player(666L, initialHand);
         assertEquals(0, player.getScopaCount(), "Initial scopa count should be 0");
@@ -226,7 +226,7 @@ public class PlayerTest {
     }
 
     @Test
-    public void testPlayerInfoDTOGettersSetters() {
+     void testPlayerInfoDTOGettersSetters() {
         PlayerInfoDTO dto = new PlayerInfoDTO();
         assertNull(dto.getUserId());
         assertEquals(0, dto.getHandSize());

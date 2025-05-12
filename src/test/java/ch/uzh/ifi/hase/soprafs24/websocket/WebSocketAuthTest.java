@@ -20,14 +20,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 
-public class WebSocketAuthTest {
+class WebSocketAuthTest {
 
     private WebSocketAuth interceptor;
     private UserService mockUserService;
     private User testUser;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         interceptor = new WebSocketAuth();
         mockUserService = mock(UserService.class);
 
@@ -38,7 +38,7 @@ public class WebSocketAuthTest {
     }
 
     @Test
-    public void beforeHandshake_validToken_authorizesAndStoresUserId() throws Exception {
+    void beforeHandshake_validToken_authorizesAndStoresUserId() throws Exception {
         String token = "valid-token";
         URI uri = new URI("ws://localhost/lobby?token=" + token);
         ServerHttpRequest request = mock(ServerHttpRequest.class);
@@ -94,7 +94,7 @@ public class WebSocketAuthTest {
     }
 
     @Test
-    public void beforeHandshake_uriNull_throwsAndReturnsBadRequest() throws Exception {
+    void beforeHandshake_uriNull_throwsAndReturnsBadRequest() throws Exception {
         ServerHttpRequest request = mock(ServerHttpRequest.class);
         ServerHttpResponse response = mock(ServerHttpResponse.class);
         WebSocketHandler handler = mock(WebSocketHandler.class);
@@ -114,7 +114,7 @@ public class WebSocketAuthTest {
     }
 
     @Test
-    public void afterHandshake_noOp() {
+    void afterHandshake_noOp() {
         ServerHttpRequest request = mock(ServerHttpRequest.class);
         ServerHttpResponse response = mock(ServerHttpResponse.class);
         WebSocketHandler handler = mock(WebSocketHandler.class);

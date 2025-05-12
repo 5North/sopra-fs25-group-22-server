@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class MessageControllerTest {
+ class MessageControllerTest {
 
     @Mock
     private LobbyService lobbyService;
@@ -183,7 +183,7 @@ public class MessageControllerTest {
 
     // --- Test /app/playCard ---
     @Test
-    public void testProcessPlayCard() {
+     void testProcessPlayCard() {
         PlayCardDTO playCardDTO = new PlayCardDTO();
         playCardDTO.setLobbyId(300L);
         playCardDTO.setCard(new CardDTO("COPPE", 7));
@@ -203,7 +203,7 @@ public class MessageControllerTest {
 
     // --- Test /app/chooseCapture ---
     @Test
-    public void testProcessChooseCapture() {
+     void testProcessChooseCapture() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(4000L);
         lobby.addUsers(10L);
@@ -228,7 +228,7 @@ public class MessageControllerTest {
 
     // --- Test /app/ai ---
     @Test
-    public void testProcessAISuggestion() {
+     void testProcessAISuggestion() {
         AiRequestDTO aiReq = new AiRequestDTO();
         aiReq.setGameId(123L);
 
@@ -492,7 +492,7 @@ public class MessageControllerTest {
     }
 
     @Test
-    public void testProcessPlayCardEmitsMoveActionDTO() {
+     void testProcessPlayCardEmitsMoveActionDTO() {
         GameSession session = spy(new GameSession(500L, List.of(77L)));
         Player player = new Player(77L, new ArrayList<>());
 
@@ -519,7 +519,7 @@ public class MessageControllerTest {
     }
 
     @Test
-    public void testProcessChooseCaptureEmitsMoveActionDTO() {
+     void testProcessChooseCaptureEmitsMoveActionDTO() {
         GameSession session = spy(new GameSession(600L, List.of(33L)));
 
         Card lastPlayed = CardFactory.getCard(Suit.SPADE, 3);

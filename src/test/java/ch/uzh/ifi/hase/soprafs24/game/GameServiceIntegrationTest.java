@@ -27,21 +27,21 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-public class GameServiceIntegrationTest {
+ class GameServiceIntegrationTest {
 
     private GameService gameService;
     private WebSocketService webSocketService;
     private AIService aiService;
 
     @BeforeEach
-    public void setup() {
+     void setup() {
         webSocketService = mock(WebSocketService.class);
         aiService = mock(AIService.class);
         gameService = new GameService(webSocketService, aiService);
     }
 
     @Test
-    public void testDeterministicTurnFlow() {
+     void testDeterministicTurnFlow() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(300L);
         lobby.addUsers(100L);
@@ -69,7 +69,7 @@ public class GameServiceIntegrationTest {
     }
 
     @Test
-    public void testNonDeterministicTurnFlowWorks() throws Exception {
+     void testNonDeterministicTurnFlowWorks() throws Exception {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(400L);
         lobby.addUsers(10L);
@@ -128,7 +128,7 @@ public class GameServiceIntegrationTest {
     }
 
     @Test
-    public void testAiSuggestionReturnsDto() {
+     void testAiSuggestionReturnsDto() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(500L);
         lobby.addUsers(55L);
@@ -144,7 +144,7 @@ public class GameServiceIntegrationTest {
     }
 
     @Test
-    public void testAiSuggestionThrowsForUnknownUser() {
+     void testAiSuggestionThrowsForUnknownUser() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(600L);
         gameService.startGame(lobby);
@@ -174,7 +174,7 @@ public class GameServiceIntegrationTest {
     }
 
     @Test
-    public void testQuitGameIntegration_RemovesSessionAndNotifiesOutcomes() throws Exception {
+     void testQuitGameIntegration_RemovesSessionAndNotifiesOutcomes() throws Exception {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(99L);
         lobby.addUsers(9L);

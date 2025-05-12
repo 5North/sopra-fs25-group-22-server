@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class WebSocketEventListenerIntegrationTest {
+class WebSocketEventListenerIntegrationTest {
 
         @MockBean
         private LobbyService lobbyService;
@@ -57,7 +57,7 @@ public class WebSocketEventListenerIntegrationTest {
     }
 
         @Test
-        public void testSubscribeIntegration() throws NotFoundException, URISyntaxException {
+        void testSubscribeIntegration() throws NotFoundException, URISyntaxException {
                 // given
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 15L);
@@ -87,7 +87,7 @@ public class WebSocketEventListenerIntegrationTest {
         }
 
         @Test
-        public void testSubscribeIntegrationThrowsException() throws NotFoundException, URISyntaxException {
+        void testSubscribeIntegrationThrowsException() throws NotFoundException, URISyntaxException {
                 // given
                 Map<String, Object> sessionAttributes = new HashMap<>();
                 sessionAttributes.put("userId", 15L);

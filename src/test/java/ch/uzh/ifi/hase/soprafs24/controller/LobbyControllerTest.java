@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 
 @WebMvcTest(LobbyController.class)
-public class LobbyControllerTest {
+class LobbyControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -75,7 +75,7 @@ public class LobbyControllerTest {
     }
 
     @Test
-    public void createLobby_invalidAuth_lobbyNotCreated() throws Exception {
+    void createLobby_invalidAuth_lobbyNotCreated() throws Exception {
         //given
 
        Lobby lobby = new Lobby();

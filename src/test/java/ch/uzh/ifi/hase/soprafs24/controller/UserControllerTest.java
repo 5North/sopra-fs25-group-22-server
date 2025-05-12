@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * This tests if the UserController works.
  */
 @WebMvcTest(UserController.class)
-public class UserControllerTest {
+ class UserControllerTest {
 
         @Autowired
         private MockMvc mockMvc;
@@ -164,7 +164,7 @@ public class UserControllerTest {
     }
 
         @Test
-        public void logout_User_validAuth_userLoggedOut() throws Exception {
+         void logout_User_validAuth_userLoggedOut() throws Exception {
                 // given
                 User user = new User();
                 user.setId(1L);
@@ -185,7 +185,7 @@ public class UserControllerTest {
         }
 
         @Test
-        public void logout_User_notValidAuth_userNotLoggedOut() throws Exception {
+         void logout_User_notValidAuth_userNotLoggedOut() throws Exception {
                 // given
                 User user = new User();
                 user.setId(1L);
@@ -208,7 +208,7 @@ public class UserControllerTest {
 
         // # 6
         @Test
-        public void createUser_validInput_userCreated() throws Exception {
+         void createUser_validInput_userCreated() throws Exception {
                 User user = new User();
                 user.setId(1L);
                 user.setUsername("testUsername");
@@ -242,7 +242,7 @@ public class UserControllerTest {
 
         // # 18
         @Test
-        public void loginUser_validInput_userLoggedIn() throws Exception {
+         void loginUser_validInput_userLoggedIn() throws Exception {
                 // given
                 User user = new User();
                 user.setId(1L);
@@ -272,7 +272,7 @@ public class UserControllerTest {
 
         // # 19
         @Test
-        public void loginUser_notValidInput_userNotLoggedIn() throws Exception {
+         void loginUser_notValidInput_userNotLoggedIn() throws Exception {
                 // given
                 User user = new User();
                 user.setId(1L);
@@ -305,7 +305,7 @@ public class UserControllerTest {
 
         // # 8
         @Test
-        public void createUser_validInput_returnsTokenInHeader() throws Exception {
+         void createUser_validInput_returnsTokenInHeader() throws Exception {
                 User user = new User();
                 user.setId(1L);
                 user.setUsername("testUsername");

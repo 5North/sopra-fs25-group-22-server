@@ -17,14 +17,14 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 
-public class GameIntegrationTest {
+ class GameIntegrationTest {
 
     private Long gameId;
     private List<Long> playerIds;
     private GameSession gameSession;
 
     @BeforeEach
-    public void setup() {
+     void setup() {
         UserRepository dummyRepo = mock(UserRepository.class);
         GameStatisticsUtil.setUserRepository(dummyRepo);
         gameId = 10L;
@@ -59,7 +59,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testDeterministicCaptureTurn() {
+     void testDeterministicCaptureTurn() {
         Table table = gameSession.getTable();
         table.clearTable();
         Card tableCard = CardFactory.getCard(Suit.COPPE, 7);
@@ -85,7 +85,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testNonDeterministicCaptureTurn() {
+     void testNonDeterministicCaptureTurn() {
         Table table = gameSession.getTable();
         table.clearTable();
         List<Card> customCards = createCardsFromValues(List.of(3, 4, 2, 5), Suit.COPPE);
@@ -146,7 +146,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testNoCaptureTurn() {
+     void testNoCaptureTurn() {
         Table table = gameSession.getTable();
         table.clearTable();
         List<Card> customCards = createCardsFromValues(List.of(2, 3, 5, 6), Suit.COPPE);
@@ -178,7 +178,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testFinishGame() {
+     void testFinishGame() {
         Table table = gameSession.getTable();
         table.clearTable();
         List<Card> residualCards = createCardsFromValues(List.of(10, 2, 3), Suit.COPPE);
@@ -196,7 +196,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testIsGameOver() {
+     void testIsGameOver() {
         int turnsToSimulate = 36;
         for (int i = 0; i < turnsToSimulate; i++) {
             Player currentPlayer = gameSession.getPlayers().get(gameSession.getCurrentPlayerIndex());
@@ -239,7 +239,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testMultipleCaptureOptionsWithoutSelectionThrowsException() {
+     void testMultipleCaptureOptionsWithoutSelectionThrowsException() {
         Table table = gameSession.getTable();
         table.clearTable();
         List<Card> customCards = createCardsFromValues(List.of(3, 4, 2, 5), Suit.COPPE);
@@ -261,7 +261,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testInvalidCaptureOptionThrowsException() {
+     void testInvalidCaptureOptionThrowsException() {
         Table table = gameSession.getTable();
         table.clearTable();
         List<Card> customCards = createCardsFromValues(List.of(3, 4, 2, 5), Suit.COPPE);
@@ -292,7 +292,7 @@ public class GameIntegrationTest {
     }
 
     @Test
-    public void testLastTurnNoScopa() {
+     void testLastTurnNoScopa() {
         Table table = gameSession.getTable();
         table.clearTable();
         Card tableCard = CardFactory.getCard(Suit.COPPE, 7);
