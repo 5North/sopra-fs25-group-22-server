@@ -33,9 +33,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // topic deals with sending msg subscriptions, queue with user-specific msg
         registry.enableSimpleBroker("/topic", "/queue");
-                //TODO investigate
-                // set client pinging every xxxxx ms and expect response every xxxxx ms, else disconnect.
-                //.setHeartbeatValue(new long[]{20000, 30000});
         // where msgs to the server are sent
         registry.setApplicationDestinationPrefixes("/app");
     }

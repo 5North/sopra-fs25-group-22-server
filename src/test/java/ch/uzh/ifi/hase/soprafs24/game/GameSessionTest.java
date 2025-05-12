@@ -239,67 +239,67 @@ public class GameSessionTest {
         // ... e così via per gli altri metodi non usati dal test
         @Override
         public List<User> findAll(Sort sort) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public <S extends User> List<S> findAll(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public <S extends User> List<S> findAll(Example<S> example, Sort sort) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public Page<User> findAll(Pageable pageable) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public void deleteAll(Iterable<? extends User> entities) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'deleteAll'");
         }
 
         @Override
         public <S extends User> Optional<S> findOne(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findOne'");
         }
 
         @Override
         public <S extends User> Page<S> findAll(Example<S> example, Pageable pageable) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public <S extends User> long count(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'count'");
         }
 
         @Override
         public <S extends User> boolean exists(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'exists'");
         }
 
         @Override
         public User findByUsername(String username) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findByUsername'");
         }
 
         @Override
         public User findByToken(String token) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findByToken'");
         }
     }
