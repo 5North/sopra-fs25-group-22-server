@@ -69,7 +69,7 @@ public class GameService {
         } catch (IllegalStateException e) {
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
-            webSocketService.lobbyNotifications(userId, optionsDTO);
+            webSocketService.sentLobbyNotifications(userId, optionsDTO);
             log.info("Message sent to user {}: card options", userId);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
@@ -103,7 +103,7 @@ public class GameService {
 
             game.getPlayers().forEach(player -> {
                 ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
-                webSocketService.lobbyNotifications(player.getUserId(), resultDTO);
+                webSocketService.sentLobbyNotifications(player.getUserId(), resultDTO);
                 log.info("Message sent to user {}: result", playerId);
             });
             gameSessions.remove(gameId);

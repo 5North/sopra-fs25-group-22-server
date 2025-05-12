@@ -37,7 +37,7 @@ public class WebSocketService {
 
     // TODO refactor rename method
     // sent (join) notification back to specific user
-    public void lobbyNotifications(Long userId, Object DTO) {
+    public void sentLobbyNotifications(Long userId, Object DTO) {
 
         // send notification to user
         messagingTemplate.convertAndSendToUser(Long.toString(userId),"/queue/reply", DTO);

@@ -97,9 +97,9 @@ public class MessageController {
         Player player = game.getPlayerById(userId);
 
         PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(player);
-        webSocketService.lobbyNotifications(userId, privateDTO);
+        webSocketService.sentLobbyNotifications(userId, privateDTO);
         log.info("Message sent to user {}: cards in hand update", userId);
-        webSocketService.lobbyNotifications(userId, publicGameDTO);
+        webSocketService.sentLobbyNotifications(userId, publicGameDTO);
         log.info("Message sent to user {}: game update", userId);
     }
 
@@ -128,7 +128,7 @@ public class MessageController {
                 GameSessionDTO updateGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
                 PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
 
-                webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
+                webSocketService.sentLobbyNotifications(userId, updatedPrivateDTO);
                 log.info("Message sent to user {}: Cards in hand after card played", userId);
                 webSocketService.broadCastLobbyNotifications(gameId, updateGameDTO);
                 log.info("Message broadcast to lobby {}: game after cards played by {}", gameId, userId);
@@ -169,7 +169,7 @@ public class MessageController {
             webSocketService.broadCastLobbyNotifications(gameId, updatedGameDTO);
             log.info("Message broadcast to lobby {}: game after choose option", gameId);
             PrivatePlayerDTO updatedPrivateDTO = GameSessionMapper.convertToPrivatePlayerDTO(currentPlayer);
-            webSocketService.lobbyNotifications(userId, updatedPrivateDTO);
+            webSocketService.sentLobbyNotifications(userId, updatedPrivateDTO);
             log.info("Message sent to user {}: cards in hand after choose option by {}", userId, userId);
 
             gameService.isGameOver(gameId);
@@ -187,7 +187,7 @@ public class MessageController {
         Long userId = (Long) Objects.requireNonNull(header.getSessionAttributes()).get("userId");
         try {
             AISuggestionDTO aiDto = gameService.aiSuggestion(gameId, userId);
-            webSocketService.lobbyNotifications(userId, aiDto);
+            webSocketService.sentLobbyNotifications(userId, aiDto);
             log.info("Message sent to user {}: Ai suggestion", userId);
         } catch (Exception e) {
             log.error("Error processing AI suggestion: {}", e.getMessage());
@@ -208,7 +208,7 @@ public class MessageController {
 
             List<QuitGameResultDTO> results = gameService.quitGame(gameId, quittingUserId);
             for (QuitGameResultDTO result : results) {
-                webSocketService.lobbyNotifications(result.getUserId(), result);
+                webSocketService.sentLobbyNotifications(result.getUserId(), result);
                 log.info("Message sent to user {}: quit game result", result.getUserId());
             }
         }
@@ -229,7 +229,7 @@ public class MessageController {
             success = false;
         }
         UserNotificationDTO privateDTO= webSocketService.convertToDTO(msg, success);
-        webSocketService.lobbyNotifications(quittingUserId, privateDTO);
+        webSocketService.sentLobbyNotifications(quittingUserId, privateDTO);
         log.info("Message sent to user {}: quitting game request in lobby {}", quittingUserId, lobbyId);
     }
 
@@ -254,7 +254,7 @@ public class MessageController {
             msg = e.getMessage();
         }
         UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
-        webSocketService.lobbyNotifications(userId, privateDTO);
+        webSocketService.sentLobbyNotifications(userId, privateDTO);
         log.info("Message sent to user {}: rematch request in lobby {}", userId, lobbyId);
 
         LobbyDTO broadcastDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);

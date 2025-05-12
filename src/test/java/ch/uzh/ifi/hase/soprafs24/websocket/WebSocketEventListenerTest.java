@@ -92,7 +92,7 @@ class WebSocketEventListenerTest {
 
         verify(lobbyService).joinLobby(1234L, 55L);
         verify(webSocketService).broadCastLobbyNotifications(1234L, broadcastDto);
-        verify(webSocketService).lobbyNotifications(55L, userDto);
+        verify(webSocketService).sentLobbyNotifications(55L, userDto);
     }
 
     @Test
@@ -110,7 +110,7 @@ class WebSocketEventListenerTest {
 
         verify(lobbyService).joinLobby(2000L, 77L);
         verify(webSocketService, never()).broadCastLobbyNotifications(anyLong(), any());
-        verify(webSocketService).lobbyNotifications(77L, userDto);
+        verify(webSocketService).sentLobbyNotifications(77L, userDto);
     }
 
     @Test
@@ -136,7 +136,7 @@ class WebSocketEventListenerTest {
 
         verify(lobbyService).leaveLobby(3000L, 88L);
         verify(webSocketService).broadCastLobbyNotifications(3000L, broadcastDto);
-        verify(webSocketService).lobbyNotifications(88L, userDto);
+        verify(webSocketService).sentLobbyNotifications(88L, userDto);
     }
 
     @Test
@@ -168,7 +168,7 @@ class WebSocketEventListenerTest {
         verify(lobbyService).leaveLobby(3000L, 88L);
         verify(webSocketService).broadCastLobbyNotifications(3000L, broadcastDtoUnsubscribe);
         verify(webSocketService).broadCastLobbyNotifications(3000L, broadcastDto);
-        verify(webSocketService).lobbyNotifications(88L, userDto);
+        verify(webSocketService).sentLobbyNotifications(88L, userDto);
     }
 
     @Test
@@ -192,7 +192,7 @@ class WebSocketEventListenerTest {
 
         verify(lobbyService).leaveLobby(3000L, 88L);
         verify(webSocketService, never()).broadCastLobbyNotifications(anyLong(), any());
-        verify(webSocketService).lobbyNotifications(88L, userDto);
+        verify(webSocketService).sentLobbyNotifications(88L, userDto);
     }
 
     @Test
@@ -215,7 +215,7 @@ class WebSocketEventListenerTest {
 
         verify(lobbyService).leaveLobby(4000L, 99L);
         verify(webSocketService, never()).broadCastLobbyNotifications(anyLong(), any());
-        verify(webSocketService).lobbyNotifications(99L, userDto);
+        verify(webSocketService).sentLobbyNotifications(99L, userDto);
     }
 
     @Test
@@ -244,7 +244,7 @@ class WebSocketEventListenerTest {
 
         verify(lobbyService, never()).leaveLobby(4000L, 99L);
         verify(webSocketService, never()).broadCastLobbyNotifications(anyLong(), any());
-        verify(webSocketService).lobbyNotifications(99L, userDto);
+        verify(webSocketService).sentLobbyNotifications(99L, userDto);
     }
 
     @Test
@@ -284,6 +284,6 @@ class WebSocketEventListenerTest {
 
         verify(lobbyService).joinLobby(6789L, 22L);
         verify(webSocketService).broadCastLobbyNotifications(6789L, broadcastDto);
-        verify(webSocketService).lobbyNotifications(22L, userDto);
+        verify(webSocketService).sentLobbyNotifications(22L, userDto);
     }
 }

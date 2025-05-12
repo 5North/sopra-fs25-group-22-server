@@ -68,7 +68,7 @@ public class WebSocketEventListener {
 
             // notify user
             UserNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
-            webSocketService.lobbyNotifications(userId, DTO);
+            webSocketService.sentLobbyNotifications(userId, DTO);
             log.info("Message broadcast to user {}: lobby join status", userId);
         } else {
             log.debug("Received subscription event to other destination: {}", event.getMessage());
@@ -105,7 +105,7 @@ public class WebSocketEventListener {
             }
             // sent notification to user
             UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
-            webSocketService.lobbyNotifications(userId, privateDTO);
+            webSocketService.sentLobbyNotifications(userId, privateDTO);
             log.info("Message broadcast to user {}: lobby leave status", userId);
 
             // check if lobby has been deleted and set and broadcast right msg
@@ -120,7 +120,7 @@ public class WebSocketEventListener {
                 log.info("Message broadcast to lobby {}: lobby deleted", lobbyId);
                 msg = "Lobby deleted successfully";
                 privateDTO = webSocketService.convertToDTO(msg, success);
-                webSocketService.lobbyNotifications(userId, privateDTO);
+                webSocketService.sentLobbyNotifications(userId, privateDTO);
                 log.info("Message sent to user {}: lobby deleted successfully", userId);
             }
         }

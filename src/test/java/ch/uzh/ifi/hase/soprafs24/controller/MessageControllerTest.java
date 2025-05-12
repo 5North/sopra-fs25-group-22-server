@@ -177,8 +177,8 @@ public class MessageControllerTest {
 
         messageController.receiveUpdateGame(session.getGameId(), headerAccessor);
 
-        verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(PrivatePlayerDTO.class));
-        verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(GameSessionDTO.class));
+        verify(webSocketService, times(1)).sentLobbyNotifications(anyLong(), any(PrivatePlayerDTO.class));
+        verify(webSocketService, times(1)).sentLobbyNotifications(anyLong(), any(GameSessionDTO.class));
     }
 
     // --- Test /app/playCard ---
@@ -197,7 +197,7 @@ public class MessageControllerTest {
         messageController.processPlayCard(playCardDTO, accessor);
 
         verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(300L), any());
-        verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(100L), any());
+        verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(100L), any());
         verify(gameService, atLeastOnce()).isGameOver(300L);
     }
 
@@ -223,7 +223,7 @@ public class MessageControllerTest {
         messageController.processChooseCapture(chosenCaptureDTO, accessor);
 
         verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(4000L), any());
-        verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(10L), any());
+        verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(10L), any());
     }
 
     // --- Test /app/ai ---
@@ -240,7 +240,7 @@ public class MessageControllerTest {
         messageController.processAISuggestion(aiReq, accessor);
 
         verify(webSocketService, times(1))
-                .lobbyNotifications(eq(42L), eq(expectedDto));
+                .sentLobbyNotifications(eq(42L), eq(expectedDto));
     }
 
     // --- Test /app/quit ---
@@ -288,9 +288,9 @@ public class MessageControllerTest {
         messageController.processQuitGame(dto, accessor);
 
         verify(webSocketService, times(1))
-                .lobbyNotifications(eq(5L), eq(r1));
+                .sentLobbyNotifications(eq(5L), eq(r1));
         verify(webSocketService, times(1))
-                .lobbyNotifications(eq(8L), eq(r2));
+                .sentLobbyNotifications(eq(8L), eq(r2));
 
         verify(lobbyService, times(1)).deleteLobby(gameId);
 
@@ -426,7 +426,7 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .convertToDTO(anyString(), anyBoolean());
         verify(webSocketService, times(1))
-                .lobbyNotifications(eq(userId), eq(privateDTO));
+                .sentLobbyNotifications(eq(userId), eq(privateDTO));
         verify(webSocketService, times(1))
                 .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
 
@@ -469,7 +469,7 @@ public class MessageControllerTest {
         verify(webSocketService, times(1))
                 .convertToDTO(anyString(), anyBoolean());
         verify(webSocketService, times(1))
-                .lobbyNotifications(eq(userId), eq(privateDTO));
+                .sentLobbyNotifications(eq(userId), eq(privateDTO));
         verify(webSocketService, times(1))
                 .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
 
@@ -513,7 +513,7 @@ public class MessageControllerTest {
         messageController.processPlayCard(dto, acc);
 
         verify(webSocketService).broadCastLobbyNotifications(eq(500L), any(MoveActionDTO.class));
-        verify(webSocketService).lobbyNotifications(eq(77L), any(PrivatePlayerDTO.class));
+        verify(webSocketService).sentLobbyNotifications(eq(77L), any(PrivatePlayerDTO.class));
         verify(webSocketService, atLeastOnce())
                 .broadCastLobbyNotifications(eq(500L), any(GameSessionDTO.class));
     }
@@ -539,7 +539,7 @@ public class MessageControllerTest {
 
         verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(MoveActionDTO.class));
         verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(GameSessionDTO.class));
-        verify(webSocketService).lobbyNotifications(eq(33L), any(PrivatePlayerDTO.class));
+        verify(webSocketService).sentLobbyNotifications(eq(33L), any(PrivatePlayerDTO.class));
     }
 
 }

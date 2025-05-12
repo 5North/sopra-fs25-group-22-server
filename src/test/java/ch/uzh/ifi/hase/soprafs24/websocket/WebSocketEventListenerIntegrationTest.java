@@ -83,7 +83,7 @@ public class WebSocketEventListenerIntegrationTest {
 
                 // Verify with spybean that the methods in webSocketService are called
                 verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(2000L), eq(LobbyDTO));
-                verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(15L), eq(UserDTO));
+                verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(15L), eq(UserDTO));
         }
 
         @Test
@@ -113,7 +113,7 @@ public class WebSocketEventListenerIntegrationTest {
 
                 // Verify with spybean that the methods in webSocketService are called
                 verify(webSocketService, never()).broadCastLobbyNotifications(eq(2000L), eq(LobbyDTO));
-                verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(15L), eq(UserDTO));
+                verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(15L), eq(UserDTO));
         }
 
         @Test
@@ -151,7 +151,7 @@ public class WebSocketEventListenerIntegrationTest {
                 verify(webSocketService, atLeastOnce())
                                 .broadCastLobbyNotifications(eq(3000L), eq(broadcastDTO));
                 verify(webSocketService, atLeastOnce())
-                                .lobbyNotifications(eq(42L), eq(userDTO));
+                                .sentLobbyNotifications(eq(42L), eq(userDTO));
         }
 
         @Test
@@ -178,7 +178,7 @@ public class WebSocketEventListenerIntegrationTest {
                 verify(webSocketService, never())
                                 .broadCastLobbyNotifications(anyLong(), any());
                 verify(webSocketService, atLeastOnce())
-                                .lobbyNotifications(eq(99L), eq(userDTO));
+                                .sentLobbyNotifications(eq(99L), eq(userDTO));
         }
 
 }
