@@ -11,6 +11,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -22,6 +24,7 @@ import java.util.Random;
 public class ChoiceTimerStrategy implements TimerStrategy {
 
     private static final long TIMEOUT_SECONDS = 15L;
+    private static final Logger log = LoggerFactory.getLogger(ChoiceTimerStrategy.class);
     private final GameService gameService;
     private final WebSocketService webSocketService;
     private final TimerService timerService;
@@ -56,6 +59,7 @@ public class ChoiceTimerStrategy implements TimerStrategy {
             if (!opts.isEmpty()) {
                 gameService.processPlayTurn(gameId, opts.get(random.nextInt(opts.size())));
             }
+            // TODO
         } catch (Exception ignored) {
         }
 
@@ -63,9 +67,11 @@ public class ChoiceTimerStrategy implements TimerStrategy {
 
         GameSessionDTO publicDto = GameSessionMapper.convertToGameSessionDTO(updated);
         webSocketService.broadCastLobbyNotifications(gameId, publicDto);
+        log.info("Message broadcasted to lobby {}: game update on choice timeout", gameId);
 
         PrivatePlayerDTO privateDto = GameSessionMapper.convertToPrivatePlayerDTO(chooser);
         webSocketService.sentLobbyNotifications(forUserId, privateDto);
+        log.info("Message sent to user {}: hand cards update on choice timeout", forUserId);
 
         MoveActionDTO moveDto;
         try {
@@ -77,6 +83,7 @@ public class ChoiceTimerStrategy implements TimerStrategy {
             moveDto = new MoveActionDTO();
         }
         webSocketService.broadCastLobbyNotifications(gameId, moveDto);
+        log.info("Message broadcasted to lobby {}: moved cards on choice timeout", gameId);
 
         // check if game is over
         if(gameService.isGameOver(gameId)){
@@ -89,5 +96,6 @@ public class ChoiceTimerStrategy implements TimerStrategy {
         long rem = timerService.getRemainingSeconds(gameId, playStrat);
         TimeLeftDTO timeDto = GameSessionMapper.toTimeToPlayDTO(gameId, rem);
         webSocketService.broadCastLobbyNotifications(gameId, timeDto);
+        log.info("Message broadcasted to lobby {}: time left for choice", gameId);
     }
 }

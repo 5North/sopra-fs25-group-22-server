@@ -142,14 +142,14 @@ public class GameService {
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
             webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
-            log.info("Message broadcasted to lobby {}: lastcards picked by {}", gameId, playerId);
+            log.info("Message broadcasted to lobby {}: last cards picked by {}", gameId, playerId);
 
             Result result = game.calculateResult();
 
             game.getPlayers().forEach(player -> {
                 ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
                 webSocketService.sentLobbyNotifications(player.getUserId(), resultDTO);
-                log.info("Message sent to user {}: result", playerId);
+                log.info("Message sent to user {}: game result", playerId);
             });
 
             gameSessions.remove(gameId);
