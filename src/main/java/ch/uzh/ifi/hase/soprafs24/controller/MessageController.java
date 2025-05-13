@@ -289,7 +289,6 @@ public class MessageController {
         Long userId = (Long) userIdObj;
         User user = userService.checkIfUserExists(userId);
         Long lobbyId = user.getLobbyJoined();
-        Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
 
         boolean success = true;
         String msg = "Rematcher has been added to the lobby";
@@ -306,7 +305,7 @@ public class MessageController {
         log.info("Message sent to user {}: rematch request in lobby {}", userId, lobbyId);
 
         // update lobby
-        lobby = lobbyService.checkIfLobbyExists(lobbyId);
+        Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
         LobbyDTO broadcastDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);
         webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
         log.info("Message broadcast to lobby {}: update for new rematch user {} ", lobbyId, userId);
