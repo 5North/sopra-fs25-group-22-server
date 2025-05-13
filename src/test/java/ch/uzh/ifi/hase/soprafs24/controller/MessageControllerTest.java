@@ -25,9 +25,12 @@ import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import org.springframework.data.util.Pair;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
@@ -413,32 +416,54 @@ import java.util.List;
                 Lobby testLobby = new Lobby();
                 testLobby.setLobbyId(lobbyId);
                 testLobby.setUser(testUser);
-
-                LobbyDTO lobbyDTO = new LobbyDTO();
-                lobbyDTO.setLobbyId(lobbyId);
-                lobbyDTO.setHostId(userId);
+                testLobby.addUsers(userId);
 
                 UserNotificationDTO privateDTO = new UserNotificationDTO();
                 privateDTO.setSuccess(true);
                 privateDTO.setMessage("Rematcher has been added to the lobby");
 
+                List<Long> rematchers = new ArrayList<>();
+                rematchers.add(userId);
+
+                LobbyDTO rematchDTO = new LobbyDTO();
+                rematchDTO.setUsersIds(rematchers);
+                rematchDTO.setLobbyId(lobbyId);
+                rematchDTO.setHostId(userId);
+                rematchDTO.setRematchersIds(rematchers);
+
+
                 StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
 
         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
         when(lobbyService.checkIfLobbyExists(lobbyId)).thenReturn(testLobby);
-        when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(privateDTO);
+        when(webSocketService.convertToDTO("Rematcher has been added to the lobby", true)).thenReturn(privateDTO);
+            doAnswer(new Answer<Void>() {
+                @Override
+                public Void answer(InvocationOnMock invocation) throws Throwable {
+                    testLobby.adddRematchers(userId);
+                    return null;
+                }
+            }).when(lobbyService).addRematcher(lobbyId,userId);
 
                 messageController.rematch(accessor);
 
-        // verify
-        verify(lobbyService, times(1))
-                .addRematcher(lobbyId, userId);
-        verify(webSocketService, times(1))
-                .convertToDTO(anyString(), anyBoolean());
-        verify(webSocketService, times(1))
-                .sentLobbyNotifications(eq(userId), eq(privateDTO));
-        verify(webSocketService, times(1))
-                .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
+            // Captor DTOs and verify
+            verify(lobbyService, times(1))
+                    .addRematcher(lobbyId, userId);
+
+            verify(webSocketService, times(1)).sentLobbyNotifications(eq(userId), any(UserNotificationDTO.class));
+
+            verify(webSocketService, times(1))
+                    .convertToDTO(anyString(), anyBoolean());
+
+            ArgumentCaptor<LobbyDTO> broadcastCaptor = ArgumentCaptor.forClass(LobbyDTO.class);
+            verify(webSocketService, times(1)).broadCastLobbyNotifications(eq(lobbyId), broadcastCaptor.capture());
+
+            LobbyDTO actualBroadcastDTO = broadcastCaptor.getValue();
+            assertEquals(rematchDTO.getLobbyId(), actualBroadcastDTO.getLobbyId());
+            assertEquals(rematchDTO.getUsersIds(), actualBroadcastDTO.getUsersIds());
+            assertEquals(rematchDTO.getHostId(), actualBroadcastDTO.getHostId());
+            assertEquals(rematchDTO.getRematchersIds(), actualBroadcastDTO.getRematchersIds());
 
         }
 
