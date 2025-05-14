@@ -51,14 +51,12 @@ public class TimerService {
     }
 
     public void cancel(Long gameId, TimerStrategy strategy) {
-        // 1) cancella e rimuovi il future
         var taskMap = tasks.get(gameId);
         if (taskMap != null && taskMap.containsKey(strategy)) {
             taskMap.get(strategy).cancel(true);
             taskMap.remove(strategy);
         }
 
-        // 2) rimuovi anche l’expiration
         var expMap = expirations.get(gameId);
         if (expMap != null && expMap.containsKey(strategy)) {
             expMap.remove(strategy);
