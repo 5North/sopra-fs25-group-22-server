@@ -178,7 +178,7 @@ public class GameSessionMapper {
         return new TimeLeftDTO(gameId, remainingSeconds, message);
     }
 
-    /** Shortcut per la fase “play turn”. */
+    /** Shortcut for phase “play turn”. */
     public static TimeLeftDTO toTimeToPlayDTO(Long gameId, long remainingSeconds) {
         return toTimeLeftDTO(gameId, remainingSeconds, "Time to Play");
     }
