@@ -224,6 +224,146 @@ The following message is sent to the client who requested a rematch.
 
 `msg` can be either `"Rematcher has been added to the lobby"` or a string describing the error.
 
+#### During Game
+
+##### Client → Server
+
+###### PlayCardDTO  
+The following message is sent when a client plays a card:
+
+        {
+         "lobbyId": lobbyId <Long>,
+         "card": {
+                  "suit": suit <string>,
+                  "value": value <int>
+                  }
+        }
+
+###### ChosenCaptureDTO  
+The following message is sent when a client chooses a capture option:
+
+        {
+         "gameId": gameId <Long>,
+         "chosenOption": [
+                          { "suit": suit <string>, "value": value <int> },
+                          …
+                         ]
+        }
+
+###### AiRequestDTO  
+The following message is sent when a client requests an AI suggestion:
+
+        {
+         "gameId": gameId <Long>
+        }
+
+###### QuitGameDTO  
+The following message is sent when a client forfeits or quits:  
+
+        {
+         "gameId": gameId <Long>
+        }
+
+##### Server → Client
+
+###### GameSessionDTO  
+Broadcast full game state: 
+
+        {
+         "gameId": gameId <Long>,
+         "tableCards": [
+                        { "suit": suit <string>, "value": value <int> },
+                        …
+                       ],
+         "players": [
+                     { "userId": userId <Long>, "handSize": handSize <int>, "scopaCount": scopaCount <int> },
+                     …
+                    ],
+         "currentPlayerId": currentPlayerId <Long>
+        }
+
+###### PrivatePlayerDTO  
+Sent to a specific user to update their hand:
+
+        {
+         "userId": userId <Long>,
+         "handCards": [
+                       { "suit": suit <string>, "value": value <int> },
+                       …
+                      ]
+        }
+
+###### MoveActionDTO  
+Announce which card was played and which were captured:
+
+        {
+         "playerId": playerId <Long>,
+         "playedCard": { "suit": suit <string>, "value": value <int> },
+         "pickedCards": [
+                         { "suit": suit <string>, "value": value <int> },
+                         …
+                        ]
+        }
+
+###### TimeLeftDTO  
+Send remaining time and phase info:
+
+        {
+         "gameId": gameId <Long>,
+         "remainingSeconds": remainingSeconds <long>,
+         "message": message <string>
+        }
+
+###### AISuggestionDTO  
+Return a greedy AI suggestion:
+
+        {
+         "suggestion": suggestion <string>
+        }
+
+###### LastCardsDTO  
+Reveal the final cards picked by the last player:
+
+        {
+         "userId": userId <Long>,
+         "cards": [
+                   { "suit": suit <string>, "value": value <int> },
+                   …
+                  ]
+        }
+
+###### ResultDTO  
+Deliver final scores and outcome to each player:
+
+        {
+         "gameId": gameId <Long>,
+         "userId": userId <Long>,
+         "outcome": outcome <string>,
+         "myTotal": myTotal <int>,
+         "otherTotal": otherTotal <int>,
+         "myCarteResult": myCarteResult <int>,
+         "myDenariResult": myDenariResult <int>,
+         "myPrimieraResult": myPrimieraResult <int>,
+         "mySettebelloResult": mySettebelloResult <int>,
+         "myScopaResult": myScopaResult <int>,
+         "otherCarteResult": otherCarteResult <int>,
+         "otherDenariResult": otherDenariResult <int>,
+         "otherPrimieraResult": otherPrimieraResult <int>,
+         "otherSettebelloResult": otherSettebelloResult <int>,
+         "otherScopaResult": otherScopaResult <int>
+        }
+
+###### QuitGameResultDTO  
+Notify each user of forfeit results:
+
+        {
+         "userId": userId <Long>,
+         "outcome": outcome <string>,
+         "message": message <string>
+        }
+
+
+
 #### Rematch
 
 When a user clicks on the rematch button the following messages are sent.
@@ -262,7 +402,120 @@ The following message is sent to the client who requested a rematch.
 
 ### Game logic
 
-### Ai Assistance
+<details>
+<summary>See more...</summary>
+
+
+The Game Logic is organized into several collaborating components that together implement the rules of Scopa, manage state, and compute scores.
+
+#### 1. Card & Deck  
+- **Source:**  
+  - [Card.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/game/items/Card.java)  
+  - [CardFactory.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/game/items/CardFactory.java)  
+  - [Deck.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/game/items/Deck.java)  
+- **Description:**  
+  - `Card` is an immutable value object for one of 40 Italian cards (suits: Denari, Coppe, Spade, Bastoni; values 1–10), with proper `equals`/`hashCode`.  
+  - `CardFactory` implements a Flyweight cache so each suit–value pair is instantiated only once.  
+  - `Deck` constructs the full 40-card list via the factory, shuffles until the first four cards sum > 10, and exposes an unmodifiable list.
+
+#### 2. Table  
+- **Source:**  
+  - [Table.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/game/Table.java)  
+- **Description:**  
+  - Maintains the face-up pile.  
+  - `getCaptureOptions(Card)` returns all legal capture sets (exact matches or sums).  
+  - `applyCaptureOption(...)` removes those cards.  
+  - `isEmpty()` signals when a capture swept the table, awarding a Scopa bonus.
+
+#### 3. Player  
+- **Source:**  
+  - [Player.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/game/Player.java)  
+- **Description:**  
+  - Tracks each player’s `hand`, `treasure` (captured cards), and `scopaCount`.  
+  - `pickPlayedCard(...)` removes a card from the hand.  
+  - `collectCards(...)` adds captured cards to the treasure and increments Scopa count if the table was emptied.
+
+#### 4. GameSession  
+- **Source:**  
+  - [GameSession.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/game/GameSession.java)  
+- **Description:**  
+  1. **Initialization:** deal 4 cards to table, 9 to each of 4 players; set turn indices.  
+  2. **Turns (`playTurn`):**  
+     - Play a card or process a chosen capture.  
+     - Use `Table.getCaptureOptions()` to detect zero/one/multiple options.  
+     - On multiple, set `choosing = true` and defer until client selects.  
+     - Apply captures, award Scopa if table empties, advance `turnCounter` and `currentPlayerIndex`.  
+  3. **End-of-Game:** after 36 turns, leftover table cards go to last capturer; `calculateResult()` builds a `Result` aggregating five Scopa scoring categories; `GameStatisticsUtil` persists stats.  
+  4. **Forfeit:** `finishForfeit(quittingUserId)` immediately awards the opposing team and updates stats.
+
+---
+
+#### Design Patterns Applied
+
+- **Flyweight** ([CardFactory.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/game/items/CardFactory.java)):  
+  Consolidates all 40 `Card` instances into a shared cache, reducing memory overhead and simplifying comparisons.
+
+- **Strategy** ([TimerStrategy.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/timer/TimerStrategy.java)):  
+  Encapsulates “on timeout” behavior for Play (30 s) and Choice (15 s) phases in `PlayTimerStrategy` and `ChoiceTimerStrategy`. This cleanly separates scheduling (in `TimerService`) from fallback logic, making time-out behavior easy to extend without touching core game code.
+
+</details>
+
+
+### AI Assistance
+
+<details>
+<summary>See more...</summary>
+
+The AI Assistance component provides on-demand tactical hints by turning the current game state into a carefully crafted prompt for OpenAI’s chat API and returning suggestions in a fixed, machine-friendly format.
+
+#### 1. Source Files  
+- [AIService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/AIService.java)  
+- [OpenAiClient.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/OpenAiClient.java)  
+
+#### 2. Data Flow & Invocation  
+1. **Client requests a hint** via WebSocket to `/app/ai` with `gameId` and `userId`.  
+2. **`GameService.aiSuggestion(gameId, userId)`** locates the current `GameSession` and the `Player` object for that user.  
+3. **`AIService.generateAISuggestion(hand, table)`** builds a textual prompt and forwards it to OpenAI.  
+4. **Raw response** (a free-text string of up to three “Play X of Y” suggestions) is wrapped in an `AISuggestionDTO` and sent privately back on `/user/queue/reply`.
+
+#### 3. Prompt Construction (`AIService.buildPrompt`)  
+- **Hand & Table Encoding**  
+  - Converts each `Card` to a `"SUIT-VALUE"` token (e.g. `DENARI-7`) and joins with commas:  
+    ```text
+    Hand: [DENARI-7, COPPE-3, SPADE-1, …]
+    Table: [BASTONI-4, DENARI-5, …]
+    ```
+- **Rules & Heuristics**  
+  - Reminds the model of Italian-Scopa fundamentals:  
+    - “You must capture cards matching your card’s value, or sums of multiple cards.”  
+    - “If you clear the table, it’s a Scopa (1 point).”  
+    - “Avoid leaving easy Scopa opportunities for your opponents.”  
+    - “Prioritize high-value captures (seven of Denari, Denari suit, most cards).”
+- **Output Format Enforcement**  
+  - Instructs GPT to return up to three discrete suggestions, separated by semicolons, in **exactly** this pattern:  
+    ```
+    Play 7 of Denari; Play 4 of Coppe; Play 1 of Spade
+    ```
+
+#### 4. OpenAI Client Integration (`OpenAiClient`)  
+- **HTTP Chat Completion**  
+  - Uses Java’s `HttpClient` and Jackson to POST to `https://api.openai.com/v1/chat/completions`.  
+  - Model: `"gpt-4o"`, with a two-message sequence:  
+    1. **system**: “You are a helpful assistant.”  
+    2. **user**: the formatted Scopa prompt.  
+- **Error Handling**  
+  - Wraps I/O or interruption in a custom `OpenAIClientException`, so service code can log failures without crashing.
+
+#### 5. Delivery & Integration  
+- **DTO Mapping**  
+  - Raw suggestion string → `AISuggestionDTO(rawText)`  
+- **WebSocket Delivery**  
+  - Sent only to the requesting user on their private queue (`/user/queue/reply`), avoiding spam in the public game channel.  
+- **UI Consumption**  
+  - The frontend parses the semicolon-delimited suggestions and displays them as clickable hint buttons or plain text guidance.
+ 
+</details>
+
 
 ## Launch & Deployment
 
