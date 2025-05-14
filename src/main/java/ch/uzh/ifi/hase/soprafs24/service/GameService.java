@@ -11,6 +11,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Transactional
 public class GameService {
 
+    private static final Logger log = LoggerFactory.getLogger(GameService.class);
     private final Map<Long, GameSession> gameSessions = new ConcurrentHashMap<>();
     private final WebSocketService webSocketService;
     private final AIService aiService;
@@ -88,10 +91,11 @@ public class GameService {
             return Pair.of(game, current);
 
         } catch (IllegalStateException e) {
-            
+
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
-            List<List<CardDTO>> optsDto = GameSessionMapper.convertCaptureOptionsToDTO(options);
-            webSocketService.lobbyNotifications(userId, optsDto);
+            List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
+            webSocketService.sentLobbyNotifications(userId, optionsDTO);
+            log.info("Message sent to user {}: card options", userId);
 
             timerService.schedule(gameId,
                     timerService.getChoiceStrategy(),
@@ -134,14 +138,18 @@ public class GameService {
             game.finishGame();
 
             Long playerId = game.getLastPickedPlayerId();
+
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
             webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
+            log.info("Message broadcasted to lobby {}: last cards picked by {}", gameId, playerId);
 
             Result result = game.calculateResult();
+
             game.getPlayers().forEach(player -> {
                 ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
-                webSocketService.lobbyNotifications(player.getUserId(), resultDTO);
+                webSocketService.sentLobbyNotifications(player.getUserId(), resultDTO);
+                log.info("Message sent to user {}: game result", playerId);
             });
 
             gameSessions.remove(gameId);

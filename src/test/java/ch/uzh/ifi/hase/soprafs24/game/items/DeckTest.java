@@ -9,10 +9,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class DeckTest {
+ class DeckTest {
 
     @Test
-    public void testDeckInitialization() {
+     void testDeckInitialization() {
         Deck deck = new Deck();
         List<Card> cards = deck.getCards();
 
@@ -21,7 +21,7 @@ public class DeckTest {
     }
 
     @Test
-    public void testShuffleChangesOrder() {
+     void testShuffleChangesOrder() {
         Deck deck = new Deck();
         String initialOrder = deck.getCards().toString();
         deck.shuffle();
@@ -30,7 +30,7 @@ public class DeckTest {
     }
 
     @Test
-    public void testUniqueCardsInDeck() {
+     void testUniqueCardsInDeck() {
         Deck deck = new Deck();
         List<Card> cards = deck.getCards();
         Set<String> uniqueCards = new HashSet<>();
@@ -44,7 +44,7 @@ public class DeckTest {
     }
 
     @Test
-    public void testCheckCorrectnessFailure() throws Exception {
+     void testCheckCorrectnessFailure() throws Exception {
         Deck deck = new Deck();
         List<Card> fakeCards = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -58,7 +58,7 @@ public class DeckTest {
     }
 
     @Test
-    public void testShuffleLoopWithOverriddenCheckCorrectness() {
+     void testShuffleLoopWithOverriddenCheckCorrectness() {
         Deck deck = new Deck() {
             private int callCount = 0;
 

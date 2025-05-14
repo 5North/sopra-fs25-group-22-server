@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.util.UriComponents;
@@ -20,7 +21,7 @@ import ch.uzh.ifi.hase.soprafs24.service.UserService;
 
 public class WebSocketAuth implements HandshakeInterceptor {
 
-    private final Logger log = LoggerFactory.getLogger(WebSocketAuth.class);
+    private static final Logger log = LoggerFactory.getLogger(WebSocketAuth.class);
 
     @Autowired
     private UserService userService;
@@ -30,10 +31,7 @@ public class WebSocketAuth implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
 
-        //TODO remove debug statement
-        System.out.println("====================BEFORE HANDSHAKE========================");
-        System.out.println("Request: " + request.getURI());
-        System.out.println("===================================================");
+
         // Extract and validate authentication token
         String token;
         try {
@@ -42,20 +40,29 @@ public class WebSocketAuth implements HandshakeInterceptor {
              token = params.getFirst("token");
         }
         catch (NullPointerException e) {
-            // return 400 if no token header was present
+            // return 400 if no token param was present
             response.setStatusCode(HttpStatus.BAD_REQUEST);
+            log.info("Handshake failed: {}", e.getMessage());
             return false;
         }
 
-        User authUser = userService.authorizeUser(token);
+        if (token == null) {
+            response.setStatusCode(HttpStatus.BAD_REQUEST);
+            log.info("Handshake failed: no token provided");
+            return false;
 
-        if (authUser != null) {
+        }
+
+        try {
+            User authUser = userService.authorizeUser(token);
             // Save the user id as a session attribute, in order to retrieve it later
+            log.info("Handshake authenticated successfully: user {}", authUser.getId());
             attributes.put("userId", authUser.getId());
             return true;
-        } else {
-            //TODO delete
-            //response.setStatusCode(HttpStatus.UNAUTHORIZED);
+        }
+        catch (ResponseStatusException e) {
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
+            log.info("Handshake failed: unauthorized");
             return false;
         }
     }

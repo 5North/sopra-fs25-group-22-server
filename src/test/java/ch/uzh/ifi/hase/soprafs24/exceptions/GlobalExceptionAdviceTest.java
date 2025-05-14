@@ -18,12 +18,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class GlobalExceptionAdviceTest {
+ class GlobalExceptionAdviceTest {
 
     private GlobalExceptionAdvice advice = new GlobalExceptionAdvice();
 
     @Test
-    public void testHandleConflictWithIllegalArgumentException() {
+     void testHandleConflictWithIllegalArgumentException() {
         IllegalArgumentException ex = new IllegalArgumentException("Invalid argument");
         HttpServletRequest servletRequest = new MockHttpServletRequest();
         WebRequest webRequest = new ServletWebRequest(servletRequest);
@@ -35,7 +35,7 @@ public class GlobalExceptionAdviceTest {
     }
 
     @Test
-    public void testHandleTransactionSystemException() {
+     void testHandleTransactionSystemException() {
         TransactionSystemException ex = new TransactionSystemException("Transaction error");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("http://localhost/test");
@@ -48,7 +48,7 @@ public class GlobalExceptionAdviceTest {
     }
 
     @Test
-    public void testHandleInternalServerErrorException() throws Exception {
+     void testHandleInternalServerErrorException() throws Exception {
         HttpHeaders headers = new HttpHeaders();
         Constructor<?> constructor = HttpServerErrorException.InternalServerError.class
                 .getDeclaredConstructor(String.class, HttpHeaders.class, byte[].class, Charset.class);

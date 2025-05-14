@@ -14,7 +14,7 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
-public class TableTest {
+ class TableTest {
 
     private List<Card> createCards(int count, Suit suit) {
         List<Card> cards = new ArrayList<>();
@@ -25,7 +25,7 @@ public class TableTest {
     }
 
     @Test
-    public void testTableInstantiationWithFourCards() {
+     void testTableInstantiationWithFourCards() {
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
 
@@ -37,7 +37,7 @@ public class TableTest {
     }
 
     @Test
-    public void testTableInstantiationWithInvalidNumberOfCards() {
+     void testTableInstantiationWithInvalidNumberOfCards() {
         List<Card> lessThanFour = createCards(3, Suit.COPPE);
         Exception exception1 = assertThrows(IllegalArgumentException.class, () -> {
             new Table(lessThanFour);
@@ -57,7 +57,7 @@ public class TableTest {
     }
 
     @Test
-    public void testGetCardsUnmodifiable() {
+     void testGetCardsUnmodifiable() {
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
         List<Card> tableCards = table.getCards();
@@ -68,7 +68,7 @@ public class TableTest {
     }
 
     @Test
-    public void testTableInternalStateNotAffectedByExternalListModification() {
+     void testTableInternalStateNotAffectedByExternalListModification() {
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
 
@@ -79,7 +79,7 @@ public class TableTest {
     }
 
     @Test
-    public void testGetCardsReturnsCorrectSize() {
+     void testGetCardsReturnsCorrectSize() {
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
         List<Card> tableCards = table.getCards();
@@ -88,7 +88,7 @@ public class TableTest {
     }
 
     @Test
-    public void testGetCardsReturnsEmptyWhenInternalListCleared() throws Exception {
+     void testGetCardsReturnsEmptyWhenInternalListCleared() throws Exception {
         List<Card> initialCards = createCards(4, Suit.COPPE);
         Table table = new Table(initialCards);
 
@@ -119,7 +119,7 @@ public class TableTest {
     }
 
     @Test
-    public void testGetCaptureOptionsDeterministicSingleOption() {
+     void testGetCaptureOptionsDeterministicSingleOption() {
         // Table: [7, 3, 4, 2]
         List<Card> initialCards = createCardsFromValues(List.of(7, 3, 4, 2), Suit.COPPE);
         Table table = new Table(initialCards);
@@ -137,7 +137,7 @@ public class TableTest {
     }
 
     @Test
-    public void testGetCaptureOptionsNonDeterministic() {
+     void testGetCaptureOptionsNonDeterministic() {
         // Table: [3, 4, 2, 2]
         List<Card> initialCards = createCardsFromValues(List.of(3, 4, 2, 2), Suit.COPPE);
         Table table = new Table(initialCards);
@@ -165,7 +165,7 @@ public class TableTest {
     }
 
     @Test
-    public void testGetCaptureOptionsNoCapture() {
+     void testGetCaptureOptionsNoCapture() {
         List<Card> initialCards = createCardsFromValues(List.of(2, 3, 5, 6), Suit.COPPE);
         Table table = new Table(initialCards);
         Card playedCard = CardFactory.getCard(Suit.COPPE, 4);
@@ -176,7 +176,7 @@ public class TableTest {
     }
 
     @Test
-    public void testApplyCaptureOptionDeterministic() {
+     void testApplyCaptureOptionDeterministic() {
         // Table: [7, 3, 4, 2]
         List<Card> initialCards = createCardsFromValues(List.of(7, 3, 4, 2), Suit.COPPE);
         Table table = new Table(initialCards);
@@ -195,7 +195,7 @@ public class TableTest {
     }
 
     @Test
-    public void testApplyCaptureOptionNonDeterministic() {
+     void testApplyCaptureOptionNonDeterministic() {
         List<Card> initialCards = createCardsFromValues(List.of(3, 4, 2, 2), Suit.COPPE);
         Table table = new Table(initialCards);
         Card playedCard = CardFactory.getCard(Suit.COPPE, 7);
@@ -214,7 +214,7 @@ public class TableTest {
     }
 
     @Test
-    public void testAddCardAfterNoCapture() {
+     void testAddCardAfterNoCapture() {
         // Table: [2, 3, 5, 6]
         List<Card> initialCards = createCardsFromValues(List.of(2, 3, 5, 6), Suit.COPPE);
         Table table = new Table(initialCards);
@@ -229,7 +229,7 @@ public class TableTest {
     }
 
     @Test
-    public void testFullCaptureProcess() {
+     void testFullCaptureProcess() {
         // Table: [7, 3, 4, 2]
         List<Card> initialCards = createCardsFromValues(List.of(7, 3, 4, 2), Suit.COPPE);
         Table table = new Table(initialCards);
@@ -252,7 +252,7 @@ public class TableTest {
     }
 
     @Test
-    public void testGetCaptureOptionsWithTwo6AndTwo3() {
+     void testGetCaptureOptionsWithTwo6AndTwo3() {
         // Table: [3, 3, 6, 6]
         List<Card> initialCards = new ArrayList<>();
         initialCards.add(CardFactory.getCard(Suit.COPPE, 3));
@@ -275,7 +275,7 @@ public class TableTest {
     }
 
     @Test
-    public void testCaptureOptionsWithMixedAndApplyChosenOption() {
+     void testCaptureOptionsWithMixedAndApplyChosenOption() {
         Card card1 = CardFactory.getCard(Suit.DENARI, 3);
         Card card2 = CardFactory.getCard(Suit.DENARI, 4);
         Card card3 = CardFactory.getCard(Suit.COPPE, 3);
@@ -331,7 +331,7 @@ public class TableTest {
     }
 
     @Test
-    public void testCaptureUntilEmpty() {
+     void testCaptureUntilEmpty() {
         List<Integer> sevens = List.of(7, 7, 7, 7);
         List<Card> initialCards = createCardsFromValues(sevens, Suit.COPPE);
         Table table = new Table(initialCards);
@@ -355,14 +355,14 @@ public class TableTest {
     }
 
     @Test
-    public void testIsEmptyWhenTableIsNotEmpty() {
+     void testIsEmptyWhenTableIsNotEmpty() {
         List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
         Table table = new Table(initialCards);
         assertFalse(table.isEmpty(), "isEmpty() should return false when the table contains cards.");
     }
 
     @Test
-    public void testClearTable() {
+     void testClearTable() {
         List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
         Table table = new Table(initialCards);
         assertEquals(4, table.getCards().size(), "Table should initially contain 4 cards.");
@@ -372,7 +372,7 @@ public class TableTest {
     }
 
     @Test
-    public void testApplyCaptureOptionWithNull() {
+     void testApplyCaptureOptionWithNull() {
         List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
         Table table = new Table(initialCards);
 
@@ -384,7 +384,7 @@ public class TableTest {
     }
 
     @Test
-    public void testAddCardWithNull() {
+     void testAddCardWithNull() {
         List<Card> initialCards = createCardsFromValues(List.of(2, 3, 4, 5), Suit.COPPE);
         Table table = new Table(initialCards);
 

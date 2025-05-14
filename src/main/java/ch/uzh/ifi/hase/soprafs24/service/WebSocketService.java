@@ -35,9 +35,8 @@ public class WebSocketService {
         messagingTemplate.convertAndSend("/topic/lobby/" + lobbyId, DTO);
     }
 
-    // TODO refactor rename method
     // sent (join) notification back to specific user
-    public void lobbyNotifications(Long userId, Object DTO) {
+    public void sentLobbyNotifications(Long userId, Object DTO) {
 
         // send notification to user
         messagingTemplate.convertAndSendToUser(Long.toString(userId),"/queue/reply", DTO);
@@ -49,10 +48,10 @@ public class WebSocketService {
         User user = userService.checkIfUserExists(userId);
         UsersBroadcastJoinNotificationDTO DTO = new UsersBroadcastJoinNotificationDTO();
         Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
-        LobbyDTO LobbyDTO = DTOMapper.INSTANCE.convertLobbyToLobbyDTO(lobby);
+        LobbyDTO lobbyDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);
         DTO.setStatus(status);
         DTO.setUsername(user.getUsername());
-        DTO.setLobby(LobbyDTO);
+        DTO.setLobby(lobbyDTO);
         return DTO;
     }
 

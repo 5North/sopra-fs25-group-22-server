@@ -21,14 +21,14 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Deck;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 
-public class GameSessionTest {
+ class GameSessionTest {
 
     private Long gameId;
     private List<Long> playerIds;
     private GameSession gameSession;
 
     @BeforeEach
-    public void setup() throws Exception {
+     void setup() throws Exception {
         Field userRepoField = GameStatisticsUtil.class.getDeclaredField("userRepository");
         userRepoField.setAccessible(true);
         userRepoField.set(null, new DummyUserRepository());
@@ -39,18 +39,18 @@ public class GameSessionTest {
     }
 
     @Test
-    public void testLobbyIdIsSetCorrectly() {
+     void testLobbyIdIsSetCorrectly() {
         assertEquals(gameId, gameSession.getGameId(), "The gameId (lobbyId) should match the provided value.");
     }
 
     @Test
-    public void testPlayersCount() {
+     void testPlayersCount() {
         List<Player> players = gameSession.getPlayers();
         assertEquals(4, players.size(), "There should be exactly 4 players in the game session.");
     }
 
     @Test
-    public void testPlayersInitialHandAndStatus() {
+     void testPlayersInitialHandAndStatus() {
         for (Player player : gameSession.getPlayers()) {
             assertEquals(9, player.getHand().size(), "Each player's hand should contain 9 cards.");
             assertTrue(player.getTreasure().isEmpty(), "Each player's treasure should be empty initially.");
@@ -59,31 +59,31 @@ public class GameSessionTest {
     }
 
     @Test
-    public void testTableInitialization() {
+     void testTableInitialization() {
         Table table = gameSession.getTable();
         assertEquals(4, table.getCards().size(), "The table should be initialized with exactly 4 cards.");
     }
 
     @Test
-    public void testDeckInitialization() {
+     void testDeckInitialization() {
         Deck deck = gameSession.getDeck();
         assertNotNull(deck, "The deck should not be null.");
         assertEquals(40, deck.getCards().size(), "The deck should contain 40 cards.");
     }
 
     @Test
-    public void testTurnManagementInitialization() {
+     void testTurnManagementInitialization() {
         assertEquals(0, gameSession.getCurrentPlayerIndex(), "Initial current player index should be 0.");
         assertEquals(-1, gameSession.getLastGetterIndex(), "Initial last getter index should be -1.");
     }
 
     @Test
-    public void testTurnCounterInitialization() {
+     void testTurnCounterInitialization() {
         assertEquals(0, gameSession.getTurnCounter(), "Initial turn counter should be 0.");
     }
 
     @Test
-    public void testFinishForfeitWhenOddIndexQuits() {
+     void testFinishForfeitWhenOddIndexQuits() {
         // Player at index 1 (200L) quits → team {200,400} loses, {100,300} wins
         Long quittingPlayer = 200L;
         Map<Long, String> outcomes = gameSession.finishForfeit(quittingPlayer);
@@ -95,7 +95,7 @@ public class GameSessionTest {
     }
 
     @Test
-    public void testFinishForfeitWhenEvenIndexQuits() {
+     void testFinishForfeitWhenEvenIndexQuits() {
         // Player at index 0 (100L) quits → team {100,300} loses, {200,400} wins
         Long quittingPlayer = 100L;
         Map<Long, String> outcomes = gameSession.finishForfeit(quittingPlayer);
@@ -107,14 +107,14 @@ public class GameSessionTest {
     }
 
     @Test
-    public void testFinishForfeitThrowsForUnknownUser() {
+     void testFinishForfeitThrowsForUnknownUser() {
         assertThrows(IllegalArgumentException.class,
                 () -> gameSession.finishForfeit(999L),
                 "finishForfeit should reject a user ID not in the game");
     }
 
     @Test
-    public void testPlayTurnWithSelectedOptionWithoutLastCardThrows() {
+     void testPlayTurnWithSelectedOptionWithoutLastCardThrows() {
         Card dummy = gameSession.getPlayers().get(0).getHand().get(0);
         List<Card> fakeOption = List.of(dummy);
 
@@ -126,12 +126,12 @@ public class GameSessionTest {
     }
 
     @Test
-    public void testGetPlayerByIdNotFoundReturnsNull() {
+     void testGetPlayerByIdNotFoundReturnsNull() {
         assertNull(gameSession.getPlayerById(999L));
     }
 
     @Test
-    public void testLastPickedCardsGetterAndSetter() {
+     void testLastPickedCardsGetterAndSetter() {
         List<Card> picked = new ArrayList<>();
         picked.add(gameSession.getPlayers().get(1).getHand().get(0));
         picked.add(gameSession.getPlayers().get(2).getHand().get(1));
@@ -141,7 +141,7 @@ public class GameSessionTest {
     }
 
     @Test
-    public void testIsGameOverTrueAfterManuallyIncrementingTurnCounter() throws Exception {
+     void testIsGameOverTrueAfterManuallyIncrementingTurnCounter() throws Exception {
         Field turnCounterField = GameSession.class.getDeclaredField("turnCounter");
         turnCounterField.setAccessible(true);
         turnCounterField.setInt(gameSession, 36);
@@ -149,7 +149,7 @@ public class GameSessionTest {
     }
 
     @Test
-    public void testFinishGameCollectsRemainingTableCards() throws Exception {
+     void testFinishGameCollectsRemainingTableCards() throws Exception {
         assertFalse(gameSession.getTable().getCards().isEmpty());
         Field lastGetterField = GameSession.class.getDeclaredField("lastGetterIndex");
         lastGetterField.setAccessible(true);
@@ -239,67 +239,67 @@ public class GameSessionTest {
         // ... e così via per gli altri metodi non usati dal test
         @Override
         public List<User> findAll(Sort sort) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public <S extends User> List<S> findAll(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public <S extends User> List<S> findAll(Example<S> example, Sort sort) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public Page<User> findAll(Pageable pageable) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public void deleteAll(Iterable<? extends User> entities) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'deleteAll'");
         }
 
         @Override
         public <S extends User> Optional<S> findOne(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findOne'");
         }
 
         @Override
         public <S extends User> Page<S> findAll(Example<S> example, Pageable pageable) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
         public <S extends User> long count(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'count'");
         }
 
         @Override
         public <S extends User> boolean exists(Example<S> example) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'exists'");
         }
 
         @Override
         public User findByUsername(String username) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findByUsername'");
         }
 
         @Override
         public User findByToken(String token) {
-            // TODO Auto-generated method stub
+
             throw new UnsupportedOperationException("Unimplemented method 'findByToken'");
         }
     }

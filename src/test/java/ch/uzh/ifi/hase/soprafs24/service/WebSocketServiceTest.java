@@ -20,7 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class WebSocketServiceTest {
+class WebSocketServiceTest {
     @InjectMocks
     private WebSocketService webSocketService;
 
@@ -37,7 +37,7 @@ public class WebSocketServiceTest {
     private TimerStrategy choiceTimerStrategy;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
 
     }

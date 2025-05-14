@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-public class LobbyServiceTest {
+ class LobbyServiceTest {
 
     @Mock
     private LobbyRepository lobbyRepository;
@@ -123,7 +123,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void isFull_notEmpty_false() throws NotFoundException {
+     void isFull_notEmpty_false() throws NotFoundException {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
 
@@ -134,7 +134,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void isFull_Empty_false() throws NotFoundException {
+     void isFull_Empty_false() throws NotFoundException {
         // when -> setup additional mocks for LobbyRepository
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
@@ -173,7 +173,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void joinLobby_NonExistentUser_noSuccess() throws NotFoundException {
+     void joinLobby_NonExistentUser_noSuccess() throws NotFoundException {
         testLobby.addUsers(1L);
         testLobby.addUsers(2L);
 
@@ -302,7 +302,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void generateId_success() {
+     void generateId_success() {
         Long id = lobbyService.generateId();
         assertNotNull(id);
     }
@@ -312,11 +312,11 @@ public class LobbyServiceTest {
         when(lobbyRepository.findById(123L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
-                () -> lobbyService.getLobbyById(123L));
+                () -> lobbyService.checkIfLobbyExists(123L));
     }
 
     @Test
-    public void checkIfLobbyExists_exists_doesNotThrow() throws NotFoundException {
+     void checkIfLobbyExists_exists_doesNotThrow() throws NotFoundException {
         when(lobbyRepository.findById(testLobby.getLobbyId())).thenReturn(Optional.of(testLobby));
 
         assertDoesNotThrow(() -> lobbyService.checkIfLobbyExists(testLobby.getLobbyId()));
@@ -324,7 +324,7 @@ public class LobbyServiceTest {
     }
 
     @Test
-    public void checkIfLobbyExists_notExists_throwsNotFoundException() {
+     void checkIfLobbyExists_notExists_throwsNotFoundException() {
         when(lobbyRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
@@ -480,7 +480,7 @@ public class LobbyServiceTest {
         when(lobbyRepository.findById(testLobby.getLobbyId()))
                 .thenReturn(Optional.of(testLobby));
 
-        Lobby found = lobbyService.getLobbyById(testLobby.getLobbyId());
+        Lobby found = lobbyService.checkIfLobbyExists(testLobby.getLobbyId());
         assertSame(testLobby, found);
     }
 

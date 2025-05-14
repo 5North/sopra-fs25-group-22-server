@@ -41,7 +41,7 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class GameServiceTest {
+class GameServiceTest {
 
     @Mock
     private WebSocketService webSocketService;
@@ -63,7 +63,7 @@ public class GameServiceTest {
     private Long playerB;
 
     @BeforeEach
-    public void setup() {
+     void setup() {
         lobby = new Lobby();
         lobby.setLobbyId(42L);
         lobby.addUsers(100L);
@@ -77,7 +77,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testStartGameCreatesSession() {
+     void testStartGameCreatesSession() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(100L);
         lobby.addUsers(1L);
@@ -92,7 +92,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testGetGameSessionById() {
+     void testGetGameSessionById() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(200L);
         lobby.addUsers(10L);
@@ -105,7 +105,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testPlayCardDeterministic() {
+     void testPlayCardDeterministic() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(300L);
         lobby.addUsers(100L);
@@ -136,7 +136,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testProcessPlayTurnValidCapture() {
+     void testProcessPlayTurnValidCapture() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(400L);
         lobby.addUsers(10L);
@@ -189,7 +189,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testIsGameOverRemovesSession() {
+     void testIsGameOverRemovesSession() {
         try {
             Field userRepoField = GameStatisticsUtil.class.getDeclaredField("userRepository");
             userRepoField.setAccessible(true);
@@ -228,7 +228,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testPlayCardWithNullGameId() {
+     void testPlayCardWithNullGameId() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(600L);
         lobby.addUsers(1L);
@@ -239,7 +239,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testPlayCardInvalidCard() {
+     void testPlayCardInvalidCard() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(700L);
         lobby.addUsers(10L);
@@ -258,7 +258,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testProcessPlayTurnInvalidCaptureOption() {
+     void testProcessPlayTurnInvalidCaptureOption() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(800L);
         lobby.addUsers(10L);
@@ -290,7 +290,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testAiSuggestionSuccess() {
+     void testAiSuggestionSuccess() {
         String rawSuggestion = "DENARI-7; COPPE-4";
         GameSession session = gameService.getGameSessionById(gameId);
         List<Card> hand = session.getPlayers().get(0).getHand();
@@ -306,7 +306,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testAiSuggestionThrowsForUnknownUser() {
+     void testAiSuggestionThrowsForUnknownUser() {
         assertThrows(NoSuchElementException.class,
                 () -> gameService.aiSuggestion(gameId, /* userId inesistente */ 999L));
     }
@@ -323,7 +323,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testQuitGameForfeitRemovesSessionAndReturnsCorrectOutcomes() throws Exception {
+     void testQuitGameForfeitRemovesSessionAndReturnsCorrectOutcomes() throws Exception {
         Field urf = GameStatisticsUtil.class.getDeclaredField("userRepository");
         urf.setAccessible(true);
         urf.set(null, new DummyUserRepository());
@@ -359,7 +359,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testPlayCardGameNotFound() {
+     void testPlayCardGameNotFound() {
         CardDTO dto = new CardDTO("COPPE", 5);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> gameService.playCard(999L, dto, playerA));
@@ -367,19 +367,19 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testProcessPlayTurnSessionNotFound() {
+     void testProcessPlayTurnSessionNotFound() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> gameService.processPlayTurn(999L, List.of()));
         assertEquals("Game session not found for gameId: 999", ex.getMessage());
     }
 
     @Test
-    public void testIsGameOverFalse() {
+     void testIsGameOverFalse() {
         assertFalse(gameService.isGameOver(gameId));
     }
 
     @Test
-    public void testQuitGameSessionNotFound() {
+     void testQuitGameSessionNotFound() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> gameService.quitGame(999L, playerA));
         assertEquals("Game session not found for id: 999", ex.getMessage());

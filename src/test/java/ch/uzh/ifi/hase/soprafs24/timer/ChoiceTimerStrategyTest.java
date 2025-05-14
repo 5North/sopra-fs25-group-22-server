@@ -67,7 +67,7 @@ class ChoiceTimerStrategyTest {
         verify(webSocketService, times(3))
                 .broadCastLobbyNotifications(eq(gameId), any());
 
-        verify(webSocketService).lobbyNotifications(eq(userId), any());
+        verify(webSocketService).sentLobbyNotifications(eq(userId), any());
 
         verify(timerService).schedule(eq(gameId), eq(fakePlay), isNull());
     }

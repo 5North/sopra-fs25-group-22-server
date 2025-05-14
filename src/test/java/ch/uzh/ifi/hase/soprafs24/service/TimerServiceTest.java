@@ -11,14 +11,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TimerServiceTest {
+ class TimerServiceTest {
 
     private TimerService timerService;
     private DummyStrategy playStrategy;
     private DummyStrategy choiceStrategy;
 
     @BeforeEach
-    public void setup() {
+     void setup() {
         playStrategy = new DummyStrategy(1);
         choiceStrategy = new DummyStrategy(1);
         // ora passo anche il WebSocketService mock
@@ -30,7 +30,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testScheduleAndGetRemainingSeconds() {
+     void testScheduleAndGetRemainingSeconds() {
         long gameId = 100L;
         assertEquals(0, timerService.getRemainingSeconds(gameId, playStrategy));
         timerService.schedule(gameId, playStrategy, null);
@@ -39,7 +39,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testCancelRemovesScheduledTask() {
+     void testCancelRemovesScheduledTask() {
         long gameId = 101L;
         timerService.schedule(gameId, playStrategy, null);
         assertTrue(timerService.getRemainingSeconds(gameId, playStrategy) > 0);
@@ -48,7 +48,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testTimeoutExecutionForPlayStrategy() throws InterruptedException {
+     void testTimeoutExecutionForPlayStrategy() throws InterruptedException {
         long gameId = 102L;
         CountDownLatch latch = playStrategy.getLatch();
         timerService.schedule(gameId, playStrategy, 999L);
@@ -56,7 +56,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testCancelPreventsExecution() throws InterruptedException {
+     void testCancelPreventsExecution() throws InterruptedException {
         long gameId = 103L;
         CountDownLatch latch = choiceStrategy.getLatch();
         timerService.schedule(gameId, choiceStrategy, 777L);
@@ -65,7 +65,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testMultipleStrategyIndependent() {
+     void testMultipleStrategyIndependent() {
         long gameId = 200L;
         timerService.schedule(gameId, playStrategy, null);
         timerService.schedule(gameId, choiceStrategy, 555L);
@@ -74,7 +74,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testCancelOnlyOneStrategy() {
+     void testCancelOnlyOneStrategy() {
         long gameId = 201L;
         timerService.schedule(gameId, playStrategy, null);
         timerService.schedule(gameId, choiceStrategy, 888L);
@@ -84,7 +84,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testRescheduleSameStrategyCancelsOld() {
+     void testRescheduleSameStrategyCancelsOld() {
         long gameId = 203L;
         timerService.schedule(gameId, playStrategy, null);
         long first = timerService.getRemainingSeconds(gameId, playStrategy);
@@ -95,7 +95,7 @@ public class TimerServiceTest {
     }
 
     @Test
-    public void testGetRemainingSecondsUnknown() {
+     void testGetRemainingSecondsUnknown() {
         assertEquals(0, timerService.getRemainingSeconds(999L, playStrategy));
         assertEquals(0, timerService.getRemainingSeconds(999L, choiceStrategy));
     }
@@ -105,7 +105,7 @@ public class TimerServiceTest {
         private final CountDownLatch latch = new CountDownLatch(1);
         private final AtomicInteger count = new AtomicInteger(0);
 
-        public DummyStrategy(long timeoutSeconds) {
+         DummyStrategy(long timeoutSeconds) {
             this.timeoutSeconds = timeoutSeconds;
         }
 

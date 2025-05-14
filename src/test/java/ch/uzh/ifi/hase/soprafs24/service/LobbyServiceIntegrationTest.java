@@ -25,7 +25,7 @@ import static org.mockito.Mockito.doReturn;
  */
 @WebAppConfiguration
 @SpringBootTest
-public class LobbyServiceIntegrationTest {
+ class LobbyServiceIntegrationTest {
 
     @Autowired
     private LobbyRepository lobbyRepository;

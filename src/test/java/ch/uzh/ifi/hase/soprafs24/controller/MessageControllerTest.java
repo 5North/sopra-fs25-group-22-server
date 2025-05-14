@@ -25,9 +25,12 @@ import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import org.springframework.data.util.Pair;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
@@ -44,7 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class MessageControllerTest {
+ class MessageControllerTest {
 
         @Mock
         private LobbyService lobbyService;
@@ -95,11 +98,11 @@ public class MessageControllerTest {
                 dummyNotificationDTO.setSuccess(Boolean.TRUE);
                 dummyNotificationDTO.setMessage(msg);
 
-                when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
-                when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
-                when(lobbyService.rematchIsFull(lobby.getLobbyId())).thenReturn(true);
-                when(gameService.startGame(lobby)).thenReturn(dummyGame);
-                when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
+        when(lobbyService.checkIfLobbyExists(100L)).thenReturn(lobby);
+        when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
+        when(lobbyService.rematchIsFull(lobby.getLobbyId())).thenReturn(true);
+        when(gameService.startGame(lobby)).thenReturn(dummyGame);
+        when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
 
                 messageController.processStartGame(lobbyDTO.getLobbyId());
 
@@ -125,10 +128,10 @@ public class MessageControllerTest {
                 dummyNotificationDTO.setSuccess(Boolean.FALSE);
                 dummyNotificationDTO.setMessage(msg);
 
-                // when
-                when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
-                when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(false);
-                when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
+        // when
+        when(lobbyService.checkIfLobbyExists(100L)).thenReturn(lobby);
+        when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(false);
+        when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
 
                 messageController.processStartGame(lobbyDTO.getLobbyId());
 
@@ -154,11 +157,11 @@ public class MessageControllerTest {
                 dummyNotificationDTO.setSuccess(Boolean.FALSE);
                 dummyNotificationDTO.setMessage(msg);
 
-                // when
-                when(lobbyService.getLobbyById(100L)).thenReturn(lobby);
-                when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
-                when(lobbyService.rematchIsFull(lobby.getLobbyId())).thenReturn(false);
-                when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
+        // when
+        when(lobbyService.checkIfLobbyExists(100L)).thenReturn(lobby);
+        when(lobbyService.lobbyIsFull(lobby.getLobbyId())).thenReturn(true);
+        when(lobbyService.rematchIsFull(lobby.getLobbyId())).thenReturn(false);
+        when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(dummyNotificationDTO);
 
                 messageController.processStartGame(lobbyDTO.getLobbyId());
 
@@ -187,17 +190,17 @@ public class MessageControllerTest {
 
                 messageController.receiveUpdateGame(session.getGameId(), headerAccessor);
 
-                verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(PrivatePlayerDTO.class));
-                verify(webSocketService, times(1)).lobbyNotifications(anyLong(), any(GameSessionDTO.class));
-        }
+        verify(webSocketService, times(1)).sentLobbyNotifications(anyLong(), any(PrivatePlayerDTO.class));
+        verify(webSocketService, times(1)).sentLobbyNotifications(anyLong(), any(GameSessionDTO.class));
+    }
 
-        // --- Test /app/playCard ---
-        @Test
-        public void testProcessPlayCard() {
-                PlayCardDTO playCardDTO = new PlayCardDTO();
-                playCardDTO.setLobbyId(300L);
-                playCardDTO.setCard(new CardDTO("COPPE", 7));
-                StompHeaderAccessor accessor = createHeaderAccessorWithUser(100L);
+    // --- Test /app/playCard ---
+    @Test
+     void testProcessPlayCard() {
+        PlayCardDTO playCardDTO = new PlayCardDTO();
+        playCardDTO.setLobbyId(300L);
+        playCardDTO.setCard(new CardDTO("COPPE", 7));
+        StompHeaderAccessor accessor = createHeaderAccessorWithUser(100L);
 
                 GameSession session = new GameSession(300L, Arrays.asList(100L, 200L));
                 Player currentPlayer = new Player(200L, new ArrayList<>());
@@ -206,20 +209,20 @@ public class MessageControllerTest {
 
                 messageController.processPlayCard(playCardDTO, accessor);
 
-                verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(300L), any());
-                verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(100L), any());
-                verify(gameService, atLeastOnce()).isGameOver(300L);
-        }
+        verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(300L), any());
+        verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(100L), any());
+        verify(gameService, atLeastOnce()).isGameOver(300L);
+    }
 
-        // --- Test /app/chooseCapture ---
-        @Test
-        public void testProcessChooseCapture() {
-                Lobby lobby = new Lobby();
-                lobby.setLobbyId(4000L);
-                lobby.addUsers(10L);
-                lobby.addUsers(20L);
-                GameSession session = new GameSession(4000L, new ArrayList<>(lobby.getUsers()));
-                when(gameService.getGameSessionById(4000L)).thenReturn(session);
+    // --- Test /app/chooseCapture ---
+    @Test
+     void testProcessChooseCapture() {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(4000L);
+        lobby.addUsers(10L);
+        lobby.addUsers(20L);
+        GameSession session = new GameSession(4000L, new ArrayList<>(lobby.getUsers()));
+        when(gameService.getGameSessionById(4000L)).thenReturn(session);
 
                 ChosenCaptureDTO chosenCaptureDTO = new ChosenCaptureDTO();
                 chosenCaptureDTO.setGameId(4000L);
@@ -232,13 +235,13 @@ public class MessageControllerTest {
 
                 messageController.processChooseCapture(chosenCaptureDTO, accessor);
 
-                verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(4000L), any());
-                verify(webSocketService, atLeastOnce()).lobbyNotifications(eq(10L), any());
-        }
+        verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(4000L), any());
+        verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(10L), any());
+    }
 
         // --- Test /app/ai ---
         @Test
-        public void testProcessAISuggestion() {
+         void testProcessAISuggestion() {
                 AiRequestDTO aiReq = new AiRequestDTO();
                 aiReq.setGameId(123L);
 
@@ -249,9 +252,9 @@ public class MessageControllerTest {
 
                 messageController.processAISuggestion(aiReq, accessor);
 
-                verify(webSocketService, times(1))
-                                .lobbyNotifications(eq(42L), eq(expectedDto));
-        }
+        verify(webSocketService, times(1))
+                .sentLobbyNotifications(eq(42L), eq(expectedDto));
+    }
 
         // --- Test /app/quit ---
         @Test
@@ -297,22 +300,22 @@ public class MessageControllerTest {
 
                 messageController.processQuitGame(dto, accessor);
 
-                verify(webSocketService, times(1))
-                                .lobbyNotifications(eq(5L), eq(r1));
-                verify(webSocketService, times(1))
-                                .lobbyNotifications(eq(8L), eq(r2));
+        verify(webSocketService, times(1))
+                .sentLobbyNotifications(eq(5L), eq(r1));
+        verify(webSocketService, times(1))
+                .sentLobbyNotifications(eq(8L), eq(r2));
 
                 verify(lobbyService, times(1)).deleteLobby(gameId);
 
-                verify(webSocketService, times(1))
-                                .convertToDTO(msg);
-                verify(webSocketService, times(1))
-                                .broadCastLobbyNotifications(anyLong(), any(BroadcastNotificationDTO.class));
-                verify(webSocketService, times(1))
-                                .convertToDTO(msg, true);
-                verify(webSocketService, times(1))
-                                .broadCastLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
-        }
+        verify(webSocketService, times(1))
+                .convertToDTO(msg);
+        verify(webSocketService, times(1))
+                .broadCastLobbyNotifications(anyLong(), any(BroadcastNotificationDTO.class));
+        verify(webSocketService, times(1))
+                .convertToDTO(msg, true);
+        verify(webSocketService, times(1))
+                .sentLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
+    }
 
         @Test
         void testProcessQuit() throws Exception {
@@ -345,17 +348,17 @@ public class MessageControllerTest {
 
                 messageController.processQuitGame(dto, accessor);
 
-                verify(gameService, never()).quitGame(anyLong(), anyLong());
-                verify(lobbyService, times(1)).deleteLobby(gameId);
-                verify(webSocketService, times(1))
-                                .convertToDTO(msg);
-                verify(webSocketService, times(1))
-                                .broadCastLobbyNotifications(anyLong(), any(BroadcastNotificationDTO.class));
-                verify(webSocketService, times(1))
-                                .convertToDTO(msg, true);
-                verify(webSocketService, times(1))
-                                .broadCastLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
-        }
+        verify(gameService, never()).quitGame(anyLong(), anyLong());
+        verify(lobbyService, times(1)).deleteLobby(gameId);
+        verify(webSocketService, times(1))
+                .convertToDTO(msg);
+        verify(webSocketService, times(1))
+                .broadCastLobbyNotifications(anyLong(), any(BroadcastNotificationDTO.class));
+        verify(webSocketService, times(1))
+                .convertToDTO(msg, true);
+        verify(webSocketService, times(1))
+                .sentLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
+    }
 
         @Test
         void testProcessQuitThrowsException() throws Exception {
@@ -389,17 +392,17 @@ public class MessageControllerTest {
 
                 messageController.processQuitGame(dto, accessor);
 
-                verify(gameService, never()).quitGame(anyLong(), anyLong());
-                verify(lobbyService, times(1)).deleteLobby(gameId);
-                verify(webSocketService, never())
-                                .convertToDTO(msg);
-                verify(webSocketService, never())
-                                .broadCastLobbyNotifications(anyLong(), any(BroadcastNotificationDTO.class));
-                verify(webSocketService, times(1))
-                                .convertToDTO(msg, false);
-                verify(webSocketService, times(1))
-                                .broadCastLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
-        }
+        verify(gameService, never()).quitGame(anyLong(), anyLong());
+        verify(lobbyService, times(1)).deleteLobby(gameId);
+        verify(webSocketService, never())
+                .convertToDTO(msg);
+        verify(webSocketService, never())
+                .broadCastLobbyNotifications(anyLong(), any(BroadcastNotificationDTO.class));
+        verify(webSocketService, times(1))
+                .convertToDTO(msg, false);
+        verify(webSocketService, times(1))
+                .sentLobbyNotifications(anyLong(), any(UserNotificationDTO.class));
+    }
 
         @Test
         void testRematchSuccess() throws NotFoundException {
@@ -413,32 +416,54 @@ public class MessageControllerTest {
                 Lobby testLobby = new Lobby();
                 testLobby.setLobbyId(lobbyId);
                 testLobby.setUser(testUser);
-
-                LobbyDTO lobbyDTO = new LobbyDTO();
-                lobbyDTO.setLobbyId(lobbyId);
-                lobbyDTO.setHostId(userId);
+                testLobby.addUsers(userId);
 
                 UserNotificationDTO privateDTO = new UserNotificationDTO();
                 privateDTO.setSuccess(true);
                 privateDTO.setMessage("Rematcher has been added to the lobby");
 
+                List<Long> rematchers = new ArrayList<>();
+                rematchers.add(userId);
+
+                LobbyDTO rematchDTO = new LobbyDTO();
+                rematchDTO.setUsersIds(rematchers);
+                rematchDTO.setLobbyId(lobbyId);
+                rematchDTO.setHostId(userId);
+                rematchDTO.setRematchersIds(rematchers);
+
+
                 StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
 
-                when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
-                when(lobbyService.getLobbyById(lobbyId)).thenReturn(testLobby);
-                when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(privateDTO);
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        when(lobbyService.checkIfLobbyExists(lobbyId)).thenReturn(testLobby);
+        when(webSocketService.convertToDTO("Rematcher has been added to the lobby", true)).thenReturn(privateDTO);
+            doAnswer(new Answer<Void>() {
+                @Override
+                public Void answer(InvocationOnMock invocation) throws Throwable {
+                    testLobby.adddRematchers(userId);
+                    return null;
+                }
+            }).when(lobbyService).addRematcher(lobbyId,userId);
 
                 messageController.rematch(accessor);
 
-                // verify
-                verify(lobbyService, times(1))
-                                .addRematcher(lobbyId, userId);
-                verify(webSocketService, times(1))
-                                .convertToDTO(anyString(), anyBoolean());
-                verify(webSocketService, times(1))
-                                .lobbyNotifications(eq(userId), eq(privateDTO));
-                verify(webSocketService, times(1))
-                                .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
+            // Captor DTOs and verify
+            verify(lobbyService, times(1))
+                    .addRematcher(lobbyId, userId);
+
+            verify(webSocketService, times(1)).sentLobbyNotifications(eq(userId), any(UserNotificationDTO.class));
+
+            verify(webSocketService, times(1))
+                    .convertToDTO(anyString(), anyBoolean());
+
+            ArgumentCaptor<LobbyDTO> broadcastCaptor = ArgumentCaptor.forClass(LobbyDTO.class);
+            verify(webSocketService, times(1)).broadCastLobbyNotifications(eq(lobbyId), broadcastCaptor.capture());
+
+            LobbyDTO actualBroadcastDTO = broadcastCaptor.getValue();
+            assertEquals(rematchDTO.getLobbyId(), actualBroadcastDTO.getLobbyId());
+            assertEquals(rematchDTO.getUsersIds(), actualBroadcastDTO.getUsersIds());
+            assertEquals(rematchDTO.getHostId(), actualBroadcastDTO.getHostId());
+            assertEquals(rematchDTO.getRematchersIds(), actualBroadcastDTO.getRematchersIds());
 
         }
 
@@ -465,23 +490,23 @@ public class MessageControllerTest {
 
                 StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
 
-                when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
-                when(lobbyService.getLobbyById(lobbyId)).thenReturn(testLobby);
-                doThrow(new NotFoundException("No lobby with id 1000L found")).when(lobbyService)
-                                .addRematcher(anyLong(), anyLong());
-                when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(privateDTO);
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        when(lobbyService.checkIfLobbyExists(lobbyId)).thenReturn(testLobby);
+        doThrow(new NotFoundException("No lobby with id 1000L found")).when(lobbyService)
+                .addRematcher(anyLong(), anyLong());
+        when(webSocketService.convertToDTO(anyString(), anyBoolean())).thenReturn(privateDTO);
 
                 messageController.rematch(accessor);
 
-                // verify
-                verify(lobbyService, times(1))
-                                .addRematcher(anyLong(), anyLong());
-                verify(webSocketService, times(1))
-                                .convertToDTO(anyString(), anyBoolean());
-                verify(webSocketService, times(1))
-                                .lobbyNotifications(eq(userId), eq(privateDTO));
-                verify(webSocketService, times(1))
-                                .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
+        // verify
+        verify(lobbyService, times(1))
+                .addRematcher(anyLong(), anyLong());
+        verify(webSocketService, times(1))
+                .convertToDTO(anyString(), anyBoolean());
+        verify(webSocketService, times(1))
+                .sentLobbyNotifications(eq(userId), eq(privateDTO));
+        verify(webSocketService, times(1))
+                .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
 
         }
 
@@ -502,7 +527,7 @@ public class MessageControllerTest {
         }
 
         @Test
-        public void testProcessPlayCardEmitsMoveActionDTO() {
+         void testProcessPlayCardEmitsMoveActionDTO() {
                 GameSession session = spy(new GameSession(500L, List.of(77L)));
                 Player player = new Player(77L, new ArrayList<>());
 
@@ -522,14 +547,14 @@ public class MessageControllerTest {
                 StompHeaderAccessor acc = createHeaderAccessorWithUser(77L);
                 messageController.processPlayCard(dto, acc);
 
-                verify(webSocketService).broadCastLobbyNotifications(eq(500L), any(MoveActionDTO.class));
-                verify(webSocketService).lobbyNotifications(eq(77L), any(PrivatePlayerDTO.class));
-                verify(webSocketService, atLeastOnce())
-                                .broadCastLobbyNotifications(eq(500L), any(GameSessionDTO.class));
-        }
+        verify(webSocketService).broadCastLobbyNotifications(eq(500L), any(MoveActionDTO.class));
+        verify(webSocketService).sentLobbyNotifications(eq(77L), any(PrivatePlayerDTO.class));
+        verify(webSocketService, atLeastOnce())
+                .broadCastLobbyNotifications(eq(500L), any(GameSessionDTO.class));
+    }
 
         @Test
-        public void testProcessChooseCaptureEmitsMoveActionDTO() {
+         void testProcessChooseCaptureEmitsMoveActionDTO() {
                 GameSession session = spy(new GameSession(600L, List.of(33L)));
 
                 Card lastPlayed = CardFactory.getCard(Suit.SPADE, 3);
@@ -547,10 +572,10 @@ public class MessageControllerTest {
                 StompHeaderAccessor acc = createHeaderAccessorWithUser(33L);
                 messageController.processChooseCapture(cap, acc);
 
-                verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(MoveActionDTO.class));
-                verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(GameSessionDTO.class));
-                verify(webSocketService).lobbyNotifications(eq(33L), any(PrivatePlayerDTO.class));
-        }
+        verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(MoveActionDTO.class));
+        verify(webSocketService).broadCastLobbyNotifications(eq(600L), any(GameSessionDTO.class));
+        verify(webSocketService).sentLobbyNotifications(eq(33L), any(PrivatePlayerDTO.class));
+    }
 
         @Test
         void testReceiveUpdateGame_WhenChoosing_SendsCaptureOptions() {
@@ -578,10 +603,10 @@ public class MessageControllerTest {
 
                 messageController.receiveUpdateGame(123L, header);
 
-                verify(webSocketService).lobbyNotifications(eq(userId), any(PrivatePlayerDTO.class));
-                verify(webSocketService).lobbyNotifications(eq(userId), any(GameSessionDTO.class));
+                verify(webSocketService).sentLobbyNotifications(eq(userId), any(PrivatePlayerDTO.class));
+                verify(webSocketService).sentLobbyNotifications(eq(userId), any(GameSessionDTO.class));
                 // in choosing mode send options
-                verify(webSocketService).lobbyNotifications(eq(userId), anyList());
+                verify(webSocketService).sentLobbyNotifications(eq(userId), anyList());
                 // timerService get interrogated 2 times: remChoice and remPlay
                 verify(timerService, times(2))
                                 .getRemainingSeconds(eq(123L), any());

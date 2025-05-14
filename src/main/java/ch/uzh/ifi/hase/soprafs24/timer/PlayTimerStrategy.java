@@ -11,6 +11,8 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ import java.util.Random;
 public class PlayTimerStrategy implements TimerStrategy {
 
     private static final long TIMEOUT_SECONDS = 30L;
+    private static final Logger log = LoggerFactory.getLogger(PlayTimerStrategy.class);
     private final GameService gameService;
     private final WebSocketService webSocketService;
     private final TimerService timerService;
@@ -57,6 +60,7 @@ public class PlayTimerStrategy implements TimerStrategy {
                         new CardDTO(c.getSuit().toString(), c.getValue()),
                         currentUserId);
             }
+            // TODO
         } catch (Exception ignored) {
         }
 
@@ -64,10 +68,12 @@ public class PlayTimerStrategy implements TimerStrategy {
 
         GameSessionDTO publicDto = GameSessionMapper.convertToGameSessionDTO(updated);
         webSocketService.broadCastLobbyNotifications(gameId, publicDto);
+        log.info("Message broadcasted to lobby {}: game update on play timeout", gameId);
 
         PrivatePlayerDTO privateDto = GameSessionMapper.convertToPrivatePlayerDTO(
                 updated.getPlayerById(currentUserId));
-        webSocketService.lobbyNotifications(currentUserId, privateDto);
+        webSocketService.sentLobbyNotifications(currentUserId, privateDto);
+        log.info("Message sent to user {}: game update on play timeout", currentUserId);
 
         MoveActionDTO moveDto;
         try {
@@ -79,6 +85,7 @@ public class PlayTimerStrategy implements TimerStrategy {
             moveDto = new MoveActionDTO();
         }
         webSocketService.broadCastLobbyNotifications(gameId, moveDto);
+        log.info("Message broadcasted to lobby {}: move update on play timeout", gameId);
 
         // check if game is over
         if(gameService.isGameOver(gameId)){
@@ -90,5 +97,6 @@ public class PlayTimerStrategy implements TimerStrategy {
         long rem = timerService.getRemainingSeconds(gameId, this);
         TimeLeftDTO timeDto = GameSessionMapper.toTimeToPlayDTO(gameId, rem);
         webSocketService.broadCastLobbyNotifications(gameId, timeDto);
+        log.info("Message broadcasted to lobby {}: time left for play", gameId);
     }
 }
