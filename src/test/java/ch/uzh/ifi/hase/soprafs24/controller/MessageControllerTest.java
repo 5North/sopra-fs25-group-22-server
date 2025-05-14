@@ -179,8 +179,8 @@ import java.util.*;
 
                 Lobby lobby = new Lobby();
                 lobby.setLobbyId(100L);
-                lobby.addUsers(1L);
-                lobby.addUsers(2L);
+                lobby.addUser(1L);
+                lobby.addUser(2L);
 
                 GameSession session = new GameSession(100L, new ArrayList<>(lobby.getUsers()));
                 when(gameService.getGameSessionById(100L)).thenReturn(session);
@@ -200,8 +200,8 @@ import java.util.*;
 
         Lobby lobby = new Lobby();
         lobby.setLobbyId(1000L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
 
         BroadcastNotificationDTO notificationDTO = new BroadcastNotificationDTO();
         notificationDTO.setMessage("Error updating game: Game with id 1000L does not exist");
@@ -239,8 +239,8 @@ import java.util.*;
      void testProcessChooseCapture() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(4000L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession session = new GameSession(4000L, new ArrayList<>(lobby.getUsers()));
         when(gameService.getGameSessionById(4000L)).thenReturn(session);
 
@@ -436,7 +436,7 @@ import java.util.*;
                 Lobby testLobby = new Lobby();
                 testLobby.setLobbyId(lobbyId);
                 testLobby.setUser(testUser);
-                testLobby.addUsers(userId);
+                testLobby.addUser(userId);
 
                 UserNotificationDTO privateDTO = new UserNotificationDTO();
                 privateDTO.setSuccess(true);
@@ -460,7 +460,7 @@ import java.util.*;
             doAnswer(new Answer<Void>() {
                 @Override
                 public Void answer(InvocationOnMock invocation) throws Throwable {
-                    testLobby.adddRematchers(userId);
+                    testLobby.addRematcher(userId);
                     return null;
                 }
             }).when(lobbyService).addRematcher(lobbyId,userId);

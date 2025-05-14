@@ -53,10 +53,10 @@ class WebSocketServiceTest {
         Lobby lobby = new Lobby();
         lobby.setUser(user);
         lobby.setLobbyId(1000L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
-        lobby.adddRematchers(1L);
-        lobby.adddRematchers(2L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
+        lobby.addRematcher(1L);
+        lobby.addRematcher(2L);
 
         LobbyDTO lobbyDTO = new LobbyDTO();
         List<Long> userIds = new ArrayList<>();

@@ -41,19 +41,19 @@ public class Lobby implements Serializable {
 
     public List<Long> getUsers() {return users;}
 
-    public void addUsers(Long userId) {users.add(userId);}
+    public void addUser(Long userId) {users.add(userId);}
 
-    public boolean removeUsers(Long userId) {return users.remove(userId);}
+    public boolean removeUser(Long userId) {return users.remove(userId);}
 
     public List<Long> getRematchers() {
         return rematchers;
     }
 
-    public void adddRematchers(Long userId) {
+    public void addRematcher(Long userId) {
         rematchers.add(userId);
     }
 
-    public boolean removeRematchers(Long userId) {
+    public boolean removeRematcher(Long userId) {
         return rematchers.remove(userId);
     }
 

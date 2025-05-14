@@ -63,8 +63,8 @@ class GameServiceTest {
      void setup() {
         lobby = new Lobby();
         lobby.setLobbyId(42L);
-        lobby.addUsers(100L);
-        lobby.addUsers(200L);
+        lobby.addUser(100L);
+        lobby.addUser(200L);
         gameService.startGame(lobby);
         gameId = lobby.getLobbyId();
         playerA = 100L;
@@ -77,10 +77,10 @@ class GameServiceTest {
      void testStartGameCreatesSession() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(100L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
-        lobby.addUsers(3L);
-        lobby.addUsers(4L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
+        lobby.addUser(3L);
+        lobby.addUser(4L);
 
         GameSession gameSession = gameService.startGame(lobby);
         assertNotNull(gameSession);
@@ -92,8 +92,8 @@ class GameServiceTest {
      void testGetGameSessionById_success() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(200L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         GameSession retrieved = gameService.getGameSessionById(200L);
@@ -105,8 +105,8 @@ class GameServiceTest {
     void testGetGameSessionById_throwsNoSuchElementException() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(2000L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         gameService.startGame(lobby);
 
         assertThrows(NoSuchElementException.class,
@@ -117,8 +117,8 @@ class GameServiceTest {
      void testPlayCardDeterministic() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(300L);
-        lobby.addUsers(100L);
-        lobby.addUsers(200L);
+        lobby.addUser(100L);
+        lobby.addUser(200L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -148,8 +148,8 @@ class GameServiceTest {
      void testProcessPlayTurnValidCapture() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(400L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -209,10 +209,10 @@ class GameServiceTest {
 
         Lobby lobby = new Lobby();
         lobby.setLobbyId(500L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
-        lobby.addUsers(3L);
-        lobby.addUsers(4L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
+        lobby.addUser(3L);
+        lobby.addUser(4L);
         GameSession gameSession = gameService.startGame(lobby);
 
         try {
@@ -241,8 +241,8 @@ class GameServiceTest {
      void testPlayCardWithNullGameId() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(600L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
         gameService.startGame(lobby);
         CardDTO cardDTO = new CardDTO("COPPE", 7);
         assertThrows(IllegalArgumentException.class, () -> gameService.playCard(null, cardDTO, 1L));
@@ -252,8 +252,8 @@ class GameServiceTest {
      void testPlayCardInvalidCard() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(700L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         Player currentPlayer = gameSession.getPlayers().get(gameSession.getCurrentPlayerIndex());
@@ -271,8 +271,8 @@ class GameServiceTest {
      void testProcessPlayTurnInvalidCaptureOption() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(800L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();

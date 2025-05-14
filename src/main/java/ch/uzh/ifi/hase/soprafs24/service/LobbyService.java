@@ -82,9 +82,9 @@ public class LobbyService {
                 String msg = "The lobby is already full";
                 throw new IllegalStateException(msg);
             }
-            lobby.addUsers(userId);
+            lobby.addUser(userId);
             user.setLobbyJoined(lobbyId);
-            lobby.adddRematchers(userId);
+            lobby.addRematcher(userId);
             userRepository.save(user);
             userRepository.flush();
         }
@@ -97,7 +97,7 @@ public class LobbyService {
         if (lobby.getUser() != null && lobby.getUser().getId().equals(userId)) {
             user.setLobby(null);
             user.setLobbyJoined(null);
-            lobby.removeRematchers(userId);
+            lobby.removeRematcher(userId);
             userRepository.save(user);
             userRepository.flush();
 
@@ -114,8 +114,8 @@ public class LobbyService {
         }
 
 
-        lobby.removeUsers(userId);
-        lobby.removeRematchers(userId);
+        lobby.removeUser(userId);
+        lobby.removeRematcher(userId);
         user.setLobbyJoined(null);
 
 
@@ -191,7 +191,7 @@ public class LobbyService {
             throw new NoSuchElementException(msg);
         }
         if (!lobby.getRematchers().contains(userId)) {
-            lobby.adddRematchers(userId);
+            lobby.addRematcher(userId);
         }
     }
 

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
@@ -23,7 +22,6 @@ import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.util.Pair;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -69,8 +67,8 @@ import java.util.stream.Collectors;
      void testDeterministicTurnFlow() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(300L);
-        lobby.addUsers(100L);
-        lobby.addUsers(200L);
+        lobby.addUser(100L);
+        lobby.addUser(200L);
         GameSession session = gameService.startGame(lobby);
         assertNotNull(session);
         assertEquals(300L, session.getGameId());
@@ -97,8 +95,8 @@ import java.util.stream.Collectors;
      void testNonDeterministicTurnFlowWorks() throws Exception {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(400L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession session = gameService.startGame(lobby);
         assertNotNull(session);
 
@@ -156,7 +154,7 @@ import java.util.stream.Collectors;
      void testAiSuggestionReturnsDto() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(500L);
-        lobby.addUsers(55L);
+        lobby.addUser(55L);
         gameService.startGame(lobby);
 
         String fake = "Play 7 of Denari; Play 4 of Coppe";
@@ -202,8 +200,8 @@ import java.util.stream.Collectors;
      void testQuitGameIntegration_RemovesSessionAndNotifiesOutcomes() throws Exception {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(99L);
-        lobby.addUsers(9L);
-        lobby.addUsers(8L);
+        lobby.addUser(9L);
+        lobby.addUser(8L);
         Field sessionsField = GameService.class.getDeclaredField("gameSessions");
         sessionsField.setAccessible(true);
         @SuppressWarnings("unchecked")
