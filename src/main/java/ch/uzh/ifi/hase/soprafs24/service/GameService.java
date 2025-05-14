@@ -8,6 +8,7 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
@@ -100,6 +101,11 @@ public class GameService {
             timerService.schedule(gameId,
                     timerService.getChoiceStrategy(),
                     userId);
+
+            long remChoice = timerService.getRemainingSeconds(gameId,
+                    timerService.getChoiceStrategy());
+            TimeLeftDTO choiceTimeDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
+            webSocketService.broadCastLobbyNotifications(gameId, choiceTimeDTO);
 
             return Pair.of(game, null);
 
