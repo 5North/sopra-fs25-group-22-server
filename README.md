@@ -402,11 +402,11 @@ The following message is sent to the client who requested a rematch.
 
 ### Game logic
 
+The Game Logic is organized into several collaborating components that together implement the rules of Scopa, manage state, and compute scores.
+
 <details>
 <summary>See more...</summary>
 
-
-The Game Logic is organized into several collaborating components that together implement the rules of Scopa, manage state, and compute scores.
 
 #### 1. Card & Deck  
 - **Source:**  
@@ -463,10 +463,11 @@ The Game Logic is organized into several collaborating components that together 
 
 ### AI Assistance
 
+The AI Assistance component provides on-demand tactical hints by turning the current game state into a carefully crafted prompt for OpenAI’s chat API and returning suggestions in a fixed, machine-friendly format.
+
 <details>
 <summary>See more...</summary>
 
-The AI Assistance component provides on-demand tactical hints by turning the current game state into a carefully crafted prompt for OpenAI’s chat API and returning suggestions in a fixed, machine-friendly format.
 
 #### 1. Source Files  
 - [AIService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/AIService.java)  
