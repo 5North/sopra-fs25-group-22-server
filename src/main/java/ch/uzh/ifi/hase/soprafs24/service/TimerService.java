@@ -51,20 +51,18 @@ public class TimerService {
     }
 
     public void cancel(Long gameId, TimerStrategy strategy) {
-        var map = tasks.get(gameId);
-        if (map != null && map.containsKey(strategy)) {
-            map.get(strategy).cancel(true);
-            map.remove(strategy);
-        }
         var taskMap = tasks.get(gameId);
         if (taskMap != null && taskMap.containsKey(strategy)) {
             taskMap.get(strategy).cancel(true);
             taskMap.remove(strategy);
         }
-    
+
         var expMap = expirations.get(gameId);
         if (expMap != null && expMap.containsKey(strategy)) {
             expMap.remove(strategy);
+            if (expMap.isEmpty()) {
+                expirations.remove(gameId);
+            }
         }
     }
 
@@ -75,7 +73,7 @@ public class TimerService {
             if (millis <= 0) {
                 return 0;
             }
-          
+
             return (millis + 999) / 1000;
         }
         return 0;
