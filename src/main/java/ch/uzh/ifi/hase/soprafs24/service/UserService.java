@@ -75,7 +75,6 @@ public class UserService {
   public User authorizeUser(String token) throws ResponseStatusException {
     User userByToken = userRepository.findByToken(token);
     if (userByToken == null || userByToken.getStatus() != UserStatus.ONLINE) {
-        log.debug("user with id {} not authorized", userByToken.getId());
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
     }
     return userByToken;
