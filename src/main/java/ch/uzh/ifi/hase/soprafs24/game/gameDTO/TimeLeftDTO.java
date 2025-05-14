@@ -5,8 +5,6 @@ public class TimeLeftDTO {
     private long remainingSeconds;
     private String message; // “Time to Play” o “Time to Choose”
 
-    public TimeLeftDTO() {
-    }
 
     public TimeLeftDTO(Long gameId, long remainingSeconds, String message) {
         this.gameId = gameId;

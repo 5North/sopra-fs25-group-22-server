@@ -53,14 +53,8 @@ public interface DTOMapper {
     @Mapping(source = "lobbyId", target = "lobbyId")
     @Mapping(source = "user", target = "hostId", qualifiedByName = "getUserId")
     @Mapping(source = "users", target = "usersIds")
-    @Mapping(target = "rematchersIds", ignore = true)
-    LobbyDTO convertLobbyToLobbyDTO(Lobby lobby);
-
-    @Mapping(source = "lobbyId", target = "lobbyId")
-    @Mapping(source = "user", target = "hostId", qualifiedByName = "getUserId")
-    @Mapping(source = "users", target = "usersIds")
     @Mapping(source = "rematchers", target = "rematchersIds")
-    LobbyDTO convertLobbyToLobbyRematchDTO(Lobby lobby);
+    LobbyDTO convertLobbyToLobbyDTO(Lobby lobby);
 
     @Named("getUserId")
     static Long getUserId(User user) {

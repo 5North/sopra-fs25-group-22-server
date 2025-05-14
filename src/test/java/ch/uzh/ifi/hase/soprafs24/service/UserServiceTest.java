@@ -328,7 +328,7 @@ import static org.mockito.Mockito.when;
         userService.createUser(testUser);
         Lobby testLobby = new Lobby();
         testLobby.setLobbyId(9999L);
-        testLobby.addUsers(testUser.getId());
+        testLobby.addUser(testUser.getId());
         testUser.setLobbyJoined(testLobby.getLobbyId());
 
         // when

@@ -67,11 +67,11 @@ public class ChoiceTimerStrategy implements TimerStrategy {
 
         GameSessionDTO publicDto = GameSessionMapper.convertToGameSessionDTO(updated);
         webSocketService.broadCastLobbyNotifications(gameId, publicDto);
-        log.info("Message broadcasted to lobby {}: game update on choice timeout", gameId);
+        log.debug("Message broadcasted to lobby {}: game update on choice timeout", gameId);
 
         PrivatePlayerDTO privateDto = GameSessionMapper.convertToPrivatePlayerDTO(chooser);
         webSocketService.sentLobbyNotifications(forUserId, privateDto);
-        log.info("Message sent to user {}: hand cards update on choice timeout", forUserId);
+        log.debug("Message sent to user {}: hand cards update on choice timeout", forUserId);
 
         MoveActionDTO moveDto;
         try {
@@ -83,7 +83,7 @@ public class ChoiceTimerStrategy implements TimerStrategy {
             moveDto = new MoveActionDTO();
         }
         webSocketService.broadCastLobbyNotifications(gameId, moveDto);
-        log.info("Message broadcasted to lobby {}: moved cards on choice timeout", gameId);
+        log.debug("Message broadcasted to lobby {}: moved cards on choice timeout", gameId);
 
         // check if game is over
         if(gameService.isGameOver(gameId)){
@@ -96,6 +96,6 @@ public class ChoiceTimerStrategy implements TimerStrategy {
         long rem = timerService.getRemainingSeconds(gameId, playStrat);
         TimeLeftDTO timeDto = GameSessionMapper.toTimeToPlayDTO(gameId, rem);
         webSocketService.broadCastLobbyNotifications(gameId, timeDto);
-        log.info("Message broadcasted to lobby {}: time left for choice", gameId);
+        log.debug("Message broadcasted to lobby {}: time left for next player", gameId);
     }
 }

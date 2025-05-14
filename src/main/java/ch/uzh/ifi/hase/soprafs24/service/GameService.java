@@ -22,6 +22,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -60,11 +61,17 @@ public class GameService {
         timerService.schedule(gameId,
                 timerService.getPlayStrategy(),
                 null);
-
+        log.info("GameService: Starting game session for lobby {}", lobby.getLobbyId());
         return gameSession;
     }
 
-    public GameSession getGameSessionById(Long gameId) {
+    // TODO check this again
+    public GameSession getGameSessionById(Long gameId) throws NoSuchElementException {
+        if (!gameSessions.containsKey(gameId)) {
+            String msg = String.format("Game with id %d does not exist", gameId);
+            log.error("GameService: {}", msg);
+            throw new NoSuchElementException(msg);
+        }
         return gameSessions.get(gameId);
     }
 
@@ -73,9 +80,6 @@ public class GameService {
             throw new IllegalArgumentException("Game ID not provided. Unable to process played card.");
         }
         GameSession game = getGameSessionById(gameId);
-        if (game == null) {
-            throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
-        }
 
         // abort current timer
         timerService.cancel(gameId, timerService.getPlayStrategy());
@@ -96,7 +100,7 @@ public class GameService {
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.sentLobbyNotifications(userId, optionsDTO);
-            log.info("Message sent to user {}: card options", userId);
+            log.debug("Message sent to user {}: card options", userId);
 
             timerService.schedule(gameId,
                     timerService.getChoiceStrategy(),
@@ -106,6 +110,9 @@ public class GameService {
                     timerService.getChoiceStrategy());
             TimeLeftDTO choiceTimeDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
             webSocketService.broadCastLobbyNotifications(gameId, choiceTimeDTO);
+            log.debug("Message broadcast to lobby {}: time left for choice", gameId);
+
+            log.debug("Turn processed");
 
             return Pair.of(game, null);
 
@@ -130,6 +137,7 @@ public class GameService {
         timerService.schedule(gameId,
                 timerService.getPlayStrategy(),
                 null);
+        log.debug("Turn with multiple options processed");
     }
 
     public boolean isGameOver(Long gameId) {
@@ -148,17 +156,18 @@ public class GameService {
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
             webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
-            log.info("Message broadcasted to lobby {}: last cards picked by {}", gameId, playerId);
+            log.debug("Message broadcasted to lobby {}: last cards picked by {}", gameId, playerId);
 
             Result result = game.calculateResult();
 
             game.getPlayers().forEach(player -> {
                 ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
                 webSocketService.sentLobbyNotifications(player.getUserId(), resultDTO);
-                log.info("Message sent to user {}: game result", playerId);
+                log.debug("Message sent to user {}: game result", playerId);
             });
 
             gameSessions.remove(gameId);
+            log.info("Game session {} deleted: game end", gameId);
         }
         return over;
     }
@@ -170,12 +179,14 @@ public class GameService {
                 .findFirst()
                 .orElseThrow();
         String raw = aiService.generateAISuggestion(player.getHand(), game.getTable().getCards());
+        log.info("AiSuggestion generated for user {}", userId);
         return new AISuggestionDTO(raw);
     }
 
     public List<QuitGameResultDTO> quitGame(Long gameId, Long quittingUserId) {
         GameSession game = gameSessions.get(gameId);
         if (game == null) {
+            log.info("Game session not found for gameId: {}", gameId);
             throw new IllegalArgumentException("Game session not found for id: " + gameId);
         }
 
@@ -191,6 +202,7 @@ public class GameService {
         timerService.cancel(gameId, timerService.getChoiceStrategy());
 
         gameSessions.remove(gameId);
+        log.info("Game {} deleted: game quit", gameId);
         return resultDTOs;
     }
 }

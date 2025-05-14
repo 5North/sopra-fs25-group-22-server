@@ -53,9 +53,10 @@ public class OpenAiClient {
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
+            log.info("Sending POST request to OpenAI API");
             HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-            log.info("Status code: {}", resp.statusCode());
-            log.info("Response from OpenAI API: {}", resp.body());
+            log.info("OpenAi api response status code: {}", resp.statusCode());
+            log.debug("OpenAi api response: {}", resp.body());
             JsonNode root = mapper.readTree(resp.body());
             return root.path("choices").get(0).path("message").path("content").asText();
 
