@@ -68,12 +68,12 @@ public class PlayTimerStrategy implements TimerStrategy {
 
         GameSessionDTO publicDto = GameSessionMapper.convertToGameSessionDTO(updated);
         webSocketService.broadCastLobbyNotifications(gameId, publicDto);
-        log.info("Message broadcasted to lobby {}: game update on play timeout", gameId);
+        log.debug("Message broadcasted to lobby {}: game update on play timeout", gameId);
 
         PrivatePlayerDTO privateDto = GameSessionMapper.convertToPrivatePlayerDTO(
                 updated.getPlayerById(currentUserId));
         webSocketService.sentLobbyNotifications(currentUserId, privateDto);
-        log.info("Message sent to user {}: game update on play timeout", currentUserId);
+        log.debug("Message sent to user {}: game update on play timeout", currentUserId);
 
         MoveActionDTO moveDto;
         try {
@@ -97,6 +97,6 @@ public class PlayTimerStrategy implements TimerStrategy {
         long rem = timerService.getRemainingSeconds(gameId, this);
         TimeLeftDTO timeDto = GameSessionMapper.toTimeToPlayDTO(gameId, rem);
         webSocketService.broadCastLobbyNotifications(gameId, timeDto);
-        log.info("Message broadcasted to lobby {}: time left for play", gameId);
+        log.debug("Message broadcasted to lobby {}: time left for play", gameId);
     }
 }

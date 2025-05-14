@@ -100,7 +100,7 @@ public class GameService {
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.sentLobbyNotifications(userId, optionsDTO);
-            log.info("Message sent to user {}: card options", userId);
+            log.debug("Message sent to user {}: card options", userId);
 
             timerService.schedule(gameId,
                     timerService.getChoiceStrategy(),
@@ -156,14 +156,14 @@ public class GameService {
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
             webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
-            log.info("Message broadcasted to lobby {}: last cards picked by {}", gameId, playerId);
+            log.debug("Message broadcasted to lobby {}: last cards picked by {}", gameId, playerId);
 
             Result result = game.calculateResult();
 
             game.getPlayers().forEach(player -> {
                 ResultDTO resultDTO = GameSessionMapper.convertResultToDTO(result, player.getUserId());
                 webSocketService.sentLobbyNotifications(player.getUserId(), resultDTO);
-                log.info("Message sent to user {}: game result", playerId);
+                log.debug("Message sent to user {}: game result", playerId);
             });
 
             gameSessions.remove(gameId);
