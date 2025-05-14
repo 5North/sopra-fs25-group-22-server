@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
@@ -17,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Transactional
 public class TimerService {
+    private static final Logger log = LoggerFactory.getLogger(TimerService.class);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
     private final TimerStrategy playStrategy;
     private final TimerStrategy choiceStrategy;
@@ -48,6 +51,7 @@ public class TimerService {
         tasks.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>()).put(strategy, f);
         expirations.computeIfAbsent(gameId, k -> new ConcurrentHashMap<>())
                 .put(strategy, System.currentTimeMillis() + timeout * 1000);
+        log.debug("Timer scheduled for game: {}", gameId);
     }
 
     public void cancel(Long gameId, TimerStrategy strategy) {
@@ -55,6 +59,7 @@ public class TimerService {
         if (taskMap != null && taskMap.containsKey(strategy)) {
             taskMap.get(strategy).cancel(true);
             taskMap.remove(strategy);
+            log.debug("Schedule cancelled for game: {}", gameId);
         }
 
         var expMap = expirations.get(gameId);
@@ -62,6 +67,7 @@ public class TimerService {
             expMap.remove(strategy);
             if (expMap.isEmpty()) {
                 expirations.remove(gameId);
+                log.debug("Timer discarded for game: {}", gameId);
             }
         }
     }

@@ -2,6 +2,8 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +15,7 @@ import javax.transaction.Transactional;
 @Transactional
 public class AIService {
 
+    private static final Logger log = LoggerFactory.getLogger(AIService.class);
     private final OpenAiClient openAiClient;
 
     public AIService(OpenAiClient openAiClient) {
@@ -33,6 +36,7 @@ public class AIService {
                 .map(c -> c.getSuit() + "-" + c.getValue())
                 .collect(Collectors.joining(", "));
 
+        log.debug("Ai assistant prompt built");
         return String.format(
                 "You are an expert Scopa player. Your hand: [%s]. Cards on table: [%s]. " +
                         "Scopa Italian played with a 40-card deck with for suits (Denari, Coppe, Spade, Bastoni). " +

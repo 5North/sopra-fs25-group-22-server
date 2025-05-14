@@ -4,6 +4,8 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.result.Outcome;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +14,7 @@ import java.util.List;
 @Component
 public class GameStatisticsUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(GameStatisticsUtil.class);
     private static UserRepository userRepository;
 
     @Autowired
@@ -46,6 +49,7 @@ public class GameStatisticsUtil {
                         break;
                 }
                 userRepository.save(user);
+                log.info("Team statistics updated");
             }
         }
     }

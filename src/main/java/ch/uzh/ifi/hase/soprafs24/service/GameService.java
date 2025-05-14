@@ -61,7 +61,7 @@ public class GameService {
         timerService.schedule(gameId,
                 timerService.getPlayStrategy(),
                 null);
-
+        log.info("GameService: Starting game session for lobby {}", lobby.getLobbyId());
         return gameSession;
     }
 
@@ -110,6 +110,9 @@ public class GameService {
                     timerService.getChoiceStrategy());
             TimeLeftDTO choiceTimeDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
             webSocketService.broadCastLobbyNotifications(gameId, choiceTimeDTO);
+            log.debug("Message broadcast to lobby {}: time left for choice", gameId);
+
+            log.debug("Turn processed");
 
             return Pair.of(game, null);
 
@@ -134,6 +137,7 @@ public class GameService {
         timerService.schedule(gameId,
                 timerService.getPlayStrategy(),
                 null);
+        log.debug("Turn with multiple options processed");
     }
 
     public boolean isGameOver(Long gameId) {
@@ -163,6 +167,7 @@ public class GameService {
             });
 
             gameSessions.remove(gameId);
+            log.info("Game session {} deleted: game end", gameId);
         }
         return over;
     }
@@ -174,12 +179,14 @@ public class GameService {
                 .findFirst()
                 .orElseThrow();
         String raw = aiService.generateAISuggestion(player.getHand(), game.getTable().getCards());
+        log.info("AiSuggestion generated for user {}", userId);
         return new AISuggestionDTO(raw);
     }
 
     public List<QuitGameResultDTO> quitGame(Long gameId, Long quittingUserId) {
         GameSession game = gameSessions.get(gameId);
         if (game == null) {
+            log.info("Game session not found for gameId: {}", gameId);
             throw new IllegalArgumentException("Game session not found for id: " + gameId);
         }
 
@@ -195,6 +202,7 @@ public class GameService {
         timerService.cancel(gameId, timerService.getChoiceStrategy());
 
         gameSessions.remove(gameId);
+        log.info("Game {} deleted: game quit", gameId);
         return resultDTOs;
     }
 }

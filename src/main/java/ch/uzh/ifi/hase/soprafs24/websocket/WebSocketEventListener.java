@@ -41,7 +41,7 @@ public class WebSocketEventListener {
         String simpDestination = getSimpDestination(event);
 
         if (simpDestination.startsWith("/topic/lobby")) {
-            log.info("Subscribing to websocket topic/lobby/{lobbyId}");
+            log.debug("Subscribing to websocket topic/lobby/{lobbyId}");
 
             // Retrieve the userid of the current session, which was saved during auth
             // before handshake
@@ -55,12 +55,12 @@ public class WebSocketEventListener {
             try {
                 lobbyId = getLobbyId(event);
                 lobbyService.joinLobby(lobbyId, userId);
-                log.info("Lobby {} joined successfully", lobbyId);
+                log.debug("Lobby {} joined successfully", lobbyId);
 
                 // broadcast msg to lobby
                 UsersBroadcastJoinNotificationDTO DTO = webSocketService.convertToDTO(userId, lobbyId, "subscribed");
                 webSocketService.broadCastLobbyNotifications(lobbyId, DTO);
-                log.info("Message broadcast to lobby {}: lobby joined successfully by user {}", lobbyId, userId);
+                log.debug("Message broadcast to lobby {}: lobby joined successfully by user {}", lobbyId, userId);
             } catch (NotFoundException | IllegalStateException e) {
                 msg = e.getMessage();
                 success = false;
@@ -69,7 +69,7 @@ public class WebSocketEventListener {
             // notify user
             UserNotificationDTO DTO = webSocketService.convertToDTO(msg, success);
             webSocketService.sentLobbyNotifications(userId, DTO);
-            log.info("Message broadcast to user {}: lobby join success {}", userId, success);
+            log.debug("Message broadcast to user {}: lobby join success {}", userId, success);
         } else {
             log.debug("Received subscription event to other destination: {}", event.getMessage());
         }
@@ -93,12 +93,12 @@ public class WebSocketEventListener {
             try {
                 lobbyId = lobbyService.getLobbyIdByParticipantId(userId);
                 lobbyService.leaveLobby(lobbyId, userId);
-                log.info("Lobby {} left successfully", lobbyId);
+                log.debug("Lobby {} left successfully", lobbyId);
 
                 // broadcast msg to lobby
                 UsersBroadcastJoinNotificationDTO broadcastDTO = webSocketService.convertToDTO(userId, lobbyId, "unsubscribed");
                 webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
-                log.info("Message broadcast to lobby {}: lobby left by user {}", lobbyId, userId);
+                log.debug("Message broadcast to lobby {}: lobby left by user {}", lobbyId, userId);
             } catch (NotFoundException e) {
                 msg = e.getMessage();
                 success = false;
@@ -106,7 +106,7 @@ public class WebSocketEventListener {
             // sent notification to user
             UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
             webSocketService.sentLobbyNotifications(userId, privateDTO);
-            log.info("Message sent to user {}: lobby leave success {}", userId, success);
+            log.debug("Message sent to user {}: lobby leave success {}", userId, success);
 
             // check if lobby has been deleted and set and broadcast right msg
         if (lobbyId != null) {
@@ -117,11 +117,11 @@ public class WebSocketEventListener {
                 msg = "Lobby with id " + lobbyId + " has been deleted";
                 BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
                 webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
-                log.info("Message broadcast to lobby {}: lobby deleted", lobbyId);
+                log.debug("Message broadcast to lobby {}: lobby deleted", lobbyId);
                 msg = "Lobby deleted successfully";
                 privateDTO = webSocketService.convertToDTO(msg, success);
                 webSocketService.sentLobbyNotifications(userId, privateDTO);
-                log.info("Message sent to user {}: lobby deleted successfully", userId);
+                log.debug("Message sent to user {}: lobby deleted successfully", userId);
             }
         }
 

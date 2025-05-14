@@ -62,6 +62,9 @@ public class LobbyService {
         newLobby.setUser(user);
         userRepository.save(user);
         userRepository.flush();
+
+        log.info("Created lobby: {}", newLobby.getLobbyId());
+
         return newLobby;
     }
 
@@ -77,6 +80,7 @@ public class LobbyService {
 
         // check if user is already in the lobby
         if (!lobby.getUsers().contains(userId)) {
+            log.info("user {} is already in lobby {}", userId, lobbyId);
             // check if lobby is already full
             if (lobbyIsFull(lobbyId)) {
                 String msg = "The lobby is already full";
@@ -87,9 +91,11 @@ public class LobbyService {
             lobby.addRematcher(userId);
             userRepository.save(user);
             userRepository.flush();
+            log.info("User {} joined lobby: {}", userId, lobbyId);
         }
     }
 
+    // TODO refactor
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {
         User user = userService.checkIfUserExists(userId);
         Lobby lobby = checkIfLobbyExists(lobbyId);
@@ -101,6 +107,7 @@ public class LobbyService {
             userRepository.save(user);
             userRepository.flush();
 
+            log.info("Host {} left lobby: {}", userId, lobbyId);
 
             deleteLobby(lobbyId);
             log.info("Lobby {} deleted by host {}", lobbyId, userId);
@@ -118,6 +125,7 @@ public class LobbyService {
         lobby.removeRematcher(userId);
         user.setLobbyJoined(null);
 
+        log.info("Host {} left lobby: {}", userId, lobbyId);
 
         userRepository.save(user);
     }
@@ -157,6 +165,8 @@ public class LobbyService {
             userRepository.save(host);
         }
 
+        log.info("Lobby {} deleted", lobbyId);
+
         userRepository.flush();
 
         // 4) Attempt deletion, but swallow if already gone
@@ -188,10 +198,12 @@ public class LobbyService {
         userService.checkIfUserExists(userId);
         if (!isUserInLobby(lobbyId, userId)){
             String msg = String.format("User with id %s is not part of lobby", userId);
+            log.error(msg);
             throw new NoSuchElementException(msg);
         }
         if (!lobby.getRematchers().contains(userId)) {
             lobby.addRematcher(userId);
+            log.info("User with id {} added to rematch in lobby {}", userId, lobbyId);
         }
     }
 

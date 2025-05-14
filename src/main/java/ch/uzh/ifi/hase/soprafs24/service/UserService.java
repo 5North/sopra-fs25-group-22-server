@@ -55,22 +55,27 @@ public class UserService {
   public String loginUser(User userInput) {
     User userByUsername = userRepository.findByUsername(userInput.getUsername());
     if (userByUsername == null) {
+        log.debug("failed to login user {}", userInput.getUsername());
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid username or password");
     } else if (!userByUsername.getPassword().equals(userInput.getPassword())) {
+        log.debug("failed to login user {}: wrong password", userInput.getUsername());
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid password");
     }
     userByUsername.setStatus(UserStatus.ONLINE);
     userByUsername.setToken(UUID.randomUUID().toString());
+    log.info("user with id {} logged in", userByUsername.getId());
     return userByUsername.getToken();
   }
 
   public void logoutUser(User authUser) {
     authUser.setStatus(UserStatus.OFFLINE);
+    log.info("user with id {} logged out", authUser.getId());
   }
 
   public User authorizeUser(String token) throws ResponseStatusException {
     User userByToken = userRepository.findByToken(token);
     if (userByToken == null || userByToken.getStatus() != UserStatus.ONLINE) {
+        log.debug("user with id {} not authorized", userByToken.getId());
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
     }
     return userByToken;
@@ -104,6 +109,9 @@ public class UserService {
     newUser.setWinCount(0);
     newUser.setLossCount(0);
     newUser.setTieCount(0);
+
+    log.info("user with id {} created", newUser.getId());
+
     return userRepository.save(newUser);
   }
 
@@ -111,6 +119,7 @@ public class UserService {
         User user = getUserById(userId);
         if (user.getLobby() == null) {
             String msg = String.format("User with id %s does not have a lobby", userId);
+            log.info("User with id {}: lobby not found", userId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
         }
         return user.getLobby();
