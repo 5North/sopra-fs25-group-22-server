@@ -96,6 +96,6 @@ public class ChoiceTimerStrategy implements TimerStrategy {
         long rem = timerService.getRemainingSeconds(gameId, playStrat);
         TimeLeftDTO timeDto = GameSessionMapper.toTimeToPlayDTO(gameId, rem);
         webSocketService.broadCastLobbyNotifications(gameId, timeDto);
-        log.info("Message broadcasted to lobby {}: time left for choice", gameId);
+        log.info("Message broadcasted to lobby {}: time left for next player", gameId);
     }
 }

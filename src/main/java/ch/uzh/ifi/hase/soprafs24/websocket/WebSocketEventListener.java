@@ -106,7 +106,7 @@ public class WebSocketEventListener {
             // sent notification to user
             UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
             webSocketService.sentLobbyNotifications(userId, privateDTO);
-            log.info("Message broadcast to user {}: lobby leave success {}", userId, success);
+            log.info("Message sent to user {}: lobby leave success {}", userId, success);
 
             // check if lobby has been deleted and set and broadcast right msg
         if (lobbyId != null) {
