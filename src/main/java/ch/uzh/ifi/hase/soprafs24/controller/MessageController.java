@@ -25,6 +25,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @Controller
@@ -95,37 +96,46 @@ public class MessageController {
         Long userId = (Long) Objects.requireNonNull(
                 headerAccessor.getSessionAttributes()).get("userId");
 
-        GameSession game = gameService.getGameSessionById(gameId);
+        // Try to catch game non-existing exception, so that if some client request update once the game is already
+        // ended just send them a notification
+        try{
+             GameSession game = gameService.getGameSessionById(gameId);
 
-        GameSessionDTO publicGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
+             GameSessionDTO publicGameDTO = GameSessionMapper.convertToGameSessionDTO(game);
 
-        Player player = game.getPlayerById(userId);
+             Player player = game.getPlayerById(userId);
 
-        PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(player);
-        webSocketService.sentLobbyNotifications(userId, privateDTO);
-        log.info("Message sent to user {}: update cards in hand", userId);
-        webSocketService.sentLobbyNotifications(userId, publicGameDTO);
-        log.info("Message sent to user {}: update game", userId);
+             PrivatePlayerDTO privateDTO = GameSessionMapper.convertToPrivatePlayerDTO(player);
+             webSocketService.sentLobbyNotifications(userId, privateDTO);
+             log.info("Message sent to user {}: update cards in hand", userId);
+             webSocketService.sentLobbyNotifications(userId, publicGameDTO);
+             log.info("Message sent to user {}: update game", userId);
 
-        if (game.isChoosing() && userId.equals(game.getCurrentPlayer().getUserId())) {
-            var options = game.getTable().getCaptureOptions(game.getLastCardPlayed());
-            var optsDto = GameSessionMapper.convertCaptureOptionsToDTO(options);
-            webSocketService.sentLobbyNotifications(userId, optsDto);
-            log.info("Message sent to user {}: update card options", userId);
-        }
+             if (game.isChoosing() && userId.equals(game.getCurrentPlayer().getUserId())) {
+                 var options = game.getTable().getCaptureOptions(game.getLastCardPlayed());
+                 var optsDto = GameSessionMapper.convertCaptureOptionsToDTO(options);
+                 webSocketService.sentLobbyNotifications(userId, optsDto);
+                 log.info("Message sent to user {}: update card options", userId);
+             }
 
 
-        long remChoice = timerService.getRemainingSeconds(gameId, timerService.getChoiceStrategy());
-        if (remChoice > 0) {
-            TimeLeftDTO choiceDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
-            webSocketService.sentLobbyNotifications(userId, choiceDTO);
-            log.info("Message sent to user {}: update remaining time for action", userId);
-        }
-        else {
-            long remPlay = timerService.getRemainingSeconds(gameId, timerService.getPlayStrategy());
-            TimeLeftDTO playDTO = GameSessionMapper.toTimeToPlayDTO(gameId, remPlay);
-            webSocketService.sentLobbyNotifications(userId, playDTO);
-            log.info("Message sent to user {}: update timeout, move on", userId);
+             long remChoice = timerService.getRemainingSeconds(gameId, timerService.getChoiceStrategy());
+             if (remChoice > 0) {
+                 TimeLeftDTO choiceDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
+                 webSocketService.sentLobbyNotifications(userId, choiceDTO);
+                 log.info("Message sent to user {}: update remaining time for action", userId);
+             }
+             else {
+                 long remPlay = timerService.getRemainingSeconds(gameId, timerService.getPlayStrategy());
+                 TimeLeftDTO playDTO = GameSessionMapper.toTimeToPlayDTO(gameId, remPlay);
+                 webSocketService.sentLobbyNotifications(userId, playDTO);
+                 log.info("Message sent to user {}: update timeout, move on", userId);
+             }
+        } catch (NoSuchElementException e) {
+            String msg = "Error updating game: " + e.getMessage();
+            BroadcastNotificationDTO DTO = webSocketService.convertToDTO(msg);
+            webSocketService.sentLobbyNotifications(userId, DTO);
+            log.info("Message sent to user {}: {}", userId, e.getMessage());
         }
     }
 

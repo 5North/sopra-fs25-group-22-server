@@ -218,6 +218,7 @@ import java.util.stream.Collectors;
         assertEquals("LOST", byUser.get(9L).getOutcome());
         assertEquals("WON", byUser.get(8L).getOutcome());
 
-        assertNull(gameService.getGameSessionById(99L));
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.getGameSessionById(99L));
     }
 }

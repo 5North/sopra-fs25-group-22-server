@@ -41,10 +41,7 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @ExtendWith(MockitoExtension.class)
  class MessageControllerTest {
@@ -192,6 +189,29 @@ import java.util.List;
 
         verify(webSocketService, times(1)).sentLobbyNotifications(anyLong(), any(PrivatePlayerDTO.class));
         verify(webSocketService, times(1)).sentLobbyNotifications(anyLong(), any(GameSessionDTO.class));
+    }
+
+    @Test
+    void testGameUpdateRequest_noGameSession() {
+        Long userId = 1L;
+        StompHeaderAccessor headerAccessor = createHeaderAccessorWithUser(userId);
+        LobbyDTO lobbyDTO = new LobbyDTO();
+        lobbyDTO.setLobbyId(1000L);
+
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(1000L);
+        lobby.addUsers(1L);
+        lobby.addUsers(2L);
+
+        BroadcastNotificationDTO notificationDTO = new BroadcastNotificationDTO();
+        notificationDTO.setMessage("Error updating game: Game with id 1000L does not exist");
+
+        when(gameService.getGameSessionById(1000L)).thenThrow(new NoSuchElementException("Game with id 1000L does not exist"));
+        when(webSocketService.convertToDTO("Error updating game: Game with id 1000L does not exist")).thenReturn(notificationDTO);
+
+        messageController.receiveUpdateGame(lobbyDTO.getLobbyId(), headerAccessor);
+
+        verify(webSocketService, times(1)).sentLobbyNotifications(anyLong(), any(BroadcastNotificationDTO.class));
     }
 
     // --- Test /app/playCard ---

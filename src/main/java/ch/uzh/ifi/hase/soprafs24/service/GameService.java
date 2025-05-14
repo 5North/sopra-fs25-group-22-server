@@ -21,6 +21,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -63,7 +64,13 @@ public class GameService {
         return gameSession;
     }
 
-    public GameSession getGameSessionById(Long gameId) {
+    // TODO check this again
+    public GameSession getGameSessionById(Long gameId) throws NoSuchElementException {
+        if (!gameSessions.containsKey(gameId)) {
+            String msg = String.format("Game with id %d does not exist", gameId);
+            log.error("GameService: {}", msg);
+            throw new NoSuchElementException(msg);
+        }
         return gameSessions.get(gameId);
     }
 
@@ -72,9 +79,6 @@ public class GameService {
             throw new IllegalArgumentException("Game ID not provided. Unable to process played card.");
         }
         GameSession game = getGameSessionById(gameId);
-        if (game == null) {
-            throw new IllegalArgumentException("Game session not found for gameId: " + gameId);
-        }
 
         // abort current timer
         timerService.cancel(gameId, timerService.getPlayStrategy());

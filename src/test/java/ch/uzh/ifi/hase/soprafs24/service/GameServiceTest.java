@@ -1,7 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -11,7 +10,6 @@ import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -23,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.util.Pair;
-import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
 import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 
 import java.lang.reflect.Field;
@@ -92,7 +89,7 @@ class GameServiceTest {
     }
 
     @Test
-     void testGetGameSessionById() {
+     void testGetGameSessionById_success() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(200L);
         lobby.addUsers(10L);
@@ -102,6 +99,18 @@ class GameServiceTest {
         GameSession retrieved = gameService.getGameSessionById(200L);
         assertNotNull(retrieved);
         assertEquals(gameSession, retrieved);
+    }
+
+    @Test
+    void testGetGameSessionById_throwsNoSuchElementException() {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(2000L);
+        lobby.addUsers(10L);
+        lobby.addUsers(20L);
+        gameService.startGame(lobby);
+
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.getGameSessionById(8000L));
     }
 
     @Test
@@ -224,7 +233,8 @@ class GameServiceTest {
 
         boolean isOver = gameService.isGameOver(500L);
         assertTrue(isOver);
-        assertNull(gameService.getGameSessionById(500L));
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.getGameSessionById(500L));
     }
 
     @Test
@@ -355,22 +365,21 @@ class GameServiceTest {
         assertEquals("WON", byUser.get(playerB).getOutcome());
         assertEquals("You won by forfeit.", byUser.get(playerB).getMessage());
 
-        assertNull(gameService.getGameSessionById(gameId), "Session should be removed after forfeit");
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.getGameSessionById(gameId));
     }
 
     @Test
      void testPlayCardGameNotFound() {
         CardDTO dto = new CardDTO("COPPE", 5);
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> gameService.playCard(999L, dto, playerA));
-        assertEquals("Game session not found for gameId: 999", ex.getMessage());
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.playCard(999L, dto, playerA));;
     }
 
     @Test
      void testProcessPlayTurnSessionNotFound() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        assertThrows(NoSuchElementException.class,
                 () -> gameService.processPlayTurn(999L, List.of()));
-        assertEquals("Game session not found for gameId: 999", ex.getMessage());
     }
 
     @Test
