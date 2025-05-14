@@ -48,7 +48,7 @@ public class WebSocketService {
         User user = userService.checkIfUserExists(userId);
         UsersBroadcastJoinNotificationDTO DTO = new UsersBroadcastJoinNotificationDTO();
         Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
-        LobbyDTO lobbyDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);
+        LobbyDTO lobbyDTO = DTOMapper.INSTANCE.convertLobbyToLobbyDTO(lobby);
         DTO.setStatus(status);
         DTO.setUsername(user.getUsername());
         DTO.setLobby(lobbyDTO);

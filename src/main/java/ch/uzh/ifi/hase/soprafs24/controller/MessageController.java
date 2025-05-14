@@ -327,7 +327,7 @@ public class MessageController {
 
         // update lobby
         Lobby lobby = lobbyService.checkIfLobbyExists(lobbyId);
-        LobbyDTO broadcastDTO = DTOMapper.INSTANCE.convertLobbyToLobbyRematchDTO(lobby);
+        LobbyDTO broadcastDTO = DTOMapper.INSTANCE.convertLobbyToLobbyDTO(lobby);
         webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
         log.info("Message broadcast to lobby {}: update rematch list, user {} joined", lobbyId, userId);
     }
