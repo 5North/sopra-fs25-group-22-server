@@ -55,6 +55,8 @@ class WebSocketServiceTest {
         lobby.setLobbyId(1000L);
         lobby.addUsers(1L);
         lobby.addUsers(2L);
+        lobby.adddRematchers(1L);
+        lobby.adddRematchers(2L);
 
         LobbyDTO lobbyDTO = new LobbyDTO();
         List<Long> userIds = new ArrayList<>();
@@ -63,6 +65,7 @@ class WebSocketServiceTest {
         lobbyDTO.setLobbyId(1000L);
         lobbyDTO.setHostId(userId);
         lobbyDTO.setUsersIds(userIds);
+        lobbyDTO.setRematchersIds(userIds);
 
         // when
         when(userService.checkIfUserExists(userId)).thenReturn(user);
@@ -78,6 +81,7 @@ class WebSocketServiceTest {
         assertEquals(lobbyDTO.getLobbyId(), dto.getLobby().getLobbyId());
         assertEquals(lobbyDTO.getHostId(), dto.getLobby().getHostId());
         assertEquals(lobbyDTO.getUsersIds(), dto.getLobby().getUsersIds());
+        assertEquals(lobbyDTO.getRematchersIds(), dto.getLobby().getRematchersIds());
     }
 
     @Test
