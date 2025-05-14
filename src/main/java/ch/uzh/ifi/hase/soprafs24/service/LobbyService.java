@@ -186,7 +186,19 @@ public class LobbyService {
     public void addRematcher(Long lobbyId, Long userId) throws NotFoundException {
         Lobby lobby = checkIfLobbyExists(lobbyId);
         userService.checkIfUserExists(userId);
-        lobby.adddRematchers(userId);
+        if (!isUserInLobby(lobbyId, userId)){
+            String msg = String.format("User with id %s is not part of lobby", userId);
+            throw new NoSuchElementException(msg);
+        }
+        if (!lobby.getRematchers().contains(userId)) {
+            lobby.adddRematchers(userId);
+        }
+    }
+
+    boolean isUserInLobby(Long lobbyId, Long userId) throws NotFoundException {
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        userService.checkIfUserExists(userId);
+        return lobby.getUsers().contains(userId);
     }
 
     public Long getLobbyIdByParticipantId(Long participantId) throws NotFoundException {
