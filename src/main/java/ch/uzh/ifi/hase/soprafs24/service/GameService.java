@@ -65,7 +65,6 @@ public class GameService {
         return gameSession;
     }
 
-    // TODO check this again
     public GameSession getGameSessionById(Long gameId) throws NoSuchElementException {
         if (!gameSessions.containsKey(gameId)) {
             String msg = String.format("Game with id %d does not exist", gameId);

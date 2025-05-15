@@ -32,6 +32,7 @@ import java.util.Objects;
 public class MessageController {
 
     private static final Logger log = LoggerFactory.getLogger(MessageController.class);
+    private static final String USER_ID_ATTR = "userId";
     private final LobbyService lobbyService;
     private final GameService gameService;
     private final WebSocketService webSocketService;
@@ -94,7 +95,7 @@ public class MessageController {
     public void receiveUpdateGame(@DestinationVariable Long gameId,
             StompHeaderAccessor headerAccessor) {
         Long userId = (Long) Objects.requireNonNull(
-                headerAccessor.getSessionAttributes()).get("userId");
+                headerAccessor.getSessionAttributes()).get(USER_ID_ATTR);
         log.debug("Message at /updateGame/{}", gameId);
 
         // Try to catch game non-existing exception, so that if some client request
@@ -143,7 +144,7 @@ public class MessageController {
     public void processPlayCard(@Payload PlayCardDTO DTO,
             StompHeaderAccessor headerAccessor) {
         log.debug("Message at /playCard");
-        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get(USER_ID_ATTR);
         Long userId = (Long) userIdObj;
 
         CardDTO cardDTO = DTO.getCard();
@@ -204,7 +205,7 @@ public class MessageController {
     public void processChooseCapture(@Payload ChosenCaptureDTO DTO,
             StompHeaderAccessor headerAccessor) {
         log.debug("Message at /chooseCapture");
-        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+        Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get(USER_ID_ATTR);
         Long userId = (Long) userIdObj;
 
         List<CardDTO> chosenOption = DTO.getChosenOption();
@@ -258,7 +259,7 @@ public class MessageController {
             StompHeaderAccessor headerAccessor) {
         log.debug("Message at /ai");
         Long gameId = aiReq.getGameId();
-        Long userId = (Long) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+        Long userId = (Long) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get(USER_ID_ATTR);
         try {
             AISuggestionDTO aiDto = gameService.aiSuggestion(gameId, userId);
             webSocketService.sentLobbyNotifications(userId, aiDto);
@@ -273,7 +274,7 @@ public class MessageController {
             StompHeaderAccessor headerAccessor) throws NotFoundException {
         log.debug("Message at /quitGame");
         Long quittingUserId = (Long) Objects.requireNonNull(
-                headerAccessor.getSessionAttributes()).get("userId");
+                headerAccessor.getSessionAttributes()).get(USER_ID_ATTR);
         User user = userService.checkIfUserExists(quittingUserId);
         Long lobbyId = user.getLobbyJoined();
 
@@ -314,7 +315,7 @@ public class MessageController {
     public void rematch(StompHeaderAccessor headerAccessor) throws NotFoundException {
         log.debug("Message at /rematch");
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes())
-                .get("userId");
+                .get(USER_ID_ATTR);
         Long userId = (Long) userIdObj;
         User user = userService.checkIfUserExists(userId);
         Long lobbyId = user.getLobbyJoined();

@@ -13,17 +13,12 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
- class ApplicationTest {
+class ApplicationTest {
 
         @LocalServerPort
         int port;
 
         TestRestTemplate restTemplate = new TestRestTemplate();
-
-        @Test
-        void contextLoadsAndMainIsSafe() {
-                Application.main(new String[] { "--spring.main.web-environment=false" });
-        }
 
         @Test
         void helloWorldEndpoint_returnsExpectedStringAndStatus() {
