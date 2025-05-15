@@ -52,16 +52,18 @@ public class PlayTimerStrategy implements TimerStrategy {
         Player current = game.getCurrentPlayer();
         Long currentUserId = current.getUserId();
 
-        try {
-            var hand = current.getHand();
-            if (!hand.isEmpty()) {
+        // Try auto-play only, swallow exceptions without blocking the rest
+        var hand = current.getHand();
+        if (!hand.isEmpty()) {
+            try {
                 var c = hand.get(random.nextInt(hand.size()));
-                gameService.playCard(gameId,
+                gameService.playCard(
+                        gameId,
                         new CardDTO(c.getSuit().toString(), c.getValue()),
                         currentUserId);
+            } catch (Exception e) {
+                log.warn("Failed to auto-play card on timeout", e);
             }
-            // TODO
-        } catch (Exception ignored) {
         }
 
         GameSession updated = gameService.getGameSessionById(gameId);
@@ -87,11 +89,12 @@ public class PlayTimerStrategy implements TimerStrategy {
         webSocketService.broadCastLobbyNotifications(gameId, moveDto);
         log.info("Message broadcasted to lobby {}: move update on play timeout", gameId);
 
-        // check if game is over
-        if(gameService.isGameOver(gameId)){
+        // check if game is over before rescheduling
+        if (gameService.isGameOver(gameId)) {
             return;
         }
 
+        // reschedule next auto-play
         timerService.schedule(gameId, this, null);
 
         long rem = timerService.getRemainingSeconds(gameId, this);

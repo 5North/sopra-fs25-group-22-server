@@ -183,19 +183,8 @@ public class GameSessionMapper {
         return toTimeLeftDTO(gameId, remainingSeconds, "Time to Play");
     }
 
-    /** Shortcut per la fase “choose capture”. */
     public static TimeLeftDTO toTimeToChooseDTO(Long gameId, long remainingSeconds) {
         return toTimeLeftDTO(gameId, remainingSeconds, "Time to Choose");
-    }
-
-    /**
-     * Notifica quando il timer è scaduto.
-     */
-    public static TimeOutNotificationDTO toTimeOutNotificationDTO(Long timedOutPlayerId, String message) {
-        TimeOutNotificationDTO dto = new TimeOutNotificationDTO();
-        dto.setTimedOutPlayerId(timedOutPlayerId);
-        dto.setMessage(message);
-        return dto;
     }
 
 }

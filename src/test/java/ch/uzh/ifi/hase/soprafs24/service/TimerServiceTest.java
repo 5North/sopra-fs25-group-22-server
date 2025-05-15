@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
 import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,17 +12,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
- class TimerServiceTest {
+class TimerServiceTest {
 
     private TimerService timerService;
     private DummyStrategy playStrategy;
     private DummyStrategy choiceStrategy;
 
     @BeforeEach
-     void setup() {
+    void setup() {
         playStrategy = new DummyStrategy(1);
         choiceStrategy = new DummyStrategy(1);
-        // ora passo anche il WebSocketService mock
         timerService = new TimerService(
                 Mockito.mock(GameService.class),
                 playStrategy,
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testScheduleAndGetRemainingSeconds() {
+    void testScheduleAndGetRemainingSeconds() {
         long gameId = 100L;
         assertEquals(0, timerService.getRemainingSeconds(gameId, playStrategy));
         timerService.schedule(gameId, playStrategy, null);
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testCancelRemovesScheduledTask() {
+    void testCancelRemovesScheduledTask() {
         long gameId = 101L;
         timerService.schedule(gameId, playStrategy, null);
         assertTrue(timerService.getRemainingSeconds(gameId, playStrategy) > 0);
@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testTimeoutExecutionForPlayStrategy() throws InterruptedException {
+    void testTimeoutExecutionForPlayStrategy() throws InterruptedException {
         long gameId = 102L;
         CountDownLatch latch = playStrategy.getLatch();
         timerService.schedule(gameId, playStrategy, 999L);
@@ -56,7 +56,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testCancelPreventsExecution() throws InterruptedException {
+    void testCancelPreventsExecution() throws InterruptedException {
         long gameId = 103L;
         CountDownLatch latch = choiceStrategy.getLatch();
         timerService.schedule(gameId, choiceStrategy, 777L);
@@ -65,7 +65,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testMultipleStrategyIndependent() {
+    void testMultipleStrategyIndependent() {
         long gameId = 200L;
         timerService.schedule(gameId, playStrategy, null);
         timerService.schedule(gameId, choiceStrategy, 555L);
@@ -74,7 +74,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testCancelOnlyOneStrategy() {
+    void testCancelOnlyOneStrategy() {
         long gameId = 201L;
         timerService.schedule(gameId, playStrategy, null);
         timerService.schedule(gameId, choiceStrategy, 888L);
@@ -84,7 +84,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testRescheduleSameStrategyCancelsOld() {
+    void testRescheduleSameStrategyCancelsOld() {
         long gameId = 203L;
         timerService.schedule(gameId, playStrategy, null);
         long first = timerService.getRemainingSeconds(gameId, playStrategy);
@@ -95,7 +95,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 
     @Test
-     void testGetRemainingSecondsUnknown() {
+    void testGetRemainingSecondsUnknown() {
         assertEquals(0, timerService.getRemainingSeconds(999L, playStrategy));
         assertEquals(0, timerService.getRemainingSeconds(999L, choiceStrategy));
     }
@@ -105,7 +105,7 @@ import static org.junit.jupiter.api.Assertions.*;
         private final CountDownLatch latch = new CountDownLatch(1);
         private final AtomicInteger count = new AtomicInteger(0);
 
-         DummyStrategy(long timeoutSeconds) {
+        DummyStrategy(long timeoutSeconds) {
             this.timeoutSeconds = timeoutSeconds;
         }
 
@@ -128,4 +128,59 @@ import static org.junit.jupiter.api.Assertions.*;
             return count.get();
         }
     }
+
+    @Test
+    void testTimeLeftDTOGettersAndSetters() {
+        Long initialGameId = 1L;
+        long initialRemaining = 5L;
+        String initialMessage = "Time to Play";
+        TimeLeftDTO dto = new TimeLeftDTO(initialGameId, initialRemaining, initialMessage);
+
+        assertEquals(initialGameId, dto.getGameId());
+        assertEquals(initialRemaining, dto.getRemainingSeconds());
+        assertEquals(initialMessage, dto.getMessage());
+
+        Long newGameId = 2L;
+        long newRemaining = 10L;
+        String newMessage = "Time to Choose";
+        dto.setGameId(newGameId);
+        dto.setRemainingSeconds(newRemaining);
+        dto.setMessage(newMessage);
+
+        assertEquals(newGameId, dto.getGameId());
+        assertEquals(newRemaining, dto.getRemainingSeconds());
+        assertEquals(newMessage, dto.getMessage());
+    }
+
+    @Test
+    void testGetRemainingSecondsExpiresImmediatelyWhenTimeoutZero() {
+        TimerStrategy zeroStrategy = new TimerStrategy() {
+            @Override
+            public long getTimeoutSeconds() {
+                return 0L;
+            }
+
+            @Override
+            public void onTimeout(Long gameId, Long forUserId) {
+                /* no-op */ }
+        };
+        var svc = new TimerService(
+                Mockito.mock(GameService.class),
+                zeroStrategy,
+                choiceStrategy,
+                Mockito.mock(WebSocketService.class));
+
+        long gameId = 999L;
+        svc.schedule(gameId, zeroStrategy, null);
+        long rem = svc.getRemainingSeconds(gameId, zeroStrategy);
+
+        assertEquals(0, rem);
+    }
+
+    @Test
+    void testGetPlayAndChoiceStrategyReturnInjected() {
+        assertSame(playStrategy, timerService.getPlayStrategy());
+        assertSame(choiceStrategy, timerService.getChoiceStrategy());
+    }
+
 }

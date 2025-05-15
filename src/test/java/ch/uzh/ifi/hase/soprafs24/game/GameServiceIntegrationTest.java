@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
- class GameServiceIntegrationTest {
+class GameServiceIntegrationTest {
 
     private GameService gameService;
     private WebSocketService webSocketService;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
     private UserRepository userRepository;
 
     @BeforeEach
-     void setup() throws Exception {
+    void setup() throws Exception {
         webSocketService = mock(WebSocketService.class);
         aiService = mock(AIService.class);
         timerService = mock(TimerService.class);
@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
         when(timerService.getPlayStrategy()).thenReturn(playStrat);
         when(timerService.getChoiceStrategy()).thenReturn(choiceStrat);
 
-
         userRepository = mock(UserRepository.class);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
@@ -59,12 +58,11 @@ import java.util.stream.Collectors;
         repoField.setAccessible(true);
         repoField.set(null, userRepository);
 
-
         gameService = new GameService(webSocketService, aiService, timerService);
     }
 
     @Test
-     void testDeterministicTurnFlow() {
+    void testDeterministicTurnFlow() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(300L);
         lobby.addUser(100L);
@@ -92,7 +90,7 @@ import java.util.stream.Collectors;
     }
 
     @Test
-     void testNonDeterministicTurnFlowWorks() throws Exception {
+    void testNonDeterministicTurnFlowWorks() throws Exception {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(400L);
         lobby.addUser(10L);
@@ -151,7 +149,7 @@ import java.util.stream.Collectors;
     }
 
     @Test
-     void testAiSuggestionReturnsDto() {
+    void testAiSuggestionReturnsDto() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(500L);
         lobby.addUser(55L);
@@ -167,9 +165,10 @@ import java.util.stream.Collectors;
     }
 
     @Test
-     void testAiSuggestionThrowsForUnknownUser() {
+    void testAiSuggestionThrowsForUnknownUser() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(600L);
+        lobby.addUser(1L);
         gameService.startGame(lobby);
 
         assertThrows(NoSuchElementException.class,
@@ -197,7 +196,7 @@ import java.util.stream.Collectors;
     }
 
     @Test
-     void testQuitGameIntegration_RemovesSessionAndNotifiesOutcomes() throws Exception {
+    void testQuitGameIntegration_RemovesSessionAndNotifiesOutcomes() throws Exception {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(99L);
         lobby.addUser(9L);
