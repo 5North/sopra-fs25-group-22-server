@@ -81,12 +81,13 @@ public class GameService {
         }
         GameSession game = getGameSessionById(gameId);
 
-        // abort current timer
         timerService.cancel(gameId, timerService.getPlayStrategy());
 
         Card playedCard = GameSessionMapper.convertCardDTOtoEntity(cardDTO);
+
+        Player current = game.getCurrentPlayer();
+
         try {
-            Player current = game.getCurrentPlayer();
             game.playTurn(playedCard, null);
 
             timerService.schedule(gameId,
@@ -96,7 +97,6 @@ public class GameService {
             return Pair.of(game, current);
 
         } catch (IllegalStateException e) {
-
             List<List<Card>> options = game.getTable().getCaptureOptions(playedCard);
             List<List<CardDTO>> optionsDTO = GameSessionMapper.convertCaptureOptionsToDTO(options);
             webSocketService.sentLobbyNotifications(userId, optionsDTO);
@@ -112,9 +112,7 @@ public class GameService {
             webSocketService.broadCastLobbyNotifications(gameId, choiceTimeDTO);
             log.debug("Message broadcast to lobby {}: time left for choice", gameId);
 
-            log.debug("Turn processed");
-
-            return Pair.of(game, null);
+            return Pair.of(game, current);
 
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid card played. Unable to process played card.");
@@ -149,14 +147,12 @@ public class GameService {
             timerService.cancel(gameId, timerService.getChoiceStrategy());
 
             List<Card> lastCards = game.getTable().getCards();
-            game.finishGame();
-
             Long playerId = game.getLastPickedPlayerId();
-
             LastCardsDTO lastCardsDTO = GameSessionMapper.convertToLastCardsDTO(playerId, lastCards);
             lastCardsDTO.setUserId(playerId);
             webSocketService.broadCastLobbyNotifications(gameId, lastCardsDTO);
             log.debug("Message broadcasted to lobby {}: last cards picked by {}", gameId, playerId);
+            game.finishGame();
 
             Result result = game.calculateResult();
 

@@ -13,6 +13,7 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
@@ -611,6 +612,118 @@ class MessageControllerTest {
                 // timerService get interrogated 2 times: remChoice and remPlay
                 verify(timerService, times(2))
                                 .getRemainingSeconds(eq(123L), any());
+        }
+
+        @Test
+        void testProcessAISuggestionExceptionIsCaught() {
+                AiRequestDTO aiReq = new AiRequestDTO();
+                aiReq.setGameId(123L);
+                StompHeaderAccessor accessor = createHeaderAccessorWithUser(42L);
+
+                when(gameService.aiSuggestion(123L, 42L))
+                                .thenThrow(new RuntimeException("AI service down"));
+
+                assertDoesNotThrow(() -> messageController.processAISuggestion(aiReq, accessor));
+
+                verify(webSocketService, never())
+                                .sentLobbyNotifications(anyLong(), any(AISuggestionDTO.class));
+        }
+
+        @Test
+        void testProcessPlayCardWhenChoosing_SendsChoiceTime() {
+                Long userId = 101L;
+                Long gameId = 500L;
+                PlayCardDTO dto = new PlayCardDTO();
+                dto.setLobbyId(gameId);
+                dto.setCard(new CardDTO("COPPE", 5));
+                StompHeaderAccessor accessor = createHeaderAccessorWithUser(userId);
+
+                GameSession session = mock(GameSession.class);
+                when(session.isChoosing()).thenReturn(true);
+
+                Player player = new Player(userId, new ArrayList<>());
+                when(gameService.playCard(eq(gameId), any(CardDTO.class), eq(userId)))
+                                .thenReturn(Pair.of(session, player));
+
+                when(timerService.getRemainingSeconds(eq(gameId), any()))
+                                .thenReturn(7L);
+
+                messageController.processPlayCard(dto, accessor);
+
+                verify(timerService).getRemainingSeconds(eq(gameId), any());
+                verify(webSocketService)
+                                .broadCastLobbyNotifications(eq(gameId), any(TimeLeftDTO.class));
+
+                verify(webSocketService, never())
+                                .sentLobbyNotifications(eq(userId), any(PrivatePlayerDTO.class));
+                verify(webSocketService, never())
+                                .broadCastLobbyNotifications(eq(gameId), any(MoveActionDTO.class));
+        }
+
+        @Test
+        void testReceiveUpdateGame_RemChoicePositive_SendsChoiceTime() {
+                Long userId = 55L;
+                Long gameId = 600L;
+                StompHeaderAccessor header = createHeaderAccessorWithUser(userId);
+
+                GameSession session = new GameSession(gameId, List.of(userId, 99L));
+                when(gameService.getGameSessionById(gameId)).thenReturn(session);
+
+                when(timerService.getRemainingSeconds(eq(gameId), any()))
+                                .thenReturn(12L);
+
+                messageController.receiveUpdateGame(gameId, header);
+
+                verify(timerService).getRemainingSeconds(eq(gameId), any());
+                verify(webSocketService)
+                                .sentLobbyNotifications(eq(userId), any(TimeLeftDTO.class));
+        }
+
+        @Test
+        void testReceiveUpdateGame_RemChoiceZero_SendsPlayTime() {
+                Long userId = 66L;
+                Long gameId = 700L;
+                StompHeaderAccessor header = createHeaderAccessorWithUser(userId);
+
+                GameSession session = new GameSession(gameId, List.of(userId, 99L));
+                when(gameService.getGameSessionById(gameId)).thenReturn(session);
+
+                when(timerService.getRemainingSeconds(eq(gameId), any()))
+                                .thenReturn(0L)
+                                .thenReturn(15L);
+
+                messageController.receiveUpdateGame(gameId, header);
+
+                verify(timerService, times(2))
+                                .getRemainingSeconds(eq(gameId), any());
+                verify(webSocketService)
+                                .sentLobbyNotifications(eq(userId), any(TimeLeftDTO.class));
+        }
+
+        @Test
+        void testProcessPlayCard_MultipleOptions_ControllerOnlySendsChoiceTimer() {
+                Long userId = 42L;
+                Long gameId = 777L;
+                PlayCardDTO dto = new PlayCardDTO();
+                dto.setLobbyId(gameId);
+                dto.setCard(new CardDTO("DENARI", 9));
+                StompHeaderAccessor acc = createHeaderAccessorWithUser(userId);
+
+                GameSession session = mock(GameSession.class);
+                when(session.isChoosing()).thenReturn(true);
+                Player current = new Player(userId, new ArrayList<>());
+                when(gameService.playCard(eq(gameId), any(CardDTO.class), eq(userId)))
+                                .thenReturn(Pair.of(session, current));
+
+                when(timerService.getRemainingSeconds(eq(gameId), any()))
+                                .thenReturn(12L);
+
+                messageController.processPlayCard(dto, acc);
+
+                verify(webSocketService, never())
+                                .sentLobbyNotifications(eq(userId), any(PrivatePlayerDTO.class));
+
+                verify(webSocketService).broadCastLobbyNotifications(eq(gameId), any(TimeLeftDTO.class));
         }
 
 }

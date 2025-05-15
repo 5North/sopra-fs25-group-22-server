@@ -601,4 +601,19 @@ class LobbyServiceTest {
         assertSame(session, lobby.getGameSession());
     }
 
+    @Test
+    void testRematchIsFull_UsersOverLimit_ThrowsException() throws NotFoundException {
+        testLobby.addUser(1L);
+        testLobby.addUser(2L);
+        testLobby.addUser(3L);
+        testLobby.addUser(4L);
+        testLobby.addUser(5L);
+        when(lobbyRepository.findById(testLobby.getLobbyId()))
+                .thenReturn(Optional.of(testLobby));
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> lobbyService.rematchIsFull(testLobby.getLobbyId()));
+        assertEquals("The lobby is more than 4 users full", ex.getMessage());
+    }
+
 }

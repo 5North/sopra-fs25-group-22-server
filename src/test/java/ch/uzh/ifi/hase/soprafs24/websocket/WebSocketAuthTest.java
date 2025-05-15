@@ -67,7 +67,8 @@ class WebSocketAuthTest {
         WebSocketHandler handler = mock(WebSocketHandler.class);
         Map<String, Object> attrs = new HashMap<>();
 
-        when(mockUserService.authorizeUser("invalid-token")).thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        when(mockUserService.authorizeUser("invalid-token"))
+                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 
         boolean result = interceptor.beforeHandshake(request, response, handler, attrs);
 
@@ -84,7 +85,6 @@ class WebSocketAuthTest {
         ServerHttpResponse response = mock(ServerHttpResponse.class);
         WebSocketHandler handler = mock(WebSocketHandler.class);
         Map<String, Object> attrs = new HashMap<>();
-
 
         boolean result = interceptor.beforeHandshake(request, response, handler, attrs);
 
@@ -120,5 +120,21 @@ class WebSocketAuthTest {
         WebSocketHandler handler = mock(WebSocketHandler.class);
 
         assertDoesNotThrow(() -> interceptor.afterHandshake(request, response, handler, null));
+    }
+
+    @Test
+    void beforeHandshake_uriThrowsNullPointer_returnsBadRequest() {
+        ServerHttpRequest request = mock(ServerHttpRequest.class);
+        ServerHttpResponse response = mock(ServerHttpResponse.class);
+        WebSocketHandler handler = mock(WebSocketHandler.class);
+        Map<String, Object> attrs = new HashMap<>();
+
+        when(request.getURI()).thenThrow(new NullPointerException("boom"));
+
+        boolean result = interceptor.beforeHandshake(request, response, handler, attrs);
+
+        assertFalse(result, "Should return false when URI parsing throws NPE");
+        verify(response).setStatusCode(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(mockUserService);
     }
 }

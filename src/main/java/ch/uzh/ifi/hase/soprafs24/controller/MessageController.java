@@ -39,10 +39,10 @@ public class MessageController {
     private final TimerService timerService;
 
     public MessageController(LobbyService lobbyService,
-                             GameService gameService,
-                             WebSocketService webSocketService,
-                             UserService userService,
-                             TimerService timerService) {
+            GameService gameService,
+            WebSocketService webSocketService,
+            UserService userService,
+            TimerService timerService) {
         this.lobbyService = lobbyService;
         this.gameService = gameService;
         this.webSocketService = webSocketService;
@@ -73,8 +73,7 @@ public class MessageController {
             // reset rematch array
             lobbyService.resetRematch(lobbyId);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             msg = "Error starting game: " + e.getMessage();
             success = false;
             log.error(msg);
@@ -93,12 +92,13 @@ public class MessageController {
 
     @MessageMapping("/updateGame/{gameId}")
     public void receiveUpdateGame(@DestinationVariable Long gameId,
-                                  StompHeaderAccessor headerAccessor) {
+            StompHeaderAccessor headerAccessor) {
         Long userId = (Long) Objects.requireNonNull(
                 headerAccessor.getSessionAttributes()).get("userId");
         log.debug("Message at /updateGame/{}", gameId);
 
-        // Try to catch game non-existing exception, so that if some client request update once the game is already
+        // Try to catch game non-existing exception, so that if some client request
+        // update once the game is already
         // ended just send them a notification
         try {
             GameSession game = gameService.getGameSessionById(gameId);
@@ -120,21 +120,18 @@ public class MessageController {
                 log.debug("Message sent to user {}: update card options", userId);
             }
 
-
             long remChoice = timerService.getRemainingSeconds(gameId, timerService.getChoiceStrategy());
             if (remChoice > 0) {
                 TimeLeftDTO choiceDTO = GameSessionMapper.toTimeToChooseDTO(gameId, remChoice);
                 webSocketService.sentLobbyNotifications(userId, choiceDTO);
                 log.debug("Message sent to user {}: update remaining time for action", userId);
-            }
-            else {
+            } else {
                 long remPlay = timerService.getRemainingSeconds(gameId, timerService.getPlayStrategy());
                 TimeLeftDTO playDTO = GameSessionMapper.toTimeToPlayDTO(gameId, remPlay);
                 webSocketService.sentLobbyNotifications(userId, playDTO);
                 log.debug("Message sent to user {}: update timeout, move on", userId);
             }
-        }
-        catch (NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             String msg = "Error updating game: " + e.getMessage();
             BroadcastNotificationDTO DTO = webSocketService.convertToDTO(msg);
             webSocketService.sentLobbyNotifications(userId, DTO);
@@ -144,7 +141,7 @@ public class MessageController {
 
     @MessageMapping("/playCard")
     public void processPlayCard(@Payload PlayCardDTO DTO,
-                                StompHeaderAccessor headerAccessor) {
+            StompHeaderAccessor headerAccessor) {
         log.debug("Message at /playCard");
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
         Long userId = (Long) userIdObj;
@@ -157,7 +154,8 @@ public class MessageController {
             GameSession game = result.getFirst();
             Player current = result.getSecond();
 
-            if (current != null) {
+            boolean choosingPhase = game.isChoosing();
+            if (!choosingPhase) {
                 // public state update
                 GameSessionDTO sessionDTO = GameSessionMapper.convertToGameSessionDTO(game);
                 webSocketService.broadCastLobbyNotifications(gameId, sessionDTO);
@@ -188,8 +186,7 @@ public class MessageController {
                 webSocketService.broadCastLobbyNotifications(gameId, nextPlayDTO);
                 log.debug("Message broadcast to lobby {}: time left for play", gameId);
 
-            }
-            else {
+            } else {
                 // multiple-capture: sync choose-phase timer
                 long remChoice = timerService.getRemainingSeconds(gameId,
                         timerService.getChoiceStrategy());
@@ -197,8 +194,7 @@ public class MessageController {
                 webSocketService.broadCastLobbyNotifications(gameId, chooseDTO);
                 log.debug("Message broadcast to lobby {}: time left for choice", gameId);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error processing played card: {}", e.getMessage());
         }
 
@@ -206,7 +202,7 @@ public class MessageController {
 
     @MessageMapping("/chooseCapture")
     public void processChooseCapture(@Payload ChosenCaptureDTO DTO,
-                                     StompHeaderAccessor headerAccessor) {
+            StompHeaderAccessor headerAccessor) {
         log.debug("Message at /chooseCapture");
         Object userIdObj = Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
         Long userId = (Long) userIdObj;
@@ -251,8 +247,7 @@ public class MessageController {
             webSocketService.broadCastLobbyNotifications(gameId, nextPlayDTO);
             log.debug("Message broadcast to lobby {}: time left for next play", gameId);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error(e.getMessage());
             log.error("Error processing card choice: {}", e.getMessage());
         }
@@ -260,7 +255,7 @@ public class MessageController {
 
     @MessageMapping("/ai")
     public void processAISuggestion(@Payload AiRequestDTO aiReq,
-                                    StompHeaderAccessor headerAccessor) {
+            StompHeaderAccessor headerAccessor) {
         log.debug("Message at /ai");
         Long gameId = aiReq.getGameId();
         Long userId = (Long) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
@@ -268,15 +263,14 @@ public class MessageController {
             AISuggestionDTO aiDto = gameService.aiSuggestion(gameId, userId);
             webSocketService.sentLobbyNotifications(userId, aiDto);
             log.debug("Message sent to user {}: Ai suggestion", userId);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error processing AI suggestion: {}", e.getMessage());
         }
     }
 
     @MessageMapping("/quitGame")
     public void processQuitGame(@Payload QuitGameDTO dto,
-                                StompHeaderAccessor headerAccessor) throws NotFoundException {
+            StompHeaderAccessor headerAccessor) throws NotFoundException {
         log.debug("Message at /quitGame");
         Long quittingUserId = (Long) Objects.requireNonNull(
                 headerAccessor.getSessionAttributes()).get("userId");
@@ -306,8 +300,7 @@ public class MessageController {
             BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
             webSocketService.broadCastLobbyNotifications(lobbyId, broadcastDTO);
             log.debug("Message broadcast to lobby {}: lobby delete", lobbyId);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             // msg and status for delete failure
             msg = String.format("The lobby with id %s was not found", lobbyId);
             success = false;
@@ -331,8 +324,7 @@ public class MessageController {
 
         try {
             lobbyService.addRematcher(lobbyId, userId);
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             success = false;
             msg = e.getMessage();
         }

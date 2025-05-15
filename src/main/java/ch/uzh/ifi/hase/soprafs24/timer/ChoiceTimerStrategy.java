@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -47,20 +48,26 @@ public class ChoiceTimerStrategy implements TimerStrategy {
     @Override
     public void onTimeout(Long gameId, Long forUserId) {
         GameSession game = gameService.getGameSessionById(gameId);
-        if (game == null || game.isGameOver() || forUserId == null)
+        if (game == null || game.isGameOver() || forUserId == null) {
             return;
+        }
 
         Player chooser = game.getPlayerById(forUserId);
-        if (chooser == null)
+        if (chooser == null) {
             return;
+        }
 
+        List<List<Card>> opts;
         try {
-            List<List<Card>> opts = game.getTable().getCaptureOptions(game.getLastCardPlayed());
-            if (!opts.isEmpty()) {
-                gameService.processPlayTurn(gameId, opts.get(random.nextInt(opts.size())));
-            }
-            // TODO
-        } catch (Exception ignored) {
+            opts = game.getTable().getCaptureOptions(game.getLastCardPlayed());
+        } catch (Exception e) {
+            log.error("Error obtaining capture options for game {}: {}", gameId, e.getMessage(), e);
+            opts = Collections.emptyList();
+        }
+
+        if (!opts.isEmpty()) {
+            List<Card> choice = opts.get(random.nextInt(opts.size()));
+            gameService.processPlayTurn(gameId, choice);
         }
 
         GameSession updated = gameService.getGameSessionById(gameId);
@@ -85,8 +92,7 @@ public class ChoiceTimerStrategy implements TimerStrategy {
         webSocketService.broadCastLobbyNotifications(gameId, moveDto);
         log.debug("Message broadcasted to lobby {}: moved cards on choice timeout", gameId);
 
-        // check if game is over
-        if(gameService.isGameOver(gameId)){
+        if (gameService.isGameOver(gameId)) {
             return;
         }
 
