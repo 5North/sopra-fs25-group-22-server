@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -30,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
- class LobbyServiceTest {
+class LobbyServiceTest {
 
     @Mock
     private LobbyRepository lobbyRepository;
@@ -123,7 +124,7 @@ import static org.mockito.Mockito.*;
     }
 
     @Test
-     void isFull_notEmpty_false() throws NotFoundException {
+    void isFull_notEmpty_false() throws NotFoundException {
         testLobby.addUser(1L);
         testLobby.addUser(2L);
 
@@ -134,7 +135,7 @@ import static org.mockito.Mockito.*;
     }
 
     @Test
-     void isFull_Empty_false() throws NotFoundException {
+    void isFull_Empty_false() throws NotFoundException {
         // when -> setup additional mocks for LobbyRepository
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
 
@@ -173,7 +174,7 @@ import static org.mockito.Mockito.*;
     }
 
     @Test
-     void joinLobby_NonExistentUser_noSuccess() throws NotFoundException {
+    void joinLobby_NonExistentUser_noSuccess() throws NotFoundException {
         testLobby.addUser(1L);
         testLobby.addUser(2L);
 
@@ -220,7 +221,7 @@ import static org.mockito.Mockito.*;
         Mockito.when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
         when(userService.checkIfUserExists(Mockito.anyLong())).thenReturn(testUser);
         assertEquals(4, testLobby.getUsers().size());
-        assertDoesNotThrow(()->lobbyService.joinLobby(lobbyId, 4L));
+        assertDoesNotThrow(() -> lobbyService.joinLobby(lobbyId, 4L));
 
     }
 
@@ -302,7 +303,7 @@ import static org.mockito.Mockito.*;
     }
 
     @Test
-     void generateId_success() {
+    void generateId_success() {
         Long id = lobbyService.generateId();
         assertNotNull(id);
     }
@@ -316,7 +317,7 @@ import static org.mockito.Mockito.*;
     }
 
     @Test
-     void checkIfLobbyExists_exists_doesNotThrow() throws NotFoundException {
+    void checkIfLobbyExists_exists_doesNotThrow() throws NotFoundException {
         when(lobbyRepository.findById(testLobby.getLobbyId())).thenReturn(Optional.of(testLobby));
 
         assertDoesNotThrow(() -> lobbyService.checkIfLobbyExists(testLobby.getLobbyId()));
@@ -324,7 +325,7 @@ import static org.mockito.Mockito.*;
     }
 
     @Test
-     void checkIfLobbyExists_notExists_throwsNotFoundException() {
+    void checkIfLobbyExists_notExists_throwsNotFoundException() {
         when(lobbyRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
@@ -445,53 +446,53 @@ import static org.mockito.Mockito.*;
                 () -> lobbyService.addRematcher(testLobby.getLobbyId(), testUser.getId()));
     }
 
-     @Test
-     void addRematcher_userAlreadyInRematch() throws NotFoundException {
+    @Test
+    void addRematcher_userAlreadyInRematch() throws NotFoundException {
         testLobby.addRematcher(testUser.getId());
         testLobby.addUser(testUser.getId());
         List<Long> expectedRematchers = new ArrayList<>();
         expectedRematchers.add(testUser.getId());
         assertEquals(expectedRematchers, testLobby.getRematchers());
 
-         // when
-         when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
-         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        // when
+        when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
 
-         lobbyService.addRematcher(testLobby.getLobbyId(), testUser.getId());
-         assertEquals(expectedRematchers, testLobby.getRematchers());
-     }
+        lobbyService.addRematcher(testLobby.getLobbyId(), testUser.getId());
+        assertEquals(expectedRematchers, testLobby.getRematchers());
+    }
 
-     @Test
-     void addRematcher_userNotInLobby() throws NotFoundException {
+    @Test
+    void addRematcher_userNotInLobby() throws NotFoundException {
 
-         // when
-         when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
-         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        // when
+        when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
 
-         // assert
-         assertThrows(NoSuchElementException.class,
-                 () -> lobbyService.addRematcher(testLobby.getLobbyId(), testUser.getId()));
-     }
+        // assert
+        assertThrows(NoSuchElementException.class,
+                () -> lobbyService.addRematcher(testLobby.getLobbyId(), testUser.getId()));
+    }
 
-     @Test
-     void isUserInLobby_true() throws NotFoundException {
+    @Test
+    void isUserInLobby_true() throws NotFoundException {
         testLobby.addUser(testUser.getId());
 
-         // when
-         when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
-         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        // when
+        when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
 
         assertEquals(Boolean.TRUE, lobbyService.isUserInLobby(testLobby.getLobbyId(), testUser.getId()));
-     }
+    }
 
-     @Test
-     void isUserInLobby_false() throws NotFoundException {
+    @Test
+    void isUserInLobby_false() throws NotFoundException {
         assertEquals(new ArrayList<>(), testLobby.getUsers());
-         // when
-         when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
-         when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
+        // when
+        when(lobbyRepository.findById(Mockito.any())).thenReturn(Optional.of(testLobby));
+        when(userService.checkIfUserExists(anyLong())).thenReturn(testUser);
         assertEquals(Boolean.FALSE, lobbyService.isUserInLobby(testLobby.getLobbyId(), testUser.getId()));
-     }
+    }
 
     @Test
     void getLobbyByParticipantId_validInputs_success() throws NotFoundException {
@@ -511,7 +512,7 @@ import static org.mockito.Mockito.*;
         // when
         when(userService.checkIfUserExists(anyLong())).thenThrow(new NotFoundException(("error")));
 
-        //assert
+        // assert
         assertThrows(NotFoundException.class,
                 () -> lobbyService.getLobbyIdByParticipantId(testUser.getId()));
     }
@@ -592,7 +593,8 @@ import static org.mockito.Mockito.*;
     @Test
     void testSetAndGetGameSession() {
         Lobby lobby = new Lobby();
-        GameSession session = new GameSession(123L, new ArrayList<>());
+        List<Long> dummyPlayers = Collections.singletonList(1L);
+        GameSession session = new GameSession(123L, dummyPlayers);
 
         lobby.setGameSession(session);
         assertNotNull(lobby.getGameSession());

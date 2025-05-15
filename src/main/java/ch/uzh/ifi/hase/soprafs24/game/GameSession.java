@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import ch.uzh.ifi.hase.soprafs24.game.result.Outcome;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
@@ -46,7 +47,7 @@ public class GameSession {
             players.add(new Player(playerId, hand));
         }
 
-        this.currentPlayerIndex = 0;
+        this.currentPlayerIndex = new Random().nextInt(players.size());
         this.lastGetterIndex = -1;
         this.turnCounter = 0;
     }
