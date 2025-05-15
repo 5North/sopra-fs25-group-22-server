@@ -23,7 +23,7 @@
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=5North_sopra-fs25-group-22-server&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=5North_sopra-fs25-group-22-server)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=5North_sopra-fs25-group-22-server&metric=coverage)](https://sonarcloud.io/summary/new_code?id=5North_sopra-fs25-group-22-server)
-![CI](https://img.shields.io/github/actions/workflow/status/5north/sopra-fs25-group-22-server/main.yml?label=CI)
+![CI/CD](https://img.shields.io/github/actions/workflow/status/5north/sopra-fs25-group-22-server/main.yml?label=CI%2FCD)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # 🧹Scopa for Beginners🧹
@@ -31,23 +31,23 @@
 This repository only contains the code of the backend. For the frontend implementation, check out this 
 [repo](https://github.com/5North/sopra-fs25-group-22-client).
 
-## Table of Contents
+## 📖 Table of Contents
 
-* [Introduction](#introduction)
-* [Illustrations](#illustrations)
-* [Technologies](#technologies)
-* [High-Level Components](#high-level-components)
+* [🗒️ Introduction](#introduction)
+* [🏞️ Illustrations](#illustrations)
+* [💡 Technologies](#technologies)
+* [⚙️ High-Level Components](#high-level-components)
     * [Rest](#rest-specs)
     * [Websocket](#websocket-specs)
     * [Database](#database)
     * [Game Logic](#game-logic)
     * [Ai Assistance](#ai-assistance)
-* [Launch & Deployment](#launch--deployment)
-* [Roadmap](#roadmap)
-* [Authors & Acknowledgments](#authors--acknowledgements)
-* [License](#license)
+* [🛠️ Launch & Deployment](#launch--deployment)
+* [🚀 Roadmap](#roadmap)
+* [🖋️ Authors & Acknowledgments](#authors--acknowledgements)
+* [📜 License](#license)
 
-## Introduction
+<h2 id="introduction">🗒️ Introduction</h2>
 
 🧹**Scopa for Beginners**🧹 aims to bring the beloved traditional italian cards game [Scopa](https://en.wikipedia.org/wiki/Scopa) 
 to an international audience by creating an accessible digital version of the 2 versus 2 variant. The goal of this project is to create a user and 
@@ -57,12 +57,11 @@ assistant can suggest some possible options to play if help requested by the pla
 allows to play this timeless classic with your friends without noticeable hiccups on a simple and no-fuss application,
 that propose itself as an open source alternative to the usually paywalled or ads-filled commercial versions. 
 
-
-## Illustrations
+<h2 id="illustrations">🏞️ Illustrations</h2>
 
 // TODO once application is final
 
-## Technologies
+<h2 id="technologies">💡 Technologies</h2>
 
 * [Spring Boot](https://spring.io/projects/spring-boot) - Open-source Java framework to create Spring-based applications.
 * [Gradle](https://gradle.org/) - a fast, dependable, and adaptable open-source build automation tool.
@@ -75,7 +74,7 @@ update of the game state among the participants during a match.
 * [SonarQube](https://www.sonarsource.com/products/sonarqube/) - open-source platform for continuous inspection of code quality.
 * [OpenAi API](https://openai.com/) - API used for the game helping assistant.
 
-## High-level components
+<h2 id="high-level-components">⚙️ High-level components</h2>
 
 ### REST Specs
 
@@ -516,8 +515,7 @@ The AI Assistance component provides on-demand tactical hints by turning the cur
  
 </details>
 
-
-## Launch & Deployment
+<h2 id="launch--deployment">🛠️ Launch & Deployment</h2>
 
 Getting started with Spring Boot
 
@@ -549,6 +547,8 @@ Note: You'll need to build the project first with Gradle, just click on the buil
 Then check the Spring Boot Dashboard extension if it already shows soprafs24 and hit the play button to start the
 server. If it doesn't show up, restart VS Code and check again.
 Building with Gradle
+
+### 🔨Build and Develop
 
 You can use the local Gradle Wrapper to build the application.
 
@@ -589,6 +589,10 @@ If you want to avoid running all tests with every change, use the following comm
 
 ```./gradlew build --continuous -xtest```
 
+</details>
+<h2 id="technologies">💡 Technologies</h2>
+### 🪲 How to debug
+
 To configure a debugger for SpringBoot's Tomcat servlet (i.e. the process you start with ./gradlew bootRun command), do
 the following:
 
@@ -599,39 +603,45 @@ the following:
     Set breakpoints in the application where you need it
     Step through the process one step at a time
 
-</details>
-
-Testing
+### ✅  How to test
 
 Have a look here: https://www.baeldung.com/spring-boot-testing
 
-### Release
+### ☁️💾 How to Deploy and Release
 
-New contributions to the main branch are continuously build, tested, analyzed and deployed to Google Engine using 
+New contributions pushed to the main branch are continuously integrated and continuously deployed to Google Engine using 
 GitHub actions.
 
 Code releases are done at the end of each sprint by manually creating a GitHub release with a new tag.
 
-## Roadmap
+<h2 id="roadmap">🚀 Roadmap</h2>
 
+- Implement a 1 versus 1 game mode
+- Add the option to choose teams in the 2 versus 2 game.
+- Add more messages for encouragements
+- Add language localization (IT, DE, FR ...)
+- Integrate Spring Security in the backend to improve users data security (e.g. passwords)
+
+<h2 id="authors--aknowledgments">🖋️ Authors & Acknowledgements</h2>
 ## Authors & Acknowledgements
 
-### Authors
+## Authors
 
 * [5North](https://github.com/5North)
-* Author 2
-* Author 3
-* Author 4
+* [Stefano Benzoni](https://github.com/sbenzo99)
+* [Seyda Gündüz](https://github.com/Seydi89)
+* [Shellmy Chakkaith](https://github.com/shellmychakkaith)
 
 ### Acknowledgements
 
-We would like to thank our tutor [] for his support and guidance during this course.
+We would like to thank our tutor []() for his support and guidance during this course, as well as all the teaching and 
+tutoring team of the Sopra course.
 
-## License
+<h2 id="license">📜 License</h2>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This work is licensed under the MIT License - see the LICENSE.md file for details.
 
 The project is based on the [sopra-fs25-template-server](https://github.com/HASEL-UZH/sopra-fs25-template-server)
-, which is licensed under the Apache 2.0 license.
+, which is licensed under the Apache 2.0 license - see the LICENSE.Apache-2.0 file for the original notice.
