@@ -332,7 +332,6 @@ class LobbyServiceTest {
                 () -> lobbyService.checkIfLobbyExists(999L));
     }
 
-    // TODO delete if useless
     @Test
     void deleteLobby_validInputs_success() throws NotFoundException {
         testLobby.setUser(testUser);
@@ -346,7 +345,6 @@ class LobbyServiceTest {
         assertNull(testUser.getLobby());
     }
 
-    // TODO delete if useless
     @Test
     void deleteLobby_noLobbyFound_throwsException() throws NotFoundException {
         testLobby.setUser(testUser);

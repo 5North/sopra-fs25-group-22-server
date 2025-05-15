@@ -23,8 +23,6 @@ public class TimerService {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
     private final TimerStrategy playStrategy;
     private final TimerStrategy choiceStrategy;
-    private final GameService gameService;
-    private final WebSocketService webSocketService;
 
     private final Map<Long, Map<TimerStrategy, ScheduledFuture<?>>> tasks = new ConcurrentHashMap<>();
     private final Map<Long, Map<TimerStrategy, Long>> expirations = new ConcurrentHashMap<>();
@@ -35,10 +33,8 @@ public class TimerService {
             @Qualifier("playTimerStrategy") TimerStrategy playStrategy,
             @Qualifier("choiceTimerStrategy") TimerStrategy choiceStrategy,
             WebSocketService webSocketService) {
-        this.gameService = gameService;
         this.playStrategy = playStrategy;
         this.choiceStrategy = choiceStrategy;
-        this.webSocketService = webSocketService;
     }
 
     public void schedule(Long gameId, TimerStrategy strategy, Long forUserId) {

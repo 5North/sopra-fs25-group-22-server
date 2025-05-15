@@ -255,7 +255,6 @@ class WebSocketEventListenerTest {
         assertEquals("Hello", dto.getMessage(), "Getter should return the value set");
     }
 
-    // TODO
     @Test
     void handleSubscribeEvent_missingId_throwsNPE() {
         SessionSubscribeEvent event = buildSubscribeEvent("/topic/lobby", 11L);
@@ -266,8 +265,6 @@ class WebSocketEventListenerTest {
         assertEquals("Could not find lobby ID", ex.getMessage());
     }
 
-
-    // TODO
     @Test
     void handleSubscribeEvent_largeId_usesLast4Digits() throws Exception {
         SessionSubscribeEvent event = buildSubscribeEvent("/topic/lobby/56789", 22L);

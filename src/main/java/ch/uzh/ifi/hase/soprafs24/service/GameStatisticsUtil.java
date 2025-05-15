@@ -17,6 +17,10 @@ public class GameStatisticsUtil {
     private static final Logger log = LoggerFactory.getLogger(GameStatisticsUtil.class);
     private static UserRepository userRepository;
 
+    private GameStatisticsUtil() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
     @Autowired
     public GameStatisticsUtil(UserRepository userRepository) {
         GameStatisticsUtil.userRepository = userRepository;

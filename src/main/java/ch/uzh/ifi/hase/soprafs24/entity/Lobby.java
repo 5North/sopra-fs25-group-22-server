@@ -19,7 +19,6 @@ public class Lobby implements Serializable {
     @OneToOne(mappedBy = "lobby")
     private User user;
 
-
     @ElementCollection(fetch = FetchType.EAGER)
     @Fetch(FetchMode.SUBSELECT)
     private List<Long> users = new ArrayList<>();
@@ -29,21 +28,35 @@ public class Lobby implements Serializable {
     private List<Long> rematchers = new ArrayList<>();
 
     @Transient
-    private GameSession gameSession;
+    private transient GameSession gameSession;
 
-    public void setLobbyId(Long lobbyId) {this.lobbyId = lobbyId;}
+    public void setLobbyId(Long lobbyId) {
+        this.lobbyId = lobbyId;
+    }
 
-    public Long getLobbyId() {return lobbyId;}
+    public Long getLobbyId() {
+        return lobbyId;
+    }
 
-    public void setUser(User user) {this.user = user;}
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    public User getUser() {return user;}
+    public User getUser() {
+        return user;
+    }
 
-    public List<Long> getUsers() {return users;}
+    public List<Long> getUsers() {
+        return users;
+    }
 
-    public void addUser(Long userId) {users.add(userId);}
+    public void addUser(Long userId) {
+        users.add(userId);
+    }
 
-    public boolean removeUser(Long userId) {return users.remove(userId);}
+    public boolean removeUser(Long userId) {
+        return users.remove(userId);
+    }
 
     public List<Long> getRematchers() {
         return rematchers;
@@ -61,7 +74,11 @@ public class Lobby implements Serializable {
         rematchers.clear();
     }
 
-    public GameSession getGameSession() {return gameSession;}
+    public GameSession getGameSession() {
+        return gameSession;
+    }
 
-    public void setGameSession(GameSession gameSession) {this.gameSession = gameSession;}
+    public void setGameSession(GameSession gameSession) {
+        this.gameSession = gameSession;
+    }
 }

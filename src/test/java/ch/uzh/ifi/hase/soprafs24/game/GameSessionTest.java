@@ -168,7 +168,8 @@ class GameSessionTest {
         assertTrue(collector.getTreasure().containsAll(remaining));
     }
 
-    private static class DummyUserRepository implements UserRepository {
+    public class DummyUserRepository implements UserRepository {
+
         @Override
         public Optional<User> findById(Long id) {
             User u = new User();
@@ -178,7 +179,7 @@ class GameSessionTest {
 
         @Override
         public List<User> findAll() {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
         }
 
         @Override
@@ -198,112 +199,108 @@ class GameSessionTest {
 
         @Override
         public void deleteById(Long id) {
+            throw new UnsupportedOperationException("Unimplemented method 'deleteById'");
         }
 
         @Override
         public void delete(User entity) {
+            throw new UnsupportedOperationException("Unimplemented method 'delete'");
         }
 
         @Override
         public void deleteAll() {
-        }
-
-        @Override
-        public List<User> findAllById(Iterable<Long> ids) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <S extends User> List<S> saveAll(Iterable<S> entities) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public <S extends User> S saveAndFlush(S entity) {
-            return entity;
-        }
-
-        @Override
-        public void deleteInBatch(Iterable<User> entities) {
-        }
-
-        @Override
-        public void deleteAllInBatch() {
-        }
-
-        @Override
-        public User getOne(Long id) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public List<User> findAll(Sort sort) {
-
-            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
-        }
-
-        @Override
-        public <S extends User> List<S> findAll(Example<S> example) {
-
-            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
-        }
-
-        @Override
-        public <S extends User> List<S> findAll(Example<S> example, Sort sort) {
-
-            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
-        }
-
-        @Override
-        public Page<User> findAll(Pageable pageable) {
-
-            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
-        }
-
-        @Override
-        public void deleteAll(Iterable<? extends User> entities) {
-
             throw new UnsupportedOperationException("Unimplemented method 'deleteAll'");
         }
 
         @Override
-        public <S extends User> Optional<S> findOne(Example<S> example) {
+        public List<User> findAllById(Iterable<Long> ids) {
+            throw new UnsupportedOperationException("Unimplemented method 'findAllById'");
+        }
 
-            throw new UnsupportedOperationException("Unimplemented method 'findOne'");
+        @Override
+        public <S extends User> List<S> saveAll(Iterable<S> entities) {
+            throw new UnsupportedOperationException("Unimplemented method 'saveAll'");
+        }
+
+        @Override
+        public void flush() {
+            throw new UnsupportedOperationException("Unimplemented method 'flush'");
+        }
+
+        @Override
+        public <S extends User> S saveAndFlush(S entity) {
+            throw new UnsupportedOperationException("Unimplemented method 'saveAndFlush'");
+        }
+
+        @Override
+        public void deleteInBatch(Iterable<User> entities) {
+            throw new UnsupportedOperationException("Unimplemented method 'deleteInBatch'");
+        }
+
+        @Override
+        public void deleteAllInBatch() {
+            throw new UnsupportedOperationException("Unimplemented method 'deleteAllInBatch'");
+        }
+
+        @Override
+        public User getOne(Long id) {
+            throw new UnsupportedOperationException("Unimplemented method 'getOne'");
+        }
+
+        @Override
+        public List<User> findAll(Sort sort) {
+            throw new UnsupportedOperationException("Unimplemented method 'findAll(Sort)'");
+        }
+
+        @Override
+        public <S extends User> List<S> findAll(Example<S> example) {
+            throw new UnsupportedOperationException("Unimplemented method 'findAll(Example)'");
+        }
+
+        @Override
+        public <S extends User> List<S> findAll(Example<S> example, Sort sort) {
+            throw new UnsupportedOperationException("Unimplemented method 'findAll(Example,Sort)'");
+        }
+
+        @Override
+        public Page<User> findAll(Pageable pageable) {
+            throw new UnsupportedOperationException("Unimplemented method 'findAll(Pageable)'");
+        }
+
+        @Override
+        public void deleteAll(Iterable<? extends User> entities) {
+            throw new UnsupportedOperationException("Unimplemented method 'deleteAll(Iterable)'");
+        }
+
+        @Override
+        public <S extends User> Optional<S> findOne(Example<S> example) {
+            throw new UnsupportedOperationException("Unimplemented method 'findOne(Example)'");
         }
 
         @Override
         public <S extends User> Page<S> findAll(Example<S> example, Pageable pageable) {
-
-            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+            throw new UnsupportedOperationException("Unimplemented method 'findAll(Example,Pageable)'");
         }
 
         @Override
         public <S extends User> long count(Example<S> example) {
-
-            throw new UnsupportedOperationException("Unimplemented method 'count'");
+            throw new UnsupportedOperationException("Unimplemented method 'count(Example)'");
         }
 
         @Override
         public <S extends User> boolean exists(Example<S> example) {
-
-            throw new UnsupportedOperationException("Unimplemented method 'exists'");
+            throw new UnsupportedOperationException("Unimplemented method 'exists(Example)'");
         }
 
         @Override
         public User findByUsername(String username) {
-
             throw new UnsupportedOperationException("Unimplemented method 'findByUsername'");
         }
 
         @Override
         public User findByToken(String token) {
-
             throw new UnsupportedOperationException("Unimplemented method 'findByToken'");
         }
     }
+
 }

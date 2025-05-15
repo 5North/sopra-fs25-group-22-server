@@ -95,7 +95,6 @@ public class LobbyService {
         }
     }
 
-    // TODO refactor
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {
         User user = userService.checkIfUserExists(userId);
         Lobby lobby = checkIfLobbyExists(lobbyId);
@@ -114,12 +113,10 @@ public class LobbyService {
             return;
         }
 
-
         if (!lobby.getUsers().contains(userId)) {
             throw new NoSuchElementException(
                     "User " + userId + " is not part of lobby " + lobbyId);
         }
-
 
         lobby.removeUser(userId);
         lobby.removeRematcher(userId);
@@ -143,7 +140,6 @@ public class LobbyService {
         }
         return lobby.get();
     }
-
 
     public void deleteLobby(Long lobbyId) throws NotFoundException {
         // 1) Verify existence
@@ -179,12 +175,12 @@ public class LobbyService {
     }
 
     public boolean rematchIsFull(Long lobbyId) throws NotFoundException {
-       Lobby lobby = checkIfLobbyExists(lobbyId);
-       if (lobby.getUsers().size() > 4) {
-           String msg = "The lobby is more than 4 users full";
-           log.error(msg);
-           throw new IllegalArgumentException(msg);
-       }
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        if (lobby.getUsers().size() > 4) {
+            String msg = "The lobby is more than 4 users full";
+            log.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
         return lobby.getRematchers().size() >= 4;
     }
 
@@ -196,7 +192,7 @@ public class LobbyService {
     public void addRematcher(Long lobbyId, Long userId) throws NotFoundException {
         Lobby lobby = checkIfLobbyExists(lobbyId);
         userService.checkIfUserExists(userId);
-        if (!isUserInLobby(lobbyId, userId)){
+        if (!isUserInLobby(lobbyId, userId)) {
             String msg = String.format("User with id %s is not part of lobby", userId);
             log.error(msg);
             throw new NoSuchElementException(msg);

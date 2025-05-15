@@ -14,6 +14,10 @@ import java.util.List;
 
 public class GameSessionMapper {
 
+    private GameSessionMapper() {
+        throw new UnsupportedOperationException("GameSessionMapper is a utility class and cannot be instantiated");
+    }
+
     public static CardDTO convertToCardDTO(Card card) {
         CardDTO dto = new CardDTO();
         dto.setSuit(card.getSuit().toString());
@@ -178,7 +182,6 @@ public class GameSessionMapper {
         return new TimeLeftDTO(gameId, remainingSeconds, message);
     }
 
-    /** Shortcut for phase “play turn”. */
     public static TimeLeftDTO toTimeToPlayDTO(Long gameId, long remainingSeconds) {
         return toTimeLeftDTO(gameId, remainingSeconds, "Time to Play");
     }
