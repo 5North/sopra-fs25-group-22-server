@@ -21,10 +21,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🧹Scopa for Beginners
+
 This repository only contains the code of the backend. For the frontend implementation, check out this 
 [repo](https://github.com/5North/sopra-fs25-group-22-client).
 
 ## 📖 Table of Contents
+
 * [🗒️ Introduction](#introduction)
 * [💡 Technologies](#technologies)
 * [⚙️ High-Level Components](#high-level-components)
@@ -39,6 +41,7 @@ This repository only contains the code of the backend. For the frontend implemen
 * [📜 License](#license)
 
 <h2 id="introduction">🗒️ Introduction</h2>
+
 🧹**Scopa for Beginners**🧹 aims to bring the beloved traditional italian cards game [Scopa](https://en.wikipedia.org/wiki/Scopa) 
 to an international audience by creating an accessible digital version of the 2 versus 2 variant. The goal of this project is to create a user and 
 beginner-friendly application client-server to allow both newcomers and hardcore fans of the game to conveniently play 
@@ -48,6 +51,7 @@ allows to play this timeless classic with your friends without noticeable hiccup
 that propose itself as an open source alternative to the usually paywalled or ads-filled commercial versions. 
 
 <h2 id="technologies">💡 Technologies</h2>
+
 * [Spring Boot](https://spring.io/projects/spring-boot) - Open-source Java framework to create Spring-based applications.
 * [Gradle](https://gradle.org/) - a fast, dependable, and adaptable open-source build automation tool.
 * [JPA](https://spring.io/projects/spring-data-jpa) - a persistence API used to map the application's *entities* to the database tables.
@@ -62,6 +66,7 @@ update of the game state among the participants during a match.
 <h2 id="high-level-components">⚙️ High-level components</h2>
 
 ### REST Specs
+
 <details>
 <summary>See table...</summary>
 
@@ -92,6 +97,7 @@ update of the game state among the participants during a match.
 </details>
 
 ### WebSocket Specs
+
 <details>
 <summary>See table...</summary>
 
@@ -531,6 +537,7 @@ server. If it doesn't show up, restart VS Code and check again.
 Building with Gradle
 
 ### 🔨 Build and Develop
+
 You can use the local Gradle Wrapper to build the application.
 
     macOS: ./gradlew
@@ -573,6 +580,7 @@ If you want to avoid running all tests with every change, use the following comm
 </details>
 
 ### 🪲 How to debug
+
 To configure a debugger for SpringBoot's Tomcat servlet (i.e. the process you start with ./gradlew bootRun command), do
 the following:
 
@@ -584,9 +592,11 @@ the following:
     Step through the process one step at a time
 
 ### ✅  How to test
+
 Have a look here: https://www.baeldung.com/spring-boot-testing
 
 ### 💾 How to Deploy and Release
+
 New contributions pushed to the main branch are continuously integrated and continuously deployed to Google Engine using 
 GitHub actions.
 
@@ -603,16 +613,19 @@ Code releases are done at the end of each sprint by manually creating a GitHub r
 <h2 id="authors--aknowledgments">🖋️ Authors & Acknowledgements</h2>
 
 ### Authors
+
 * [5North](https://github.com/5North)
 * [Stefano Benzoni](https://github.com/sbenzo99)
 * [Seyda Gündüz](https://github.com/Seydi89)
 * [Shellmy Chakkaith](https://github.com/shellmychakkaith)
 
 ### Acknowledgements
+
 We would like to thank our tutor []() for his support and guidance during this course, as well as all the teaching and 
 tutoring team of the Sopra course.
 
 <h2 id="license">📜 License</h2>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This work is licensed under the MIT License - see the LICENSE.md file for details.
