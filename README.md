@@ -71,11 +71,12 @@ update of the game state among the participants during a match.
 The `REST` component encompasses all the classes that are meant to receive and respond to the requests to our RESTful
 api (the "controllers", we could say). This component provides the different mappings for our api endpoints. Requests are processed using the `Service`
 component to get, create or modify persisted data. Services are used to authorize api's request as well.
+
 You can find the relevant files there: [UserController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/UserController.java),
 [LobbyController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/LobbyController.java)
 
 <details>
-<summary>See specifications table...</summary>
+<summary>See the specification table...</summary>
 
 | Supported | Mapping                      | Method   | Parameter(s)                                                      | Parameter Type          | Status Code | Response                                            | Response Type | Description                                                                                                  |
 |-----------|------------------------------|----------|-------------------------------------------------------------------|-------------------------|-------------|-----------------------------------------------------|---------------|--------------------------------------------------------------------------------------------------------------|
@@ -140,7 +141,9 @@ You can find the relevant files there: [UserController.java](https://github.com/
 
 The websocket component includes in its responsibilities both establishing and authenticating the websocket connection 
 with the session token, and receiving and sending STOMP messages, as well as listening to `SUBSCRIBE` and `UNSUBSCRIBE`
-events. In the [WebSocketAuth.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketAuth.java),
+events. 
+
+In the [WebSocketAuth.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketAuth.java),
 the `beforeHandshake` method is overridden to manage our simple token authentication, and along with 
 [CustomHandshakeHandler.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/CustomHandshakeHandler.java) 
 and [UserPrincipal.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/UserPrincipal.java)
@@ -149,13 +152,14 @@ sending STOMP messages to the controller. The controller can be found in
 [MessageController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/MessageController.java)
 and is responsible to receive messages to the `/app` endpoints, process the actions required via the `Service` component and eventually respond with another STOMP
 message, either broadcast to a lobby or sent to a specific user.
+
 Finally, this component also listen to STOMP subscription or unsubscriptions frames to the `/topic/lobby/{lobbyId} destination. 
 This allows the call of the necessary service to add or remove a user from a lobby based on those events, 
 as well as to notify the other participants when those changes happen. You can find the relevant file there: 
 [WebSocketEventListener.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketEventListener.java)
 
 <details>
-<summary>See specifications table...</summary>
+<summary>See the specification table...</summary>
 
 | Mapping                    | Method          | Parameter(s)                                                                                         | Parameter Type | Description                                                                                         |
 |----------------------------|-----------------|------------------------------------------------------------------------------------------------------|----------------|-----------------------------------------------------------------------------------------------------|
@@ -451,6 +455,7 @@ creation. It can "own" a lobby, and it also contains other information such as t
 and the lobby that the user has currently joined. The user is identified with a unique id, generated incrementally, and
 a session-only token is generated to allow the client to authenticate itself during a session. An attribute `status` 
 indicates whether the user is online or offline, based on login or logout requests.
+
 You can find the relevant file there: [User.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/User.java)
 
 #### Lobby
@@ -460,19 +465,23 @@ on how many hands the players wish to do. A random 4 digits id is generated for 
 lobby is assigned to it. During its lifetime, the lobby persists its participants and the people desiring a rematch, as well as a reference to the 
 `GameSession` object. This last object only lives for the duration of a game. When the host leaves it at any stage, the
 lobby gets deleted. It also gets deleted when a user leaves during the game, or after its end instead of opting for a rematch.
+
 You can find the relevant file there: [Lobby.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/Lobby.java)
 
-#### Service
+### Service
 
 Services are generally meant to perform actions on other objects in behalf of other components, especially for `REST`
 and `Websocket`. They perform actions on persisted entities, such as creating, authenticating and authorizing users in the case of `Userservice` or 
 creating lobbies and adding or removing participants from them in the case of `LobbyService`; but they can also interact with non-persisted objects
-such as `GameSession`, as in the case of `GameService`. As mentioned `UserService`and `LobbyService` mainly mediate between `User`/`Lobby`
+such as `GameSession`, as in the case of `GameService`. 
+
+As mentioned, `UserService`and `LobbyService` mainly mediate between `User`/`Lobby`
 and `REST`/`Websockets`, while `GameService` starts, play turns, manage game over and non-deterministic plays acting on `GameSession`
 after the instructions of the stomp messages in the `Websocket` component. `WebsocketService` slightly differ in its function compared to the other:
 it provides the conversion of custom DTOs (with the same method signature, using method overloading) used to send notifications 
 and two methods to send stomp messages to specific users or broadcast them to the right lobby. This service is not only used by `Websocket`, but also
 by the `Game Logic`component as well as internally in `Service`.
+
 You can find the relevant files there: [UserService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/UserService.java), 
 [LobbyService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/LobbyService.java), 
 [GameService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/GameService.java), 
@@ -596,7 +605,11 @@ The AI Assistance component provides on-demand tactical hints by turning the cur
 </details>
 
 <h2 id="launch--deployment">🛠️ Launch & Deployment</h2>
-Getting started with Spring Boot
+
+### 🔨 How to Build and Develop
+
+
+#### 🌱 Getting started with Spring Boot
 
     Documentation: https://docs.spring.io/spring-boot/docs/current/reference/html/index.html
     Guides: http://spring.io/guides
@@ -626,8 +639,6 @@ Note: You'll need to build the project first with Gradle, just click on the buil
 Then check the Spring Boot Dashboard extension if it already shows soprafs24 and hit the play button to start the
 server. If it doesn't show up, restart VS Code and check again.
 Building with Gradle
-
-### 🔨 Build and Develop
 
 #### ❄️ Nix
 
