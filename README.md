@@ -30,14 +30,15 @@ This repository only contains the code of the backend. For the frontend implemen
 * [🗒️ Introduction](#introduction)
 * [💡 Technologies](#technologies)
 * [⚙️ High-Level Components](#high-level-components)
-    * [Rest](#rest-specs)
-    * [Websocket](#websocket-specs)
+    * [Rest](#rest)
+    * [Websocket](#websocket)
     * [Database](#database)
+    * [Service](#service)
     * [Game Logic](#game-logic)
     * [Ai Assistance](#ai-assistance)
 * [🛠️ Launch & Deployment](#launch--deployment)
 * [🚀 Roadmap](#roadmap)
-* [🖋️ Authors & Acknowledgments](#authors--acknowledgements)
+* [🖋️ Authors & Acknowledgments](#authors--acknowledgments)
 * [📜 License](#license)
 
 <h2 id="introduction">🗒️ Introduction</h2>
@@ -65,62 +66,117 @@ update of the game state among the participants during a match.
 
 <h2 id="high-level-components">⚙️ High-level components</h2>
 
-### REST Specs
+### REST
+
+The `REST` component encompasses all the classes that are meant to receive and respond to the requests to our RESTful
+api (the "controllers", we could say). This component provides the different mappings for our api endpoints. Requests are processed using the `Service`
+component to get, create or modify persisted data. Services are used to authorize api's request as well.
+You can find the relevant files there: [UserController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/UserController.java),
+[LobbyController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/LobbyController.java)
 
 <details>
-<summary>See table...</summary>
+<summary>See specifications table...</summary>
 
-| Mapping                      | Method   | Parameter(s)                                                      | Parameter Type          | Status Code | Response                                            | Response Type | Description                                                                                                  |
-|------------------------------|----------|-------------------------------------------------------------------|-------------------------|-------------|-----------------------------------------------------|---------------|--------------------------------------------------------------------------------------------------------------|
-| **/login**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 200         | Token &lt;string&gt;                                | Header        | Log in user and return an authentication token                                                               |
-| **/login**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 403         | Error: reason &lt;string&gt;                        | Body          | Login failed due to invalid credentials                                                                      |
-| **/logout**                  | **POST** | Token &lt;string&gt;                                              | Header                  | 204         | --                                                  | Header        | Log out the user (invalidate token)                                                                          |
-| **/logout**                  | **POST** | Token &lt;string&gt;                                              | Header                  | 401         | Error: reason &lt;string&gt;                        | Body          | Logout failed due to unauthenticated request                                                                 |
-| **/users**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 201         | Token &lt;string&gt;; User(*)                       | Header; Body  | Create new user and auto-login                                                                               |
-| **/users**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 409         | Error: reason &lt;string&gt;                        | Body          | User creation failed because username already exists                                                         |
-| **/users**                   | **GET**  | Token &lt;string&gt;                                              | Header                  | 200         | list&lt;User(*)&gt;                                 | Body          | Retrieve all users (for scoreboard)                                                                          |
-| **/users**                   | **GET**  | Token &lt;string&gt;                                              | Header                  | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for users list                                                                       |
-| **/users/{userId}**          | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path            | 200         | User(*)                                             | Body          | Retrieve specific user profile                                                                               |
-| **/users/{userId}**          | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path            | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for user profile                                                                     |
-| **/users/{userId}**          | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path            | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                                                                   |
-| **/users/{userId}**          | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path      | 204         | --                                                  | --            | Update user profile                                                                                          |
-| **/users/{userId}**          | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path      | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                                                                   |
-| **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 201         | Lobby(*) (includes lobbyId, PIN, roomName, players) | Body          | Create new lobby; persist via LobbyRepository ensuring unique PIN                                            |
-| **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 401         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user is not authenticated                                                      |
-| **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 409         | Error: reason and id of lobby joined &lt;string&gt; | Body          | Lobby creation failed because user already joined a lobby                                                    |
-| **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 409         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user already has a lobby                                                       |
-| **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 200         | Lobby(*)                                            | Body          | Retrieve the lobby associated with the user                                                                  |
-| **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 404         | Lobby(*)                                            | Body          | The user doesn't have a lobby associated with it                                                             |
-| **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 401         | Lobby(*)                                            | Body          | Unauthenticated request                                                                                      |
-| **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 403         | Lobby(*)                                            | Body          | The user is neither the owner or a participant of the lobby and is not allowed to access it's representation |
+| Supported | Mapping                      | Method   | Parameter(s)                                                      | Parameter Type          | Status Code | Response                                            | Response Type | Description                                                                                                  |
+|-----------|------------------------------|----------|-------------------------------------------------------------------|-------------------------|-------------|-----------------------------------------------------|---------------|--------------------------------------------------------------------------------------------------------------|
+| ✅         | **/login**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 200         | Token &lt;string&gt;                                | Header        | Log in user and return an authentication token                                                               |
+| ✅         | **/login**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 403         | Error: reason &lt;string&gt;                        | Body          | Login failed due to invalid credentials                                                                      |
+| ✅         | **/logout**                  | **POST** | Token &lt;string&gt;                                              | Header                  | 204         | --                                                  | Header        | Log out the user (invalidate token)                                                                          |
+| ✅         | **/logout**                  | **POST** | Token &lt;string&gt;                                              | Header                  | 401         | Error: reason &lt;string&gt;                        | Body          | Logout failed due to unauthenticated request                                                                 |
+| ✅         | **/users**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 201         | Token &lt;string&gt;; User(*)                       | Header; Body  | Create new user and auto-login                                                                               |
+| ✅         | **/users**                   | **POST** | username &lt;string&gt;, password &lt;string&gt;                  | Body                    | 409         | Error: reason &lt;string&gt;                        | Body          | User creation failed because username already exists                                                         |
+| ✅         | **/users**                   | **GET**  | Token &lt;string&gt;                                              | Header                  | 200         | list&lt;User(**)&gt;                                | Body          | Retrieve all users (for scoreboard)                                                                          |
+| ✅         | **/users**                   | **GET**  | Token &lt;string&gt;                                              | Header                  | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for users list                                                                       |
+| ✅         | **/users/{userId}**          | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path            | 200         | User(**)                                            | Body          | Retrieve specific user profile                                                                               |
+| ✅         | **/users/{userId}**          | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path            | 401         | Error: reason &lt;string&gt;                        | Body          | Unauthenticated request for user profile                                                                     |
+| ✅         | **/users/{userId}**          | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Path            | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                                                                   |
+| ❌         | **/users/{userId}**          | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path      | 204         | --                                                  | --            | Update user profile                                                                                          |
+| ❌         | **/users/{userId}**          | **PUT**  | Token &lt;string&gt;; User(*) (profile data); userId &lt;long&gt; | Header; Body; Path      | 404         | Error: reason &lt;string&gt;                        | Body          | User with userId not found                                                                                   |
+| ✅         | **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 201         | Lobby(*)                                            | Body          | Create new lobby; persist via LobbyRepository ensuring unique PIN                                            |
+| ✅         | **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 401         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user is not authenticated                                                      |
+| ✅         | **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 409         | Error: reason and id of lobby joined &lt;string&gt; | Body          | Lobby creation failed because user already joined a lobby                                                    |
+| ✅         | **/lobbies**                 | **POST** | Token &lt;string&gt;                                              | Header; Body            | 409         | Error: reason &lt;string&gt;                        | Body          | Lobby creation failed because user already has a lobby                                                       |
+| ✅         | **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 200         | Lobby(**)                                           | Body          | Retrieve the lobby associated with the user                                                                  |
+| ✅         | **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 404         | Lobby(**)                                           | Body          | The user doesn't have a lobby associated with it                                                             |
+| ✅         | **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 401         | Lobby(**)                                           | Body          | Unauthenticated request                                                                                      |
+| ✅         | **/lobbies?userId={userId}** | **GET**  | Token &lt;string&gt;; userId &lt;long&gt;                         | Header; Query Parameter | 403         | Lobby(**)                                           | Body          | The user is neither the owner or a participant of the lobby and is not allowed to access it's representation |
+
+#### User *
+
+    {
+    "username": username <string>
+    "password": password <string>
+    }
+
+#### User **
+
+    {
+     "id": id <Long>
+     "username": username <string>
+     "status": status <userStatus>
+     "winCount": wins <int>
+     "lossCount": losses <int>
+     "tieCount": ties <int>
+     "lobbyJoined": id <Long>
+    }
+
+
+#### Lobby *
+
+    {"lobbyId": id <Long>}
+
+#### Lobby **
+
+    {
+    "lobbyId": lobbyId <Long>,
+    "hostId": hostId <Long>,
+    "usersIds": List<Long>,
+    "rematchersIds": List<Long>
+    }
 
 </details>
 
-### WebSocket Specs
+### WebSocket
+
+The websocket component includes in its responsibilities both establishing and authenticating the websocket connection 
+with the session token, and receiving and sending STOMP messages, as well as listening to `SUBSCRIBE` and `UNSUBSCRIBE`
+events. In the [WebSocketAuth.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketAuth.java),
+the `beforeHandshake` method is overridden to manage our simple token authentication, and along with 
+[CustomHandshakeHandler.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/CustomHandshakeHandler.java) 
+and [UserPrincipal.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/UserPrincipal.java)
+to allow setting the user id as the attribute of the connection principal. This allows us to later retrieve the identity of the user
+sending STOMP messages to the controller. The controller can be found in 
+[MessageController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/MessageController.java)
+and is responsible to receive messages to the `/app` endpoints, process the actions required via the `Service` component and eventually respond with another STOMP
+message, either broadcast to a lobby or sent to a specific user.
+Finally, this component also listen to STOMP subscription or unsubscriptions frames to the `/topic/lobby/{lobbyId} destination. 
+This allows the call of the necessary service to add or remove a user from a lobby based on those events, 
+as well as to notify the other participants when those changes happen. You can find the relevant file there: 
+[WebSocketEventListener.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketEventListener.java)
 
 <details>
-<summary>See table...</summary>
+<summary>See specifications table...</summary>
 
-| Supported | Mapping                    | Method          | Parameter(s)                                                                                         | Parameter Type | Description                                                                                         |
-|-----------|----------------------------|-----------------|------------------------------------------------------------------------------------------------------|----------------|-----------------------------------------------------------------------------------------------------|
-| ✅         | **/lobby**                 | **CONNECT**     | Token &lt;string&gt;                                                                                 | Query          | Upgrade connection to WebSocket for lobby operations                                                |
-| ✅         | **/lobby**                 | **DISCONNECT**  | --                                                                                                   | --             | Terminates the WebSocket connection                                                                 |
-| ✅         | **/topic/lobby/{lobbyId}** | **SUBSCRIBE**   | lobbyId &lt;string&gt;                                                                               | Path           | Subscribe to real-time lobby updates (player joins/leaves, notifications)                           |
-| ✅         | **/topic/lobby/{lobbyId}** | **UNSUBSCRIBE** | lobbyId &lt;string&gt;                                                                               | Path           | Unsubscribe from lobby updates                                                                      |
-| ✅         | **/startGame/{lobbyId}**   | **SEND**        | lobbyId &lt;string&gt;                                                                               | Path           | Start new game session                                                                              |
-| ✅         | **/updateGame/{gameId}**   | **SEND**        | lobbyId &lt;string&gt;                                                                               | Path           | Request new game representation                                                                     |
-| ✅         | **/app/playcard**          | **SEND**        | gameId &lt;string&gt;, card &lt;Card&gt;                                                             | Body (JSON)    | Send played card event to server for in-game processing                                             |
-| ✅         | **/app/chooseCapture**     | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, chosenOption &lt;List{Card}&gt;, playedCard &lt;Card&gt; | Body (JSON)    | Send chosen capture option when multiple options exist                                              |
-| ✅         | **/app/ai**                | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, requestFlag &lt;string&gt;                               | Body (JSON)    | Send request for AI assistance (hint) to the server                                                 |
-| ✅         | **/app/rematch**           | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, confirmRematch &lt;boolean&gt;                           | Body (JSON)    | Send rematch confirmation from the player to the server                                             |
-| ✅         | **/app/quitGame**          | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;                                                           | Body (JSON)    | Send quit game request to the server                                                                |
-| ✅         | **/user/queue/reply**      | **SUBSCRIBE**   | --                                                                                                   | --             | Subscribe to private channel for receiving personal notifications (capture options, AI hints, etc.) |
-| ✅         | **/user/queue/reply**      | **UNSUBSCRIBE** | --                                                                                                   | --             | Unsubscribe from the private channel                                                                |
+| Mapping                    | Method          | Parameter(s)                                                                                         | Parameter Type | Description                                                                                         |
+|----------------------------|-----------------|------------------------------------------------------------------------------------------------------|----------------|-----------------------------------------------------------------------------------------------------|
+| **/lobby**                 | **CONNECT**     | Token &lt;string&gt;                                                                                 | Query          | Upgrade connection to WebSocket for lobby and game operations                                       |
+| **/lobby**                 | **DISCONNECT**  | --                                                                                                   | --             | Terminates the WebSocket connection                                                                 |
+| **/topic/lobby/{lobbyId}** | **SUBSCRIBE**   | lobbyId &lt;string&gt;                                                                               | Path           | Subscribe to real-time lobby updates (player joins/leaves, notifications)                           |
+| **/topic/lobby/{lobbyId}** | **UNSUBSCRIBE** | lobbyId &lt;string&gt;                                                                               | Path           | Unsubscribe from lobby updates                                                                      |
+| **/startGame/{lobbyId}**   | **SEND**        | lobbyId &lt;string&gt;                                                                               | Path           | Start new game session                                                                              |
+| **/updateGame/{gameId}**   | **SEND**        | lobbyId &lt;string&gt;                                                                               | Path           | Request new game representation                                                                     |
+| **/app/playcard**          | **SEND**        | gameId &lt;string&gt;, card &lt;Card&gt;                                                             | Body (JSON)    | Send played card event to server for in-game processing                                             |
+| **/app/chooseCapture**     | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, chosenOption &lt;List{Card}&gt;, playedCard &lt;Card&gt; | Body (JSON)    | Send chosen capture option when multiple options exist                                              |
+| **/app/ai**                | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, requestFlag &lt;string&gt;                               | Body (JSON)    | Send request for AI assistance (hint) to the server                                                 |
+| **/app/rematch**           | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;, confirmRematch &lt;boolean&gt;                           | Body (JSON)    | Send rematch confirmation from the player to the server                                             |
+| **/app/quitGame**          | **SEND**        | gameId &lt;string&gt;, userId &lt;long&gt;                                                           | Body (JSON)    | Send quit game request to the server                                                                |
+| **/user/queue/reply**      | **SUBSCRIBE**   | --                                                                                                   | --             | Subscribe to private channel for receiving personal notifications (capture options, AI hints, etc.) |
+| **/user/queue/reply**      | **UNSUBSCRIBE** | --                                                                                                   | --             | Unsubscribe from the private channel                                                                |
 
 </details>
 
 <details>
-<summary>STOMP notifications...</summary>
+<summary>STOMP notifications docs...</summary>
 
 #### Lobby join/leave
 
@@ -137,7 +193,8 @@ When a new user join or leave a lobby the following notification will be broadca
          "lobby": {
                    "lobbyId": id <Long>,
                    "hostId": id <Long>,
-                   "usersIds": ids List<Long>
+                   "usersIds": id List<Long>
+                   "rematchersIds": id List<Long>
                    }
         }
 
@@ -159,8 +216,8 @@ action.
 
 ###### What if the user is already in a lobby?
 
-If the user is already in a lobby and they are trying to join again through the client ui, they will not be able to join a new lobby and the following message will be sent, 
-so that the client can redirect the user to the right lobby.
+If the user is already in a lobby, and they are trying to join again through the client ui, they will not be able to join 
+a new lobby and the following message will be sent, so that the client can redirect the user to the right lobby.
 
         {
          "success": "false",
@@ -360,10 +417,10 @@ When a user clicks on the rematch button the following messages are sent.
 The following message is broadcast to all the participants of this lobby.
 
         {
-        "lobbyId": lobbyId <Long>,
-        "hostId": hostId <Long>,
-        "usersIds": List<Long>,
-        "rematchersIds": List<Long>
+        "lobbyId": id <Long>,
+        "hostId": id <Long>,
+        "usersIds": id List<Long>,
+        "rematchersIds": id List<Long>
         }
 
 `rematchersIds` contains all the user that have selected a rematch.
@@ -383,9 +440,43 @@ The following message is sent to the client who requested a rematch.
 
 ### Database
 
+The database is used to persist `User` and `Lobby` entities in-memory, using the H2 db. The two entities have a 
+one-to-one relationship: the user who creates a lobby (also defined as the host) "own" the lobby he created, while the
+lobby created is owned by the user.
+
 #### User
 
+The `User` entity represent the user registering and then using the server. Username and password are saved upon account
+creation. It can "own" a lobby, and it also contains other information such as the total number of win, losses and ties, 
+and the lobby that the user has currently joined. The user is identified with a unique id, generated incrementally, and
+a session-only token is generated to allow the client to authenticate itself during a session. An attribute `status` 
+indicates whether the user is online or offline, based on login or logout requests.
+You can find the relevant file there: [User.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/User.java)
+
 #### Lobby
+
+The `Lobby` entity represent the lobby created by the user who host the game. It can live for one or multiple games, depending
+on how many hands the players wish to do. A random 4 digits id is generated for each new lobby and a user who owns the 
+lobby is assigned to it. During its lifetime, the lobby persists its participants and the people desiring a rematch, as well as a reference to the 
+`GameSession` object. This last object only lives for the duration of a game. When the host leaves it at any stage, the
+lobby gets deleted. It also gets deleted when a user leaves during the game, or after its end instead of opting for a rematch.
+You can find the relevant file there: [Lobby.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/Lobby.java)
+
+#### Service
+
+Services are generally meant to perform actions on other objects in behalf of other components, especially for `REST`
+and `Websocket`. They perform actions on persisted entities, such as creating, authenticating and authorizing users in the case of `Userservice` or 
+creating lobbies and adding or removing participants from them in the case of `LobbyService`; but they can also interact with non-persisted objects
+such as `GameSession`, as in the case of `GameService`. As mentioned `UserService`and `LobbyService` mainly mediate between `User`/`Lobby`
+and `REST`/`Websockets`, while `GameService` starts, play turns, manage game over and non-deterministic plays acting on `GameSession`
+after the instructions of the stomp messages in the `Websocket` component. `WebsocketService` slightly differ in its function compared to the other:
+it provides the conversion of custom DTOs (with the same method signature, using method overloading) used to send notifications 
+and two methods to send stomp messages to specific users or broadcast them to the right lobby. This service is not only used by `Websocket`, but also
+by the `Game Logic`component as well as internally in `Service`.
+You can find the relevant files there: [UserService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/UserService.java), 
+[LobbyService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/LobbyService.java), 
+[GameService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/GameService.java), 
+[WebSocketService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/WebSocketService.java)
 
 ### Game logic
 
@@ -538,6 +629,74 @@ Building with Gradle
 
 ### 🔨 Build and Develop
 
+#### ❄️ Nix
+
+This project uses Determinate Nix for managing development software.
+
+##### Install Nix
+
+To install Nix you can run the script `setup.sh` found in the [frontend repository](https://github.com/5North/sopra-fs25-group-22-client)
+
+<details>
+<summary>Install additional software...</summary>
+You only need to adjust the section `nativeBuildInputs = with pkgs;` in the
+[nix flake](./flake.nix) with the package you would like to install. For
+example, if you want to use docker (the [Dockerfile](./Dockerfile) and
+[.dockerignore](./.dockerignore) are already included in this repo) you can
+simply add:
+
+```nix
+nativeBuildInputs = with pkgs;
+  [
+    nodejs
+    git
+    deno
+    watchman
+    docker ### <- added docker here
+  ]
+  ++ lib.optionals stdenv.isDarwin [
+    xcodes
+  ]
+  ++ lib.optionals (system == "aarch64-linux") [
+    qemu
+  ];
+```
+
+and add the package path to the `shellHook''` section
+
+```nix
+        devShells.default = pkgs.mkShell {
+          inherit nativeBuildInputs;
+
+          shellHook = ''
+            export HOST_PROJECT_PATH="$(pwd)"
+            export COMPOSE_PROJECT_NAME=sopra-fs25-template-client
+            
+            export PATH="${pkgs.nodejs}/bin:$PATH"
+            export PATH="${pkgs.git}/bin:$PATH"
+            export PATH="${pkgs.deno}/bin:$PATH"
+            export PATH="${pkgs.watchman}/bin:$PATH"
+            export PATH="${pkgs.docker}/bin:$PATH" ### <- added docker path here
+            
+            ### rest of code ###
+        };
+```
+
+and finally do `direnv reload` in your terminal inside the repository folder. If
+you need a specific version of a package, you can override it in the `overlays`
+section
+
+```nix
+overlays = [
+  (self: super: {
+    nodejs = super.nodejs_23; ### <- changed to nodejs 23
+  })
+];
+```
+</details>
+
+#### 🐘 Gradle
+
 You can use the local Gradle Wrapper to build the application.
 
     macOS: ./gradlew
@@ -606,11 +765,11 @@ Code releases are done at the end of each sprint by manually creating a GitHub r
 
 - Implement a 1 versus 1 game mode
 - Add the option to choose teams in the 2 versus 2 game.
-- Add more messages for encouragements
+- Add more encouragement messages
 - Add language localization (IT, DE, FR ...)
 - Integrate Spring Security in the backend to improve users data security (e.g. passwords)
 
-<h2 id="authors--aknowledgments">🖋️ Authors & Acknowledgements</h2>
+<h2 id="authors--acknowledgments">🖋️ Authors & Acknowledgements</h2>
 
 ### Authors
 
