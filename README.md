@@ -34,7 +34,6 @@ This repository only contains the code of the backend. For the frontend implemen
 ## 📖 Table of Contents
 
 * [🗒️ Introduction](#introduction)
-* [🏞️ Illustrations](#illustrations)
 * [💡 Technologies](#technologies)
 * [⚙️ High-Level Components](#high-level-components)
     * [Rest](#rest-specs)
@@ -56,10 +55,6 @@ Scopa in their browser. To make it easier for beginners to learn the rules and a
 assistant can suggest some possible options to play if help requested by the player. Real time communication via Websockets
 allows to play this timeless classic with your friends without noticeable hiccups on a simple and no-fuss application,
 that propose itself as an open source alternative to the usually paywalled or ads-filled commercial versions. 
-
-<h2 id="illustrations">🏞️ Illustrations</h2>
-
-// TODO once application is final
 
 <h2 id="technologies">💡 Technologies</h2>
 
@@ -548,7 +543,7 @@ Then check the Spring Boot Dashboard extension if it already shows soprafs24 and
 server. If it doesn't show up, restart VS Code and check again.
 Building with Gradle
 
-### 🔨Build and Develop
+### 🔨 Build and Develop
 
 You can use the local Gradle Wrapper to build the application.
 
@@ -590,7 +585,7 @@ If you want to avoid running all tests with every change, use the following comm
 ```./gradlew build --continuous -xtest```
 
 </details>
-<h2 id="technologies">💡 Technologies</h2>
+
 ### 🪲 How to debug
 
 To configure a debugger for SpringBoot's Tomcat servlet (i.e. the process you start with ./gradlew bootRun command), do
@@ -607,7 +602,7 @@ the following:
 
 Have a look here: https://www.baeldung.com/spring-boot-testing
 
-### ☁️💾 How to Deploy and Release
+### 💾 How to Deploy and Release
 
 New contributions pushed to the main branch are continuously integrated and continuously deployed to Google Engine using 
 GitHub actions.
