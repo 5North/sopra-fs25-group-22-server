@@ -11,7 +11,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-public class LobbyRepositoryIntegrationTest {
+ class LobbyRepositoryIntegrationTest {
 
     @Autowired
     private TestEntityManager entityManager;
@@ -23,7 +23,7 @@ public class LobbyRepositoryIntegrationTest {
 
     // 1
     @Test
-    public void findById_success() {
+     void findById_success() {
         // given
         Lobby lobby = new Lobby();
         lobby.setLobbyId(1000L);
@@ -39,7 +39,7 @@ public class LobbyRepositoryIntegrationTest {
     }
 
     @Test
-    public void findById_returnsNull() {
+     void findById_returnsNull() {
         // given
         Lobby lobby = new Lobby();
         lobby.setLobbyId(1000L);

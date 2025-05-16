@@ -62,6 +62,9 @@ public class LobbyService {
         newLobby.setUser(user);
         userRepository.save(user);
         userRepository.flush();
+
+        log.info("Created lobby: {}", newLobby.getLobbyId());
+
         return newLobby;
     }
 
@@ -69,27 +72,27 @@ public class LobbyService {
         Lobby lobby = checkIfLobbyExists(lobbyId);
         User user = userService.checkIfUserExists(userId);
 
-        //TODO refactor this and next if block
         // check if user is already in another lobby
         if (user.getLobbyJoined() != null && !Objects.equals(user.getLobbyJoined(), lobbyId)) {
             String msg = "User with id " + user.getId() + " already joined lobby " + user.getLobbyJoined();
             throw new IllegalStateException(msg);
         }
 
-        // check if lobby is already full
-        if (lobbyIsFull(lobbyId)) {
-            String msg = "The lobby is already full";
-            throw new IllegalStateException(msg);
-        }
-
         // check if user is already in the lobby
         if (!lobby.getUsers().contains(userId)) {
-            lobby.addUsers(userId);
+            log.info("user {} is already in lobby {}", userId, lobbyId);
+            // check if lobby is already full
+            if (lobbyIsFull(lobbyId)) {
+                String msg = "The lobby is already full";
+                throw new IllegalStateException(msg);
+            }
+            lobby.addUser(userId);
             user.setLobbyJoined(lobbyId);
-            lobby.adddRematchers(userId);
+            lobby.addRematcher(userId);
+            userRepository.save(user);
+            userRepository.flush();
+            log.info("User {} joined lobby: {}", userId, lobbyId);
         }
-        userRepository.save(user);
-        userRepository.flush();
     }
 
     public void leaveLobby(Long lobbyId, Long userId) throws NotFoundException {
@@ -99,34 +102,29 @@ public class LobbyService {
         if (lobby.getUser() != null && lobby.getUser().getId().equals(userId)) {
             user.setLobby(null);
             user.setLobbyJoined(null);
-            lobby.removeRematchers(userId);
+            lobby.removeRematcher(userId);
             userRepository.save(user);
             userRepository.flush();
 
+            log.info("Host {} left lobby: {}", userId, lobbyId);
 
             deleteLobby(lobbyId);
             log.info("Lobby {} deleted by host {}", lobbyId, userId);
             return;
         }
 
-
         if (!lobby.getUsers().contains(userId)) {
             throw new NoSuchElementException(
                     "User " + userId + " is not part of lobby " + lobbyId);
         }
 
-
-        lobby.removeUsers(userId);
-        lobby.removeRematchers(userId);
+        lobby.removeUser(userId);
+        lobby.removeRematcher(userId);
         user.setLobbyJoined(null);
 
+        log.info("Host {} left lobby: {}", userId, lobbyId);
 
         userRepository.save(user);
-    }
-
-    // TODO refactor this unnecessary method
-    public Lobby getLobbyById(Long lobbyId) throws NotFoundException {
-        return checkIfLobbyExists(lobbyId);
     }
 
     public boolean lobbyIsFull(Long lobbyId) throws NotFoundException {
@@ -142,7 +140,6 @@ public class LobbyService {
         }
         return lobby.get();
     }
-
 
     public void deleteLobby(Long lobbyId) throws NotFoundException {
         // 1) Verify existence
@@ -164,6 +161,8 @@ public class LobbyService {
             userRepository.save(host);
         }
 
+        log.info("Lobby {} deleted", lobbyId);
+
         userRepository.flush();
 
         // 4) Attempt deletion, but swallow if already gone
@@ -176,8 +175,12 @@ public class LobbyService {
     }
 
     public boolean rematchIsFull(Long lobbyId) throws NotFoundException {
-       Lobby lobby = checkIfLobbyExists(lobbyId);
-       // TODO illegalstateException if more than 4 user
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        if (lobby.getUsers().size() > 4) {
+            String msg = "The lobby is more than 4 users full";
+            log.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
         return lobby.getRematchers().size() >= 4;
     }
 
@@ -189,7 +192,21 @@ public class LobbyService {
     public void addRematcher(Long lobbyId, Long userId) throws NotFoundException {
         Lobby lobby = checkIfLobbyExists(lobbyId);
         userService.checkIfUserExists(userId);
-        lobby.adddRematchers(userId);
+        if (!isUserInLobby(lobbyId, userId)) {
+            String msg = String.format("User with id %s is not part of lobby", userId);
+            log.error(msg);
+            throw new NoSuchElementException(msg);
+        }
+        if (!lobby.getRematchers().contains(userId)) {
+            lobby.addRematcher(userId);
+            log.info("User with id {} added to rematch in lobby {}", userId, lobbyId);
+        }
+    }
+
+    boolean isUserInLobby(Long lobbyId, Long userId) throws NotFoundException {
+        Lobby lobby = checkIfLobbyExists(lobbyId);
+        userService.checkIfUserExists(userId);
+        return lobby.getUsers().contains(userId);
     }
 
     public Long getLobbyIdByParticipantId(Long participantId) throws NotFoundException {
@@ -197,9 +214,7 @@ public class LobbyService {
         return user.getLobbyJoined();
     }
 
-
-    //TODO set private
-    public Long generateId() {
+    Long generateId() {
         Long randomId;
         do {
             randomId = (long) (random.nextInt(9000) + 1000);

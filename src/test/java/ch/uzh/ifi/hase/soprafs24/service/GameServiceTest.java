@@ -1,7 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
@@ -11,7 +12,7 @@ import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -23,28 +24,39 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.util.Pair;
-import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
+import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 @ExtendWith(MockitoExtension.class)
-public class GameServiceTest {
+
+@MockitoSettings(strictness = Strictness.LENIENT)
+class GameServiceTest {
 
     @Mock
     private WebSocketService webSocketService;
+    @Mock
+    private AIService aiService;
+    @Mock
+    private TimerService timerService;
+    @Mock
+    private TimerStrategy playTimerStrategy;
+    @Mock
+    private TimerStrategy choiceTimerStrategy;
 
     @InjectMocks
     private GameService gameService;
-
-    @Mock
-    private AIService aiService;
 
     private Lobby lobby;
     private Long gameId;
@@ -52,25 +64,27 @@ public class GameServiceTest {
     private Long playerB;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         lobby = new Lobby();
         lobby.setLobbyId(42L);
-        lobby.addUsers(100L);
-        lobby.addUsers(200L);
+        lobby.addUser(100L);
+        lobby.addUser(200L);
         gameService.startGame(lobby);
         gameId = lobby.getLobbyId();
         playerA = 100L;
         playerB = 200L;
+        when(timerService.getPlayStrategy()).thenReturn(playTimerStrategy);
+        when(timerService.getChoiceStrategy()).thenReturn(choiceTimerStrategy);
     }
 
     @Test
-    public void testStartGameCreatesSession() {
+    void testStartGameCreatesSession() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(100L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
-        lobby.addUsers(3L);
-        lobby.addUsers(4L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
+        lobby.addUser(3L);
+        lobby.addUser(4L);
 
         GameSession gameSession = gameService.startGame(lobby);
         assertNotNull(gameSession);
@@ -79,11 +93,11 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testGetGameSessionById() {
+    void testGetGameSessionById_success() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(200L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         GameSession retrieved = gameService.getGameSessionById(200L);
@@ -92,11 +106,23 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testPlayCardDeterministic() {
+    void testGetGameSessionById_throwsNoSuchElementException() {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(2000L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
+        gameService.startGame(lobby);
+
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.getGameSessionById(8000L));
+    }
+
+    @Test
+    void testPlayCardDeterministic() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(300L);
-        lobby.addUsers(100L);
-        lobby.addUsers(200L);
+        lobby.addUser(100L);
+        lobby.addUser(200L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -123,11 +149,11 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testProcessPlayTurnValidCapture() {
+    void testProcessPlayTurnValidCapture() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(400L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -176,7 +202,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testIsGameOverRemovesSession() {
+    void testIsGameOverRemovesSession() {
         try {
             Field userRepoField = GameStatisticsUtil.class.getDeclaredField("userRepository");
             userRepoField.setAccessible(true);
@@ -187,10 +213,10 @@ public class GameServiceTest {
 
         Lobby lobby = new Lobby();
         lobby.setLobbyId(500L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
-        lobby.addUsers(3L);
-        lobby.addUsers(4L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
+        lobby.addUser(3L);
+        lobby.addUser(4L);
         GameSession gameSession = gameService.startGame(lobby);
 
         try {
@@ -211,26 +237,27 @@ public class GameServiceTest {
 
         boolean isOver = gameService.isGameOver(500L);
         assertTrue(isOver);
-        assertNull(gameService.getGameSessionById(500L));
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.getGameSessionById(500L));
     }
 
     @Test
-    public void testPlayCardWithNullGameId() {
+    void testPlayCardWithNullGameId() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(600L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
         gameService.startGame(lobby);
         CardDTO cardDTO = new CardDTO("COPPE", 7);
         assertThrows(IllegalArgumentException.class, () -> gameService.playCard(null, cardDTO, 1L));
     }
 
     @Test
-    public void testPlayCardInvalidCard() {
+    void testPlayCardInvalidCard() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(700L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         Player currentPlayer = gameSession.getPlayers().get(gameSession.getCurrentPlayerIndex());
@@ -245,11 +272,11 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testProcessPlayTurnInvalidCaptureOption() {
+    void testProcessPlayTurnInvalidCaptureOption() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(800L);
-        lobby.addUsers(10L);
-        lobby.addUsers(20L);
+        lobby.addUser(10L);
+        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -277,7 +304,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testAiSuggestionSuccess() {
+    void testAiSuggestionSuccess() {
         String rawSuggestion = "DENARI-7; COPPE-4";
         GameSession session = gameService.getGameSessionById(gameId);
         List<Card> hand = session.getPlayers().get(0).getHand();
@@ -293,9 +320,9 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testAiSuggestionThrowsForUnknownUser() {
+    void testAiSuggestionThrowsForUnknownUser() {
         assertThrows(NoSuchElementException.class,
-                () -> gameService.aiSuggestion(gameId, /* userId inesistente */ 999L));
+                () -> gameService.aiSuggestion(gameId, 999L));
     }
 
     // --- Helper Methods ---
@@ -310,7 +337,7 @@ public class GameServiceTest {
     }
 
     @Test
-    public void testQuitGameForfeitRemovesSessionAndReturnsCorrectOutcomes() throws Exception {
+    void testQuitGameForfeitRemovesSessionAndReturnsCorrectOutcomes() throws Exception {
         Field urf = GameStatisticsUtil.class.getDeclaredField("userRepository");
         urf.setAccessible(true);
         urf.set(null, new DummyUserRepository());
@@ -342,34 +369,76 @@ public class GameServiceTest {
         assertEquals("WON", byUser.get(playerB).getOutcome());
         assertEquals("You won by forfeit.", byUser.get(playerB).getMessage());
 
-        assertNull(gameService.getGameSessionById(gameId), "Session should be removed after forfeit");
+        assertThrows(NoSuchElementException.class,
+                () -> gameService.getGameSessionById(gameId));
     }
 
     @Test
-    public void testPlayCardGameNotFound() {
+    void testPlayCardGameNotFound() {
         CardDTO dto = new CardDTO("COPPE", 5);
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        assertThrows(NoSuchElementException.class,
                 () -> gameService.playCard(999L, dto, playerA));
-        assertEquals("Game session not found for gameId: 999", ex.getMessage());
+        ;
     }
 
     @Test
-    public void testProcessPlayTurnSessionNotFound() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+    void testProcessPlayTurnSessionNotFound() {
+        assertThrows(NoSuchElementException.class,
                 () -> gameService.processPlayTurn(999L, List.of()));
-        assertEquals("Game session not found for gameId: 999", ex.getMessage());
     }
 
     @Test
-    public void testIsGameOverFalse() {
+    void testIsGameOverFalse() {
         assertFalse(gameService.isGameOver(gameId));
     }
 
     @Test
-    public void testQuitGameSessionNotFound() {
+    void testQuitGameSessionNotFound() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> gameService.quitGame(999L, playerA));
         assertEquals("Game session not found for id: 999", ex.getMessage());
+    }
+
+    @Test
+    void testPlayCardMultipleCaptureOptionsSchedulesChoicePhase() throws Exception {
+        Lobby lobby = new Lobby();
+        lobby.setLobbyId(900L);
+        lobby.addUser(playerA);
+        lobby.addUser(playerB);
+        GameSession session = gameService.startGame(lobby);
+        Long gameId = lobby.getLobbyId();
+
+        session.getTable().clearTable();
+        List<Card> tableCards = createCardsFromValues(Arrays.asList(3, 4, 2, 5), Suit.COPPE);
+        tableCards.forEach(session.getTable()::addCard);
+
+        Player current = session.getPlayers().get(session.getCurrentPlayerIndex());
+        Card seven = CardFactory.getCard(Suit.COPPE, 7);
+        List<Card> oneCard = new ArrayList<>(List.of(seven));
+        setPlayerHand(current, oneCard);
+
+        Pair<GameSession, Player> result = gameService.playCard(gameId, new CardDTO("COPPE", 7), playerA);
+
+        assertNotNull(result.getSecond(), "Expected current player returned even with multiple capture options");
+        verify(webSocketService)
+                .sentLobbyNotifications(eq(playerA), any(List.class));
+        verify(timerService)
+                .schedule(eq(gameId), eq(choiceTimerStrategy), eq(playerA));
+    }
+
+    @Test
+    void testProcessPlayTurnSessionNotFoundThrowsIllegalArgument() {
+        GameService spyService = spy(gameService);
+
+        doReturn(null).when(spyService).getGameSessionById(9999L);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> spyService.processPlayTurn(9999L, Collections.emptyList()));
+
+        assertEquals(
+                "Game session not found for gameId: 9999",
+                ex.getMessage());
     }
 
     private List<Card> createCardsFromValues(List<Integer> values, Suit suit) {
@@ -516,4 +585,5 @@ public class GameServiceTest {
             throw new UnsupportedOperationException("Unimplemented method 'findByToken'");
         }
     }
+
 }

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @WebAppConfiguration
 @SpringBootTest
-public class UserServiceIntegrationTest {
+ class UserServiceIntegrationTest {
 
   @Qualifier("userRepository")
   @Autowired
@@ -30,13 +30,13 @@ public class UserServiceIntegrationTest {
   private UserService userService;
 
   @BeforeEach
-  public void setup() {
+   void setup() {
     userRepository.deleteAll();
   }
 
   // # 1
   @Test
-  public void createUser_validInputs_success() {
+   void createUser_validInputs_success() {
     // given:
     assertNull(userRepository.findByUsername("testUsername"));
 
@@ -60,7 +60,7 @@ public class UserServiceIntegrationTest {
 
   // # 1
   @Test
-  public void createUser_duplicateUsername_throwsException() {
+   void createUser_duplicateUsername_throwsException() {
     // given:
     User testUser = new User();
     testUser.setUsername("testUsername");

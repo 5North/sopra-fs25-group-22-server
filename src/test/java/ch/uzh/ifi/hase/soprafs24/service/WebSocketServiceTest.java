@@ -4,6 +4,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Lobby;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.BroadcastNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.LobbyDTO;
+import ch.uzh.ifi.hase.soprafs24.timer.TimerStrategy;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UserNotificationDTO;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.UsersBroadcastJoinNotificationDTO;
 import javassist.NotFoundException;
@@ -19,7 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class WebSocketServiceTest {
+class WebSocketServiceTest {
     @InjectMocks
     private WebSocketService webSocketService;
 
@@ -28,9 +29,15 @@ public class WebSocketServiceTest {
 
     @Mock
     private LobbyService lobbyService;
+    @Mock
+    private TimerService timerService;
+    @Mock
+    private TimerStrategy playTimerStrategy;
+    @Mock
+    private TimerStrategy choiceTimerStrategy;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
 
     }
@@ -46,8 +53,10 @@ public class WebSocketServiceTest {
         Lobby lobby = new Lobby();
         lobby.setUser(user);
         lobby.setLobbyId(1000L);
-        lobby.addUsers(1L);
-        lobby.addUsers(2L);
+        lobby.addUser(1L);
+        lobby.addUser(2L);
+        lobby.addRematcher(1L);
+        lobby.addRematcher(2L);
 
         LobbyDTO lobbyDTO = new LobbyDTO();
         List<Long> userIds = new ArrayList<>();
@@ -56,6 +65,7 @@ public class WebSocketServiceTest {
         lobbyDTO.setLobbyId(1000L);
         lobbyDTO.setHostId(userId);
         lobbyDTO.setUsersIds(userIds);
+        lobbyDTO.setRematchersIds(userIds);
 
         // when
         when(userService.checkIfUserExists(userId)).thenReturn(user);
@@ -71,6 +81,7 @@ public class WebSocketServiceTest {
         assertEquals(lobbyDTO.getLobbyId(), dto.getLobby().getLobbyId());
         assertEquals(lobbyDTO.getHostId(), dto.getLobby().getHostId());
         assertEquals(lobbyDTO.getUsersIds(), dto.getLobby().getUsersIds());
+        assertEquals(lobbyDTO.getRematchersIds(), dto.getLobby().getRematchersIds());
     }
 
     @Test

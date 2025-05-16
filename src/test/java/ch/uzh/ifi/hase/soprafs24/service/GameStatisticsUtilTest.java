@@ -24,13 +24,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-public class GameStatisticsUtilTest {
+ class GameStatisticsUtilTest {
 
     @Mock
     private UserRepository userRepository;
 
     @BeforeEach
-    public void setup() {
+     void setup() {
         new GameStatisticsUtil(userRepository);
     }
 
@@ -48,7 +48,7 @@ public class GameStatisticsUtilTest {
     }
 
     @Test
-    public void testUpdateUserStatistics_WinLoss() {
+     void testUpdateUserStatistics_WinLoss() {
         Player p1 = createDummyPlayer(1L);
         Player p2 = createDummyPlayer(2L);
         Player p3 = createDummyPlayer(3L);
@@ -86,7 +86,7 @@ public class GameStatisticsUtilTest {
     }
 
     @Test
-    public void testUpdateUserStatistics_Tie() {
+     void testUpdateUserStatistics_Tie() {
         Player p1 = createDummyPlayer(1L);
         Player p2 = createDummyPlayer(2L);
         Player p3 = createDummyPlayer(3L);
@@ -123,7 +123,7 @@ public class GameStatisticsUtilTest {
     }
 
     @Test
-    public void testUpdateUserStatistics_UserNotFound() {
+     void testUpdateUserStatistics_UserNotFound() {
         Player p1 = createDummyPlayer(1L);
         Player p2 = createDummyPlayer(2L);
         Player p3 = createDummyPlayer(3L);
@@ -153,7 +153,7 @@ public class GameStatisticsUtilTest {
     }
 
     @Test
-    public void testIncrementWin_UserExists() {
+     void testIncrementWin_UserExists() {
         Long userId = 123L;
         User user = createDummyUser(userId);
         assertEquals(0, user.getWinCount());
@@ -167,7 +167,7 @@ public class GameStatisticsUtilTest {
     }
 
     @Test
-    public void testIncrementWin_UserNotFound() {
+     void testIncrementWin_UserNotFound() {
         Long userId = 999L;
         Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -177,7 +177,7 @@ public class GameStatisticsUtilTest {
     }
 
     @Test
-    public void testIncrementLoss_UserExists() {
+     void testIncrementLoss_UserExists() {
         Long userId = 456L;
         User user = createDummyUser(userId);
         assertEquals(0, user.getLossCount());
@@ -191,7 +191,7 @@ public class GameStatisticsUtilTest {
     }
 
     @Test
-    public void testIncrementLoss_UserNotFound() {
+     void testIncrementLoss_UserNotFound() {
         Long userId = 888L;
         Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
 

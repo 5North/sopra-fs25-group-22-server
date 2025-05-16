@@ -19,8 +19,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OpenAiClient {
-    private final Logger log = LoggerFactory.getLogger(OpenAiClient.class);
+    private static final Logger log = LoggerFactory.getLogger(OpenAiClient.class);
+
     private static final String ENDPOINT = "https://api.openai.com/v1/chat/completions";
+    private static final String FIELD_ROLE = "role";
+    private static final String FIELD_CONTENT = "content"; // ← estratta qui
+
     private final String apiKey;
     private final HttpClient client;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -34,16 +38,19 @@ public class OpenAiClient {
 
     public String createCompletion(String prompt) {
         try {
+            JsonNode systemMsg = mapper.createObjectNode()
+                    .put(FIELD_ROLE, "system")
+                    .put(FIELD_CONTENT, "You are a helpful assistant.");
+            JsonNode userMsg = mapper.createObjectNode()
+                    .put(FIELD_ROLE, "user")
+                    .put(FIELD_CONTENT, prompt);
+
             String body = mapper.writeValueAsString(
                     mapper.createObjectNode()
                             .put("model", "gpt-4o")
                             .set("messages", mapper.createArrayNode()
-                                    .add(mapper.createObjectNode()
-                                            .put("role", "system")
-                                            .put("content", "You are a helpful assistant."))
-                                    .add(mapper.createObjectNode()
-                                            .put("role", "user")
-                                            .put("content", prompt))));
+                                    .add(systemMsg)
+                                    .add(userMsg)));
 
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(ENDPOINT))
@@ -53,11 +60,17 @@ public class OpenAiClient {
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
 
+            log.info("Sending POST request to OpenAI API");
             HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
-            log.info("Status code: {}", resp.statusCode());
-            log.info("Response from OpenAI API: {}", resp.body());
+            log.info("OpenAI API response status code: {}", resp.statusCode());
+            log.debug("OpenAI API response body: {}", resp.body());
+
             JsonNode root = mapper.readTree(resp.body());
-            return root.path("choices").get(0).path("message").path("content").asText();
+            return root
+                    .path("choices").get(0)
+                    .path("message")
+                    .path(FIELD_CONTENT) // ← usa la costante anche qui
+                    .asText();
 
         } catch (IOException e) {
             throw new OpenAIClientException("Failed to call OpenAI API (I/O error)", e);

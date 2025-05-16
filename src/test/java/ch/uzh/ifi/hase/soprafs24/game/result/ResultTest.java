@@ -15,7 +15,7 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 
-public class ResultTest {
+ class ResultTest {
 
     private List<Card> createCardsFromValues(List<Integer> values, Suit suit) {
         List<Card> cards = new ArrayList<>();
@@ -45,7 +45,7 @@ public class ResultTest {
     // --- Test for TeamResult ---
 
     @Test
-    public void testPrimieraCalculation_AllSuitsPresent() {
+     void testPrimieraCalculation_AllSuitsPresent() {
 
         List<Card> treasure = new ArrayList<>();
         treasure.addAll(createCardsFromValues(List.of(7), Suit.DENARI));
@@ -63,7 +63,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testPrimieraCalculation_MissingSuit() {
+     void testPrimieraCalculation_MissingSuit() {
         List<Card> treasure = new ArrayList<>();
         treasure.addAll(createCardsFromValues(List.of(7), Suit.DENARI));
         treasure.addAll(createCardsFromValues(List.of(6), Suit.COPPE));
@@ -77,7 +77,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testFixedPointsCalculation() {
+     void testFixedPointsCalculation() {
 
         List<Card> treasure = new ArrayList<>();
 
@@ -100,7 +100,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testTotalCalculation() {
+     void testTotalCalculation() {
 
         List<Card> treasure = new ArrayList<>();
 
@@ -129,7 +129,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testResultOutcome_WinLoss() {
+     void testResultOutcome_WinLoss() {
 
         List<Card> treasureTeam1 = new ArrayList<>();
 
@@ -161,7 +161,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testResultOutcome_Tie() {
+     void testResultOutcome_Tie() {
         List<Card> treasure = new ArrayList<>();
         for (int i = 0; i < 22; i++) {
             treasure.add(CardFactory.getCard(Suit.COPPE, 2));
@@ -186,7 +186,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testTeamResultGettersAndSetters() {
+     void testTeamResultGettersAndSetters() {
 
         List<Card> treasure = new ArrayList<>();
         for (int i = 0; i < 22; i++) {
@@ -228,7 +228,7 @@ public class ResultTest {
     // --- Test for Result ---
 
     @Test
-    public void testResultGettersAndOutcome() {
+     void testResultGettersAndOutcome() {
         List<Card> treasureTeam1 = new ArrayList<>();
 
         for (int i = 0; i < 22; i++) {
@@ -272,7 +272,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testTeamResultSetterOutcome() {
+     void testTeamResultSetterOutcome() {
         List<Card> treasure = new ArrayList<>();
         treasure.addAll(createCardsFromValues(List.of(7), Suit.DENARI));
         treasure.addAll(createCardsFromValues(List.of(6), Suit.COPPE));
@@ -292,7 +292,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testResultConstructorWithInvalidPlayers() {
+     void testResultConstructorWithInvalidPlayers() {
         List<Player> players = new ArrayList<>();
         players.add(createPlayerWithTreasure(1L, new ArrayList<>(), 0));
         players.add(createPlayerWithTreasure(2L, new ArrayList<>(), 0));
@@ -306,7 +306,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testBorderlinePointsCalculation() {
+     void testBorderlinePointsCalculation() {
 
         List<Card> treasureP1 = new ArrayList<>();
 
@@ -336,7 +336,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testTeamTotalPointsCalculation() {
+     void testTeamTotalPointsCalculation() {
         List<Card> treasure = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             treasure.add(CardFactory.getCard(Suit.COPPE, 2));
@@ -365,7 +365,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testPrimieraCalculation_DefaultBranchUsingReflection() {
+     void testPrimieraCalculation_DefaultBranchUsingReflection() {
         Card invalidCard = CardFactory.getCard(Suit.BASTONI, 1);
         int originalValue = invalidCard.getValue();
         Field valueField = null;
@@ -403,7 +403,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testResultOutcome_Loss() {
+     void testResultOutcome_Loss() {
 
         List<Card> treasureTeam1 = new ArrayList<>();
         for (int i = 0; i < 22; i++) {
@@ -435,7 +435,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testTeamResultRawGetters() {
+     void testTeamResultRawGetters() {
         List<Card> treasure = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             treasure.add(CardFactory.getCard(Suit.COPPE, 2));
@@ -463,7 +463,7 @@ public class ResultTest {
     }
 
     @Test
-    public void testResultDTO_GettersAndSetters() {
+     void testResultDTO_GettersAndSetters() {
         ResultDTO dto = new ResultDTO();
 
         dto.setGameId(123L);

@@ -14,6 +14,10 @@ import java.util.List;
 
 public class GameSessionMapper {
 
+    private GameSessionMapper() {
+        throw new UnsupportedOperationException("GameSessionMapper is a utility class and cannot be instantiated");
+    }
+
     public static CardDTO convertToCardDTO(Card card) {
         CardDTO dto = new CardDTO();
         dto.setSuit(card.getSuit().toString());
@@ -172,6 +176,18 @@ public class GameSessionMapper {
         dto.setOutcome(outcome);
         dto.setMessage(message);
         return dto;
+    }
+
+    public static TimeLeftDTO toTimeLeftDTO(Long gameId, long remainingSeconds, String message) {
+        return new TimeLeftDTO(gameId, remainingSeconds, message);
+    }
+
+    public static TimeLeftDTO toTimeToPlayDTO(Long gameId, long remainingSeconds) {
+        return toTimeLeftDTO(gameId, remainingSeconds, "Time to Play");
+    }
+
+    public static TimeLeftDTO toTimeToChooseDTO(Long gameId, long remainingSeconds) {
+        return toTimeLeftDTO(gameId, remainingSeconds, "Time to Choose");
     }
 
 }

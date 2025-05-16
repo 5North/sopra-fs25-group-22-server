@@ -25,7 +25,7 @@ import static org.mockito.Mockito.doReturn;
  */
 @WebAppConfiguration
 @SpringBootTest
-public class LobbyServiceIntegrationTest {
+ class LobbyServiceIntegrationTest {
 
     @Autowired
     private LobbyRepository lobbyRepository;
@@ -113,10 +113,10 @@ public class LobbyServiceIntegrationTest {
         Lobby created = lobbyService.createLobby(testUser);
         Long id = created.getLobbyId();
 
-        created.addUsers(testUser.getId());
-        created.addUsers(testUser2.getId());
-        created.adddRematchers(testUser.getId());
-        created.adddRematchers(testUser2.getId());
+        created.addUser(testUser.getId());
+        created.addUser(testUser2.getId());
+        created.addRematcher(testUser.getId());
+        created.addRematcher(testUser2.getId());
         lobbyRepository.save(created);
         lobbyRepository.flush();
 
@@ -139,7 +139,7 @@ public class LobbyServiceIntegrationTest {
         Lobby created = lobbyService.createLobby(testUser);
         Long id = created.getLobbyId();
 
-        created.addUsers(testUser.getId());
+        created.addUser(testUser.getId());
         lobbyRepository.save(created);
         lobbyRepository.flush();
 

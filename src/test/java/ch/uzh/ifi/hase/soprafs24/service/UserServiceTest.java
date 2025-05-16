@@ -23,7 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-public class UserServiceTest {
+ class UserServiceTest {
 
   @Mock
   private UserRepository userRepository;
@@ -37,7 +37,7 @@ public class UserServiceTest {
   private User testUser;
 
   @BeforeEach
-  public void setup() {
+   void setup() {
     MockitoAnnotations.openMocks(this);
 
     // given
@@ -58,7 +58,7 @@ public class UserServiceTest {
 
   // # 18
   @Test
-  public void loginUser_validCredentials_success() {
+   void loginUser_validCredentials_success() {
     // given -> a first user has already been created
     userService.createUser(testUser);
     String previousToken = testUser.getToken();
@@ -75,7 +75,7 @@ public class UserServiceTest {
 
   // # 19
   @Test
-  public void loginUser_notValidCredentials_throwsException() {
+   void loginUser_notValidCredentials_throwsException() {
 
     // given -> a user who tries to log in with wrong credentials
     userService.createUser(testUser);
@@ -92,7 +92,7 @@ public class UserServiceTest {
 
   // # 19
   @Test
-  public void loginUser_notValidPassword_throwsException() {
+   void loginUser_notValidPassword_throwsException() {
     // given -> a first user has already been created
     userService.createUser(testUser);
 
@@ -113,7 +113,7 @@ public class UserServiceTest {
 
   // # 7
   @Test
-  public void createUser_existingUser_throwsException() {
+   void createUser_existingUser_throwsException() {
       when(userRepository.findByUsername("testUsername")).thenReturn(testUser);
 
     User duplicateUser = new User();
@@ -130,7 +130,7 @@ public class UserServiceTest {
 
   // #9
   @Test
-  public void createUser_validInputs_success() {
+   void createUser_validInputs_success() {
       when(userRepository.findByUsername(testUser.getUsername())).thenReturn(null);
 
     User createdUser = userService.createUser(testUser);
@@ -146,7 +146,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void authorizeUser_ValidAuth_success() {
+  void authorizeUser_ValidAuth_success() {
     // given -> a first user has already been created
     userService.createUser(testUser);
     testUser.setStatus(UserStatus.ONLINE);
@@ -160,7 +160,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void authorizeUser_NotValidToken_throwsException() {
+  void authorizeUser_NotValidToken_throwsException() {
     // given -> a first user has already been created
     userService.createUser(testUser);
 
@@ -175,7 +175,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void authorizeUser_InvalidatedSessionToken_throwsException() {
+  void authorizeUser_InvalidatedSessionToken_throwsException() {
     // given -> a first user has already been created
     userService.createUser(testUser);
     testUser.setStatus(UserStatus.OFFLINE);
@@ -191,7 +191,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void logoutUser_success() {
+  void logoutUser_success() {
     // given -> a first user has already been created
     userService.createUser(testUser);
 
@@ -204,7 +204,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testIncrementStatistics() {
+  void testIncrementStatistics() {
     userService.createUser(testUser);
 
     testUser.incrementWinCount();
@@ -230,7 +230,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void checkIfUserExists_throwsException() {
+  void checkIfUserExists_throwsException() {
     // given -> a first user has already been created
     userService.createUser(testUser);
     Optional<User> optionalEmptyUser = Optional.empty();
@@ -243,7 +243,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testGetUsersReturnsEmpty() {
+  void testGetUsersReturnsEmpty() {
       when(userRepository.findAll()).thenReturn(new ArrayList<>());
 
     List<User> users = userService.getUsers();
@@ -255,7 +255,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void testGetUsersSuccess() {
+  void testGetUsersSuccess() {
     List<User> usersFromRepo = new ArrayList<>();
     usersFromRepo.add(testUser);
 
@@ -328,7 +328,7 @@ public class UserServiceTest {
         userService.createUser(testUser);
         Lobby testLobby = new Lobby();
         testLobby.setLobbyId(9999L);
-        testLobby.addUsers(testUser.getId());
+        testLobby.addUser(testUser.getId());
         testUser.setLobbyJoined(testLobby.getLobbyId());
 
         // when

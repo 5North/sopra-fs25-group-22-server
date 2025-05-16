@@ -8,10 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CardTest {
+ class CardTest {
 
     @Test
-    public void cardInitialiseValidInputInitialised() {
+     void cardInitialiseValidInputInitialised() {
         Card card = CardFactory.getCard(Suit.DENARI, 7);
         assertNotNull(card);
         assertEquals(Suit.DENARI, card.getSuit());
@@ -19,7 +19,7 @@ public class CardTest {
     }
 
     @Test
-    public void testInvalidLowValue() {
+     void testInvalidLowValue() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             CardFactory.getCard(Suit.COPPE, 0);
         });
@@ -27,7 +27,7 @@ public class CardTest {
     }
 
     @Test
-    public void testInvalidHighValue() {
+     void testInvalidHighValue() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             CardFactory.getCard(Suit.BASTONI, 11);
         });
@@ -35,7 +35,7 @@ public class CardTest {
     }
 
     @Test
-    public void testEqualityAndHashCode() {
+     void testEqualityAndHashCode() {
         Card card1 = CardFactory.getCard(Suit.SPADE, 7);
         Card card2 = CardFactory.getCard(Suit.SPADE, 7);
         assertEquals(card1, card2);
@@ -43,14 +43,14 @@ public class CardTest {
     }
 
     @Test
-    public void testFactoryCaching() {
+     void testFactoryCaching() {
         Card card1 = CardFactory.getCard(Suit.DENARI, 3);
         Card card2 = CardFactory.getCard(Suit.DENARI, 3);
         assertSame(card1, card2);
     }
 
     @Test
-    public void testCardEquality() {
+     void testCardEquality() {
         Card card1 = CardFactory.getCard(Suit.DENARI, 5);
         Card card2 = CardFactory.getCard(Suit.DENARI, 5);
         Card card3 = CardFactory.getCard(Suit.COPPE, 5);
@@ -65,7 +65,7 @@ public class CardTest {
     }
 
     @Test
-    public void testEqualsBranches() {
+     void testEqualsBranches() {
         Card card = CardFactory.getCard(Suit.DENARI, 5);
 
         assertTrue(card.equals(card), "A card should equal itself (reflexivity).");

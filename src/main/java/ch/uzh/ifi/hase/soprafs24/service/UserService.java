@@ -55,17 +55,21 @@ public class UserService {
   public String loginUser(User userInput) {
     User userByUsername = userRepository.findByUsername(userInput.getUsername());
     if (userByUsername == null) {
+        log.debug("failed to login user {}", userInput.getUsername());
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid username or password");
     } else if (!userByUsername.getPassword().equals(userInput.getPassword())) {
+        log.debug("failed to login user {}: wrong password", userInput.getUsername());
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid password");
     }
     userByUsername.setStatus(UserStatus.ONLINE);
     userByUsername.setToken(UUID.randomUUID().toString());
+    log.info("user with id {} logged in", userByUsername.getId());
     return userByUsername.getToken();
   }
 
   public void logoutUser(User authUser) {
     authUser.setStatus(UserStatus.OFFLINE);
+    log.info("user with id {} logged out", authUser.getId());
   }
 
   public User authorizeUser(String token) throws ResponseStatusException {
@@ -78,11 +82,20 @@ public class UserService {
 
     public void isUserAllowedToGetLobby(User user, Lobby lobby) {
         Long lobbyId = lobby.getLobbyId();
-        // TODO refactor into something more understandable
-        if ((user.getLobby() == null || !Objects.equals(user.getLobby().getLobbyId(), lobbyId)) && (user.getLobbyJoined() == null || !Objects.equals(user.getLobbyJoined(), lobbyId))) {
+        if (!isUserInLobby(user, lobbyId) && !isUserLobbyOwner(user, lobbyId)) {
             String msg = String.format("User with id %d is not in the lobby", lobbyId);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
         }
+    }
+
+    private boolean isUserLobbyOwner(User user, Long lobbyId) {
+        Lobby userLobby = user.getLobby();
+        return userLobby != null && Objects.equals(userLobby.getLobbyId(), lobbyId);
+    }
+
+    private boolean isUserInLobby(User user, Long lobbyId) {
+        Long userLobbyJoined = user.getLobbyJoined();
+        return userLobbyJoined != null && Objects.equals(userLobbyJoined, lobbyId);
     }
 
   public User createUser(User newUser) {
@@ -95,6 +108,9 @@ public class UserService {
     newUser.setWinCount(0);
     newUser.setLossCount(0);
     newUser.setTieCount(0);
+
+    log.info("user with id {} created", newUser.getId());
+
     return userRepository.save(newUser);
   }
 
@@ -102,20 +118,20 @@ public class UserService {
         User user = getUserById(userId);
         if (user.getLobby() == null) {
             String msg = String.format("User with id %s does not have a lobby", userId);
+            log.info("User with id {}: lobby not found", userId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
         }
         return user.getLobby();
     }
 
-    // TODO eventually refactor better to avoid duplicate code
     public User checkIfUserExists(long userId) throws NotFoundException {
-      Optional<User> user = userRepository.findById(userId);
+        Optional<User> user = userRepository.findById(userId);
 
-      if(user.isEmpty()) {
+        if (user.isEmpty()) {
           String msg = "User with id " + userId + " does not exist";
           throw new NotFoundException(msg);
       }
-      return user.get();
+        return user.get();
     }
 
 }

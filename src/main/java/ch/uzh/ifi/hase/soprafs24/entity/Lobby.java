@@ -19,7 +19,6 @@ public class Lobby implements Serializable {
     @OneToOne(mappedBy = "lobby")
     private User user;
 
-
     @ElementCollection(fetch = FetchType.EAGER)
     @Fetch(FetchMode.SUBSELECT)
     private List<Long> users = new ArrayList<>();
@@ -29,31 +28,57 @@ public class Lobby implements Serializable {
     private List<Long> rematchers = new ArrayList<>();
 
     @Transient
-    private GameSession gameSession;
+    private transient GameSession gameSession;
 
-    public void setLobbyId(Long lobbyId) {this.lobbyId = lobbyId;}
+    public void setLobbyId(Long lobbyId) {
+        this.lobbyId = lobbyId;
+    }
 
-    public Long getLobbyId() {return lobbyId;}
+    public Long getLobbyId() {
+        return lobbyId;
+    }
 
-    public void setUser(User user) {this.user = user;}
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    public User getUser() {return user;}
+    public User getUser() {
+        return user;
+    }
 
-    public List<Long> getUsers() {return users;}
+    public List<Long> getUsers() {
+        return users;
+    }
 
-    public void addUsers(Long userId) {users.add(userId);}
+    public void addUser(Long userId) {
+        users.add(userId);
+    }
 
-    public boolean removeUsers(Long userId) {return users.remove(userId);}
+    public boolean removeUser(Long userId) {
+        return users.remove(userId);
+    }
 
-    public List<Long> getRematchers() {return rematchers;}
+    public List<Long> getRematchers() {
+        return rematchers;
+    }
 
-    public void adddRematchers(Long userId) {rematchers.add(userId);}
+    public void addRematcher(Long userId) {
+        rematchers.add(userId);
+    }
 
-    public boolean removeRematchers(Long userId){return rematchers.remove(userId);}
+    public boolean removeRematcher(Long userId) {
+        return rematchers.remove(userId);
+    }
 
-    public void clearRematchers() {rematchers.clear();}
+    public void clearRematchers() {
+        rematchers.clear();
+    }
 
-    public GameSession getGameSession() {return gameSession;}
+    public GameSession getGameSession() {
+        return gameSession;
+    }
 
-    public void setGameSession(GameSession gameSession) {this.gameSession = gameSession;}
+    public void setGameSession(GameSession gameSession) {
+        this.gameSession = gameSession;
+    }
 }

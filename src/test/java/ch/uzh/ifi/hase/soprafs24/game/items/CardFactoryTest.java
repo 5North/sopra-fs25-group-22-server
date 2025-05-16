@@ -7,33 +7,24 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-public class CardFactoryTest {
+class CardFactoryTest {
 
     @Test
-    public void testSameInstanceForSameCard() {
+    void testSameInstanceForSameCard() {
         Card card1 = CardFactory.getCard(Suit.COPPE, 4);
         Card card2 = CardFactory.getCard(Suit.COPPE, 4);
         assertSame(card1, card2, "CardFactory should return the same instance for the same card parameters");
     }
 
     @Test
-    public void testDifferentInstancesForDifferentCards() {
+    void testDifferentInstancesForDifferentCards() {
         Card card1 = CardFactory.getCard(Suit.COPPE, 4);
         Card card2 = CardFactory.getCard(Suit.DENARI, 4);
         assertNotSame(card1, card2, "Cards with different suits should be different instances");
     }
 
     @Test
-    public void testFactoryCacheSize() {
-        for (Suit suit : Suit.values()) {
-            for (int value = 1; value <= 10; value++) {
-                CardFactory.getCard(suit, value);
-            }
-        }
-    }
-
-    @Test
-    public void testFactoryCacheContent() throws Exception {
+    void testFactoryCacheContent() throws Exception {
         for (Suit suit : Suit.values()) {
             for (int value = 1; value <= 10; value++) {
                 CardFactory.getCard(suit, value);

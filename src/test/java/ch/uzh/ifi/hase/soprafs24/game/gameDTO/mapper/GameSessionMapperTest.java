@@ -11,6 +11,7 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;
+import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -25,10 +26,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GameSessionMapperTest {
+class GameSessionMapperTest {
 
     @Test
-    public void testConvertToCardDTO() {
+    void testConvertToCardDTO() {
         Card card = CardFactory.getCard(Suit.DENARI, 7);
         CardDTO dto = GameSessionMapper.convertToCardDTO(card);
         assertNotNull(dto);
@@ -37,7 +38,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertCardDTOtoEntity() {
+    void testConvertCardDTOtoEntity() {
         CardDTO dto = new CardDTO("coppe", 3);
         Card card = GameSessionMapper.convertCardDTOtoEntity(dto);
         assertNotNull(card);
@@ -46,7 +47,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertCaptureOptionsToDTO() {
+    void testConvertCaptureOptionsToDTO() {
         List<Card> option1 = Collections.singletonList(CardFactory.getCard(Suit.BASTONI, 2));
         List<Card> option2 = Arrays.asList(CardFactory.getCard(Suit.SPADE, 5), CardFactory.getCard(Suit.DENARI, 7));
         List<List<Card>> captureOptions = Arrays.asList(option1, option2);
@@ -69,7 +70,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertCardDTOListToEntity() {
+    void testConvertCardDTOListToEntity() {
         List<CardDTO> dtoList = Arrays.asList(
                 new CardDTO("denari", 1),
                 new CardDTO("coppe", 2),
@@ -86,7 +87,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertToPrivatePlayerDTO() {
+    void testConvertToPrivatePlayerDTO() {
         List<Card> hand = new ArrayList<>();
         hand.add(CardFactory.getCard(Suit.BASTONI, 4));
         hand.add(CardFactory.getCard(Suit.SPADE, 8));
@@ -104,7 +105,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertResultToDTO() {
+    void testConvertResultToDTO() {
         ResultDTO dto = GameSessionMapper.convertResultToDTO(
                 new ch.uzh.ifi.hase.soprafs24.game.result.Result(777L, Arrays.asList(
                         new Player(100L, new ArrayList<>()),
@@ -117,7 +118,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertToGameSessionDTO() {
+    void testConvertToGameSessionDTO() {
         List<Long> playerIds = Arrays.asList(1L, 2L, 3L, 4L);
         GameSession gameSession = new GameSession(999L, playerIds);
 
@@ -131,11 +132,41 @@ public class GameSessionMapperTest {
         assertNotNull(dto.getPlayers());
         assertEquals(4, dto.getPlayers().size());
 
-        assertEquals(1L, dto.getCurrentPlayerId());
+        Long expectedPlayerId = gameSession.getPlayers()
+                .get(gameSession.getCurrentPlayerIndex())
+                .getUserId();
+        assertEquals(expectedPlayerId, dto.getCurrentPlayerId());
     }
 
     @Test
-    public void testConvertToLastCardsDTO() {
+    void testConvertToGameSessionDTO_whenTableIsNullAndNoPlayers() {
+        GameSession stub = new GameSession(55L, Collections.singletonList(0L)) {
+            @Override
+            public Table getTable() {
+                return null;
+            }
+
+            @Override
+            public List<Player> getPlayers() {
+                return Collections.emptyList();
+            }
+        };
+
+        GameSessionDTO dto = GameSessionMapper.convertToGameSessionDTO(stub);
+
+        assertEquals(55L, dto.getGameId());
+
+        assertNotNull(dto.getTableCards());
+        assertTrue(dto.getTableCards().isEmpty());
+
+        assertNotNull(dto.getPlayers());
+        assertTrue(dto.getPlayers().isEmpty());
+
+        assertNull(dto.getCurrentPlayerId());
+    }
+
+    @Test
+    void testConvertToLastCardsDTO() {
         List<Card> lastCards = Arrays.asList(
                 CardFactory.getCard(Suit.DENARI, 7),
                 CardFactory.getCard(Suit.SPADE, 5));
@@ -158,7 +189,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertCaptureOptionsToDTO_empty() {
+    void testConvertCaptureOptionsToDTO_empty() {
         List<List<Card>> empty = Collections.emptyList();
         List<List<CardDTO>> dto = GameSessionMapper.convertCaptureOptionsToDTO(empty);
         assertNotNull(dto, "Should return non-null list");
@@ -166,7 +197,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertToMoveActionDTO_noCaptured_withUser() {
+    void testConvertToMoveActionDTO_noCaptured_withUser() {
         long userId = 42L;
         Card played = CardFactory.getCard(Suit.DENARI, 9);
         List<Card> picked = Collections.emptyList();
@@ -187,7 +218,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertToMoveActionDTO_withCaptured_withUser() {
+    void testConvertToMoveActionDTO_withCaptured_withUser() {
         long userId = 99L;
         Card played = CardFactory.getCard(Suit.COPPE, 7);
         List<Card> picked = new ArrayList<>();
@@ -216,7 +247,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testToQuitGameResultDTO() {
+    void testToQuitGameResultDTO() {
         Long userId = 123L;
         String outcome = "WON";
         String message = "You won by forfeit.";
@@ -228,7 +259,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testToQuitGameResultDTO_LostCase() {
+    void testToQuitGameResultDTO_LostCase() {
         Long userId = 456L;
         String outcome = "LOST";
         String message = "You lost by forfeit.";
@@ -240,7 +271,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertToLastCardsDTO_nullList() {
+    void testConvertToLastCardsDTO_nullList() {
         LastCardsDTO dto = GameSessionMapper.convertToLastCardsDTO(42L, null);
         assertEquals(42L, dto.getUserId());
         assertNotNull(dto.getCards());
@@ -248,7 +279,7 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertResultToDTO_secondTeamAndUnknown() {
+    void testConvertResultToDTO_secondTeamAndUnknown() {
         List<Player> players = Arrays.asList(
                 new Player(1L, Collections.emptyList()),
                 new Player(2L, Collections.emptyList()),
@@ -270,26 +301,29 @@ public class GameSessionMapperTest {
     }
 
     @Test
-    public void testConvertToGameSessionDTO_whenTableIsNullAndNoPlayers() {
-        GameSession stub = new GameSession(55L, Collections.emptyList()) {
-            @Override
-            public Table getTable() {
-                return null;
-            }
-
-            @Override
-            public List<Player> getPlayers() {
-                return Collections.emptyList();
-            }
-        };
-
-        GameSessionDTO dto = GameSessionMapper.convertToGameSessionDTO(stub);
-        assertEquals(55L, dto.getGameId());
-        assertNotNull(dto.getTableCards());
-        assertTrue(dto.getTableCards().isEmpty());
-        assertNotNull(dto.getPlayers());
-        assertTrue(dto.getPlayers().isEmpty());
-        assertNull(dto.getCurrentPlayerId());
+    void testToTimeLeftDTO() {
+        TimeLeftDTO dto = GameSessionMapper.toTimeLeftDTO(77L, 15L, "Custom Message");
+        assertNotNull(dto);
+        assertEquals(77L, dto.getGameId());
+        assertEquals(15L, dto.getRemainingSeconds());
+        assertEquals("Custom Message", dto.getMessage());
     }
 
+    @Test
+    void testToTimeToPlayDTO() {
+        TimeLeftDTO dto = GameSessionMapper.toTimeToPlayDTO(42L, 30L);
+        assertNotNull(dto);
+        assertEquals(42L, dto.getGameId());
+        assertEquals(30L, dto.getRemainingSeconds());
+        assertEquals("Time to Play", dto.getMessage());
+    }
+
+    @Test
+    void testToTimeToChooseDTO() {
+        TimeLeftDTO dto = GameSessionMapper.toTimeToChooseDTO(99L, 10L);
+        assertNotNull(dto);
+        assertEquals(99L, dto.getGameId());
+        assertEquals(10L, dto.getRemainingSeconds());
+        assertEquals("Time to Choose", dto.getMessage());
+    }
 }
