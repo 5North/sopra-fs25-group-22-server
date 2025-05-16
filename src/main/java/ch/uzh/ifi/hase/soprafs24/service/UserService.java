@@ -109,9 +109,10 @@ public class UserService {
     newUser.setLossCount(0);
     newUser.setTieCount(0);
 
+    User createdUser = userRepository.save(newUser);
     log.info("user with id {} created", newUser.getId());
 
-    return userRepository.save(newUser);
+    return createdUser;
   }
 
     public Lobby getLobby(Long userId) {
