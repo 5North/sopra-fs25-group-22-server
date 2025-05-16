@@ -15,7 +15,7 @@ import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
-import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
+import ch.uzh.ifi.hase.soprafs24.utils.GameStatisticsUtil;
 
 class GameIntegrationTest {
 

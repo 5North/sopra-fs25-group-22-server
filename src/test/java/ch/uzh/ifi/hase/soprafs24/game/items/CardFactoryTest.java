@@ -2,7 +2,6 @@ package ch.uzh.ifi.hase.soprafs24.game.items;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.text.DateFormat.Field;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;

@@ -279,7 +279,7 @@ class MessageControllerTest {
                 messageController.processAISuggestion(aiReq, accessor);
 
                 verify(webSocketService, times(1))
-                                .sentLobbyNotifications(eq(42L), eq(expectedDto));
+                                .sentLobbyNotifications(42L, expectedDto);
         }
 
         // --- Test /app/quit ---
@@ -506,7 +506,7 @@ class MessageControllerTest {
                 verify(webSocketService, times(1))
                                 .convertToDTO(anyString(), anyBoolean());
                 verify(webSocketService, times(1))
-                                .sentLobbyNotifications(eq(userId), eq(privateDTO));
+                                .sentLobbyNotifications(userId, privateDTO);
                 verify(webSocketService, times(1))
                                 .broadCastLobbyNotifications(anyLong(), any(LobbyDTO.class));
 

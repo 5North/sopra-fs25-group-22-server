@@ -1,21 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.timer;
 
 import ch.uzh.ifi.hase.soprafs24.game.GameSession;
-import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.Table;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.mapper.GameSessionMapper;
-import ch.uzh.ifi.hase.soprafs24.game.items.Card;
+
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -19,7 +19,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.Deck;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
-import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
+import ch.uzh.ifi.hase.soprafs24.utils.GameStatisticsUtil;
 
 class GameSessionTest {
 

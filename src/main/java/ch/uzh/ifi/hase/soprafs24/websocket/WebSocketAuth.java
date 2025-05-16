@@ -42,13 +42,13 @@ public class WebSocketAuth implements HandshakeInterceptor {
         catch (NullPointerException e) {
             // return 400 if no token param was present
             response.setStatusCode(HttpStatus.BAD_REQUEST);
-            log.info("Handshake failed: {}", e.getMessage());
+            log.debug("Handshake failed: {}", e.getMessage());
             return false;
         }
 
         if (token == null) {
             response.setStatusCode(HttpStatus.BAD_REQUEST);
-            log.info("Handshake failed: no token provided");
+            log.debug("Handshake failed: no token provided");
             return false;
 
         }
@@ -56,13 +56,13 @@ public class WebSocketAuth implements HandshakeInterceptor {
         try {
             User authUser = userService.authorizeUser(token);
             // Save the user id as a session attribute, in order to retrieve it later
-            log.info("Handshake authenticated successfully: user {}", authUser.getId());
+            log.debug("Handshake authenticated successfully: user {}", authUser.getId());
             attributes.put("userId", authUser.getId());
             return true;
         }
         catch (ResponseStatusException e) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
-            log.info("Handshake failed: unauthorized");
+            log.debug("Handshake failed: unauthorized");
             return false;
         }
     }

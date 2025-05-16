@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import ch.uzh.ifi.hase.soprafs24.client.OpenAiClient;
+import ch.uzh.ifi.hase.soprafs24.exceptions.OpenAIClientException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

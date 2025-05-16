@@ -1,7 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.client.OpenAiClient;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,8 +24,7 @@ public class AIService {
 
     public String generateAISuggestion(List<Card> hand, List<Card> table) {
         String prompt = buildPrompt(hand, table);
-        String raw = openAiClient.createCompletion(prompt);
-        return raw;
+        return openAiClient.createCompletion(prompt);
     }
 
     private String buildPrompt(List<Card> hand, List<Card> table) {
