@@ -80,7 +80,6 @@ public class LobbyService {
 
         // check if user is already in the lobby
         if (!lobby.getUsers().contains(userId)) {
-            log.info("user {} is already in lobby {}", userId, lobbyId);
             // check if lobby is already full
             if (lobbyIsFull(lobbyId)) {
                 String msg = "The lobby is already full";
@@ -92,6 +91,8 @@ public class LobbyService {
             userRepository.save(user);
             userRepository.flush();
             log.info("User {} joined lobby: {}", userId, lobbyId);
+        } else {
+            log.debug("user {} is already in lobby {}", userId, lobbyId);
         }
     }
 
@@ -110,21 +111,25 @@ public class LobbyService {
 
             deleteLobby(lobbyId);
             log.info("Lobby {} deleted by host {}", lobbyId, userId);
-            return;
+
+        } else {
+
+            if (!lobby.getUsers().contains(userId)) {
+                throw new NoSuchElementException(
+                        "User " + userId + " is not part of lobby " + lobbyId);
+            }
+
+            lobby.removeUser(userId);
+            lobby.removeRematcher(userId);
+            user.setLobbyJoined(null);
+
+            log.info("User {} left lobby: {}", userId, lobbyId);
+            lobbyRepository.save(lobby);
+            lobbyRepository.flush();
+
+            userRepository.save(user);
+            userRepository.flush();
         }
-
-        if (!lobby.getUsers().contains(userId)) {
-            throw new NoSuchElementException(
-                    "User " + userId + " is not part of lobby " + lobbyId);
-        }
-
-        lobby.removeUser(userId);
-        lobby.removeRematcher(userId);
-        user.setLobbyJoined(null);
-
-        log.info("Host {} left lobby: {}", userId, lobbyId);
-
-        userRepository.save(user);
     }
 
     public boolean lobbyIsFull(Long lobbyId) throws NotFoundException {
