@@ -12,7 +12,6 @@ import ch.uzh.ifi.hase.soprafs24.game.Player;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.AISuggestionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.TimeLeftDTO;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.CardFactory;
 import ch.uzh.ifi.hase.soprafs24.game.items.Suit;
@@ -79,38 +78,26 @@ class GameServiceTest {
 
     @Test
     void testStartGameCreatesSession() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(100L);
-        lobby.addUser(1L);
-        lobby.addUser(2L);
         lobby.addUser(3L);
         lobby.addUser(4L);
 
         GameSession gameSession = gameService.startGame(lobby);
         assertNotNull(gameSession);
-        assertEquals(100L, gameSession.getGameId());
+        assertEquals(gameId, gameSession.getGameId());
         assertEquals(4, gameSession.getPlayers().size());
     }
 
     @Test
     void testGetGameSessionById_success() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(200L);
-        lobby.addUser(10L);
-        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
-        GameSession retrieved = gameService.getGameSessionById(200L);
+        GameSession retrieved = gameService.getGameSessionById(gameId);
         assertNotNull(retrieved);
         assertEquals(gameSession, retrieved);
     }
 
     @Test
     void testGetGameSessionById_throwsNoSuchElementException() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(2000L);
-        lobby.addUser(10L);
-        lobby.addUser(20L);
         gameService.startGame(lobby);
 
         assertThrows(NoSuchElementException.class,
@@ -119,10 +106,6 @@ class GameServiceTest {
 
     @Test
     void testPlayCardDeterministic() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(300L);
-        lobby.addUser(100L);
-        lobby.addUser(200L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -138,7 +121,7 @@ class GameServiceTest {
         setPlayerHand(currentPlayer, hand);
 
         CardDTO cardDTO = new CardDTO("COPPE", 7);
-        Pair<GameSession, Player> result = gameService.playCard(300L, cardDTO, 100L);
+        Pair<GameSession, Player> result = gameService.playCard(gameId, cardDTO, playerA);
         assertNotNull(result, "La risposta non deve essere null.");
         GameSession updatedSession = result.getFirst();
         Player nextPlayer = result.getSecond();
@@ -150,10 +133,6 @@ class GameServiceTest {
 
     @Test
     void testProcessPlayTurnValidCapture() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(400L);
-        lobby.addUser(10L);
-        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -186,7 +165,7 @@ class GameServiceTest {
         }
         assertNotNull(selectedOption);
 
-        gameService.processPlayTurn(400L, selectedOption);
+        gameService.processPlayTurn(gameId, selectedOption);
 
         List<Card> remainingTable = gameSession.getTable().getCards();
         for (Card captured : selectedOption) {
@@ -211,10 +190,6 @@ class GameServiceTest {
             fail("Reflection failed su userRepository: " + e.getMessage());
         }
 
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(500L);
-        lobby.addUser(1L);
-        lobby.addUser(2L);
         lobby.addUser(3L);
         lobby.addUser(4L);
         GameSession gameSession = gameService.startGame(lobby);
@@ -235,29 +210,23 @@ class GameServiceTest {
             fail("Reflection failed su turnCounter: " + e.getMessage());
         }
 
-        boolean isOver = gameService.isGameOver(500L);
+        boolean isOver = gameService.isGameOver(gameId);
         assertTrue(isOver);
         assertThrows(NoSuchElementException.class,
-                () -> gameService.getGameSessionById(500L));
+                () -> gameService.getGameSessionById(gameId));
     }
 
     @Test
     void testPlayCardWithNullGameId() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(600L);
-        lobby.addUser(1L);
-        lobby.addUser(2L);
+
         gameService.startGame(lobby);
         CardDTO cardDTO = new CardDTO("COPPE", 7);
-        assertThrows(IllegalArgumentException.class, () -> gameService.playCard(null, cardDTO, 1L));
+        assertThrows(IllegalArgumentException.class, () -> gameService.playCard(null, cardDTO, playerA));
     }
 
     @Test
     void testPlayCardInvalidCard() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(700L);
-        lobby.addUser(10L);
-        lobby.addUser(20L);
+
         GameSession gameSession = gameService.startGame(lobby);
 
         Player currentPlayer = gameSession.getPlayers().get(gameSession.getCurrentPlayerIndex());
@@ -267,16 +236,12 @@ class GameServiceTest {
 
         CardDTO cardDTO = new CardDTO("COPPE", 7);
         Exception exception = assertThrows(IllegalArgumentException.class,
-                () -> gameService.playCard(700L, cardDTO, 10L));
+                () -> gameService.playCard(gameId, cardDTO, playerA));
         assertTrue(exception.getMessage().contains("Invalid card played. Unable to process played card."));
     }
 
     @Test
     void testProcessPlayTurnInvalidCaptureOption() {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(800L);
-        lobby.addUser(10L);
-        lobby.addUser(20L);
         GameSession gameSession = gameService.startGame(lobby);
 
         gameSession.getTable().clearTable();
@@ -299,7 +264,7 @@ class GameServiceTest {
         invalidOption.add(CardFactory.getCard(Suit.COPPE, 8));
 
         Exception exception = assertThrows(IllegalArgumentException.class,
-                () -> gameService.processPlayTurn(800L, invalidOption));
+                () -> gameService.processPlayTurn(gameId, invalidOption));
         assertTrue(exception.getMessage().contains("Selected capture option is not valid"));
     }
 
@@ -342,10 +307,6 @@ class GameServiceTest {
         urf.setAccessible(true);
         urf.set(null, new DummyUserRepository());
 
-        Long gameId = 123L;
-        Long playerA = 10L;
-        Long playerB = 20L;
-
         GameSession gs = new GameSession(gameId, Arrays.asList(playerA, playerB));
         Field sessionsField = GameService.class.getDeclaredField("gameSessions");
         sessionsField.setAccessible(true);
@@ -378,7 +339,6 @@ class GameServiceTest {
         CardDTO dto = new CardDTO("COPPE", 5);
         assertThrows(NoSuchElementException.class,
                 () -> gameService.playCard(999L, dto, playerA));
-        ;
     }
 
     @Test
@@ -400,13 +360,8 @@ class GameServiceTest {
     }
 
     @Test
-    void testPlayCardMultipleCaptureOptionsSchedulesChoicePhase() throws Exception {
-        Lobby lobby = new Lobby();
-        lobby.setLobbyId(900L);
-        lobby.addUser(playerA);
-        lobby.addUser(playerB);
+    void testPlayCardMultipleCaptureOptionsSchedulesChoicePhase() {
         GameSession session = gameService.startGame(lobby);
-        Long gameId = lobby.getLobbyId();
 
         session.getTable().clearTable();
         List<Card> tableCards = createCardsFromValues(Arrays.asList(3, 4, 2, 5), Suit.COPPE);
@@ -423,7 +378,7 @@ class GameServiceTest {
         verify(webSocketService)
                 .sentLobbyNotifications(eq(playerA), any(List.class));
         verify(timerService)
-                .schedule(eq(gameId), eq(choiceTimerStrategy), eq(playerA));
+                .schedule(gameId, choiceTimerStrategy, playerA);
     }
 
     @Test

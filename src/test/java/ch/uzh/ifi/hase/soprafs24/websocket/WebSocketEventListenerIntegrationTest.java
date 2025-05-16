@@ -25,7 +25,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -82,8 +81,8 @@ class WebSocketEventListenerIntegrationTest {
                 eventListener.handleSubscribeEvent(event);
 
                 // Verify with spybean that the methods in webSocketService are called
-                verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(eq(2000L), eq(LobbyDTO));
-                verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(15L), eq(UserDTO));
+                verify(webSocketService, atLeastOnce()).broadCastLobbyNotifications(2000L, LobbyDTO);
+                verify(webSocketService, atLeastOnce()).sentLobbyNotifications(15L, UserDTO);
         }
 
         @Test
@@ -112,8 +111,8 @@ class WebSocketEventListenerIntegrationTest {
                 eventListener.handleSubscribeEvent(event);
 
                 // Verify with spybean that the methods in webSocketService are called
-                verify(webSocketService, never()).broadCastLobbyNotifications(eq(2000L), eq(LobbyDTO));
-                verify(webSocketService, atLeastOnce()).sentLobbyNotifications(eq(15L), eq(UserDTO));
+                verify(webSocketService, never()).broadCastLobbyNotifications(2000L, LobbyDTO);
+                verify(webSocketService, atLeastOnce()).sentLobbyNotifications(15L, UserDTO);
         }
 
         @Test
@@ -149,9 +148,9 @@ class WebSocketEventListenerIntegrationTest {
                 eventListener.handleUnsubscribeEvent(event);
 
                 verify(webSocketService, atLeastOnce())
-                                .broadCastLobbyNotifications(eq(3000L), eq(broadcastDTO));
+                                .broadCastLobbyNotifications(3000L, broadcastDTO);
                 verify(webSocketService, atLeastOnce())
-                                .sentLobbyNotifications(eq(42L), eq(userDTO));
+                                .sentLobbyNotifications(42L, userDTO);
         }
 
         @Test
@@ -178,7 +177,7 @@ class WebSocketEventListenerIntegrationTest {
                 verify(webSocketService, never())
                                 .broadCastLobbyNotifications(anyLong(), any());
                 verify(webSocketService, atLeastOnce())
-                                .sentLobbyNotifications(eq(99L), eq(userDTO));
+                                .sentLobbyNotifications(99L, userDTO);
         }
 
 }

@@ -545,7 +545,7 @@ class LobbyServiceTest {
     }
 
     @Test
-    void testDeleteLobbySwallowEmptyResult() throws NotFoundException {
+    void testDeleteLobbySwallowEmptyResult() {
         when(lobbyRepository.findById(testLobby.getLobbyId()))
                 .thenReturn(Optional.of(testLobby));
         doThrow(new EmptyResultDataAccessException(1))
@@ -600,7 +600,7 @@ class LobbyServiceTest {
     }
 
     @Test
-    void testRematchIsFull_UsersOverLimit_ThrowsException() throws NotFoundException {
+    void testRematchIsFull_UsersOverLimit_ThrowsException() {
         testLobby.addUser(1L);
         testLobby.addUser(2L);
         testLobby.addUser(3L);

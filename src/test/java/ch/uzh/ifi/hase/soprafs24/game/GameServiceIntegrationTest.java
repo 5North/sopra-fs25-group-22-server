@@ -90,7 +90,7 @@ class GameServiceIntegrationTest {
     }
 
     @Test
-    void testNonDeterministicTurnFlowWorks() throws Exception {
+    void testNonDeterministicTurnFlowWorks() {
         Lobby lobby = new Lobby();
         lobby.setLobbyId(400L);
         lobby.addUser(10L);

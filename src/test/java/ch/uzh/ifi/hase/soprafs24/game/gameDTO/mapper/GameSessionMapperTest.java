@@ -7,7 +7,6 @@ import ch.uzh.ifi.hase.soprafs24.game.gameDTO.CardDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.GameSessionDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.LastCardsDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.MoveActionDTO;
-import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PlayerInfoDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.PrivatePlayerDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.QuitGameResultDTO;
 import ch.uzh.ifi.hase.soprafs24.game.gameDTO.ResultDTO;

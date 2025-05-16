@@ -3,7 +3,6 @@ package ch.uzh.ifi.hase.soprafs24.game.items;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
-import java.text.DateFormat.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

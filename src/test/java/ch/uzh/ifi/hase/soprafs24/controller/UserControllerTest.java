@@ -139,7 +139,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     void givenUser_whenGetUser_unauthorized() throws Exception {
         // given
         // no user
-        Long userId = 2L;
 
         User user = new User();
         user.setId(1L);
