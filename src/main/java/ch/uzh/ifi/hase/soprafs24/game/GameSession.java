@@ -8,7 +8,7 @@ import java.util.Random;
 
 import ch.uzh.ifi.hase.soprafs24.game.result.Outcome;
 import ch.uzh.ifi.hase.soprafs24.game.result.Result;
-import ch.uzh.ifi.hase.soprafs24.service.GameStatisticsUtil;
+import ch.uzh.ifi.hase.soprafs24.utils.GameStatisticsUtil;
 
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import ch.uzh.ifi.hase.soprafs24.game.items.Deck;

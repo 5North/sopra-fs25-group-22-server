@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.client.OpenAiClient;
 import ch.uzh.ifi.hase.soprafs24.game.items.Card;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

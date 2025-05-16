@@ -1,8 +1,6 @@
-/*
- * src/main/java/ch/uzh/ifi/hase/soprafs24/service/OpenAiClient.java
- */
-package ch.uzh.ifi.hase.soprafs24.service;
+package ch.uzh.ifi.hase.soprafs24.client;
 
+import ch.uzh.ifi.hase.soprafs24.exceptions.OpenAIClientException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
