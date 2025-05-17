@@ -72,8 +72,8 @@ The `REST` component encompasses all the classes that are meant to receive and r
 api (the "controllers", we could say). This component provides the different mappings for our api endpoints. Requests are processed using the `Service`
 component to get, create or modify persisted data. Services are used to authorize api's request as well.
 
-You can find the relevant files there: [UserController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/UserController.java),
-[LobbyController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/LobbyController.java)
+You can find the relevant files there: [UserController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/UserController.java),
+[LobbyController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/LobbyController.java)
 
 <details>
 <summary>See the specification table...</summary>
@@ -143,20 +143,20 @@ The websocket component includes in its responsibilities both establishing and a
 with the session token, and receiving and sending STOMP messages, as well as listening to `SUBSCRIBE` and `UNSUBSCRIBE`
 events. 
 
-In the [WebSocketAuth.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketAuth.java),
+In the [WebSocketAuth.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketAuth.java),
 the `beforeHandshake` method is overridden to manage our simple token authentication, and along with 
-[CustomHandshakeHandler.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/CustomHandshakeHandler.java) 
-and [UserPrincipal.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/UserPrincipal.java)
+[CustomHandshakeHandler.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/CustomHandshakeHandler.java) 
+and [UserPrincipal.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/UserPrincipal.java)
 to allow setting the user id as the attribute of the connection principal. This allows us to later retrieve the identity of the user
 sending STOMP messages to the controller. The controller can be found in 
-[MessageController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/MessageController.java)
+[MessageController.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/controller/MessageController.java)
 and is responsible to receive messages to the `/app` endpoints, process the actions required via the `Service` component and eventually respond with another STOMP
 message, either broadcast to a lobby or sent to a specific user.
 
 Finally, this component also listen to STOMP subscription or unsubscriptions frames to the `/topic/lobby/{lobbyId} destination. 
 This allows the call of the necessary service to add or remove a user from a lobby based on those events, 
 as well as to notify the other participants when those changes happen. You can find the relevant file there: 
-[WebSocketEventListener.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketEventListener.java)
+[WebSocketEventListener.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/WebSocketEventListener.java)
 
 <details>
 <summary>See the specification table...</summary>
@@ -456,7 +456,7 @@ and the lobby that the user has currently joined. The user is identified with a 
 a session-only token is generated to allow the client to authenticate itself during a session. An attribute `status` 
 indicates whether the user is online or offline, based on login or logout requests.
 
-You can find the relevant file there: [User.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/User.java)
+You can find the relevant file there: [User.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/User.java)
 
 #### Lobby
 
@@ -466,7 +466,7 @@ lobby is assigned to it. During its lifetime, the lobby persists its participant
 `GameSession` object. This last object only lives for the duration of a game. When the host leaves it at any stage, the
 lobby gets deleted. It also gets deleted when a user leaves during the game, or after its end instead of opting for a rematch.
 
-You can find the relevant file there: [Lobby.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/Lobby.java)
+You can find the relevant file there: [Lobby.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/entity/Lobby.java)
 
 ### Service
 
@@ -482,10 +482,10 @@ it provides the conversion of custom DTOs (with the same method signature, using
 and two methods to send stomp messages to specific users or broadcast them to the right lobby. This service is not only used by `Websocket`, but also
 by the `Game Logic`component as well as internally in `Service`.
 
-You can find the relevant files there: [UserService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/UserService.java), 
-[LobbyService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/LobbyService.java), 
-[GameService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/GameService.java), 
-[WebSocketService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/readme-m4/src/main/java/ch/uzh/ifi/hase/soprafs24/service/WebSocketService.java)
+You can find the relevant files there: [UserService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/UserService.java), 
+[LobbyService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/LobbyService.java), 
+[GameService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/GameService.java), 
+[WebSocketService.java](https://github.com/5North/sopra-fs25-group-22-server/blob/main/src/main/java/ch/uzh/ifi/hase/soprafs24/service/WebSocketService.java)
 
 ### Game logic
 
