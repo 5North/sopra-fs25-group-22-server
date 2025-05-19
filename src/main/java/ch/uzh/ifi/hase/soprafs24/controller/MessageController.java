@@ -14,7 +14,6 @@ import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
-import ch.uzh.ifi.hase.soprafs24.websocket.WebSocketEventListener;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,19 +38,17 @@ public class MessageController {
     private final WebSocketService webSocketService;
     private final UserService userService;
     private final TimerService timerService;
-    private final WebSocketEventListener webSocketEventListener;
 
     public MessageController(LobbyService lobbyService,
                              GameService gameService,
                              WebSocketService webSocketService,
                              UserService userService,
-                             TimerService timerService, WebSocketEventListener webSocketEventListener) {
+                             TimerService timerService) {
         this.lobbyService = lobbyService;
         this.gameService = gameService;
         this.webSocketService = webSocketService;
         this.userService = userService;
         this.timerService = timerService;
-        this.webSocketEventListener = webSocketEventListener;
     }
 
     @MessageMapping("/startGame/{lobbyId}")
