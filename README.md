@@ -650,6 +650,7 @@ To install Nix you can run the script `setup.sh` found in the [frontend reposito
 
 <details>
 <summary>Install additional software...</summary>
+   
 You only need to adjust the section `nativeBuildInputs = with pkgs;` in the
 [nix flake](./flake.nix) with the package you would like to install. For
 example, if you want to use docker (the [Dockerfile](./Dockerfile) and
@@ -717,20 +718,21 @@ You can use the local Gradle Wrapper to build the application.
 <details>
 <summary>More Information about Gradle Wrapper and Gradle.</summary>
 
-Build
+##### Build
 
 ```./gradlew build```
 
-Run
+##### Run
 
 ```./gradlew bootRun```
 
 You can verify that the server is running by visiting localhost:8080 in your browser.
-Test
+
+##### Test
 
 ```./gradlew test```
 
-Development Mode
+##### Development Mode
 
 You can start the backend in development mode, this will automatically trigger a new build and reload the application
 once the content of a file has been changed.
