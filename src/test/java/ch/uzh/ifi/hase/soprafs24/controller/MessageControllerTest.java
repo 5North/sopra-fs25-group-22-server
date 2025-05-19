@@ -174,7 +174,7 @@ class MessageControllerTest {
         }
 
         @Test
-        void testGameUpdateRequest() {
+        void testGameUpdateRequest() throws NotFoundException {
                 Long userId = 1L;
                 StompHeaderAccessor headerAccessor = createHeaderAccessorWithUser(userId);
                 LobbyDTO lobbyDTO = new LobbyDTO();
@@ -195,7 +195,7 @@ class MessageControllerTest {
         }
 
         @Test
-        void testGameUpdateRequest_noGameSession() {
+        void testGameUpdateRequest_noGameSession() throws NotFoundException {
                 Long userId = 1L;
                 StompHeaderAccessor headerAccessor = createHeaderAccessorWithUser(userId);
                 LobbyDTO lobbyDTO = new LobbyDTO();
@@ -580,7 +580,7 @@ class MessageControllerTest {
         }
 
         @Test
-        void testReceiveUpdateGame_WhenChoosing_SendsCaptureOptions() {
+        void testReceiveUpdateGame_WhenChoosing_SendsCaptureOptions() throws NotFoundException {
                 Long userId = 42L;
                 StompHeaderAccessor header = createHeaderAccessorWithUser(userId);
 
@@ -661,7 +661,7 @@ class MessageControllerTest {
         }
 
         @Test
-        void testReceiveUpdateGame_RemChoicePositive_SendsChoiceTime() {
+        void testReceiveUpdateGame_RemChoicePositive_SendsChoiceTime() throws NotFoundException {
                 Long userId = 55L;
                 Long gameId = 600L;
                 StompHeaderAccessor header = createHeaderAccessorWithUser(userId);
@@ -680,7 +680,7 @@ class MessageControllerTest {
         }
 
         @Test
-        void testReceiveUpdateGame_RemChoiceZero_SendsPlayTime() {
+        void testReceiveUpdateGame_RemChoiceZero_SendsPlayTime() throws NotFoundException {
                 Long userId = 66L;
                 Long gameId = 700L;
                 StompHeaderAccessor header = createHeaderAccessorWithUser(userId);

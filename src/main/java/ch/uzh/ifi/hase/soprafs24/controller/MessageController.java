@@ -14,6 +14,7 @@ import ch.uzh.ifi.hase.soprafs24.service.TimerService;
 import ch.uzh.ifi.hase.soprafs24.service.WebSocketService;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.websocket.DTO.*;
+import ch.uzh.ifi.hase.soprafs24.websocket.WebSocketEventListener;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,17 +39,19 @@ public class MessageController {
     private final WebSocketService webSocketService;
     private final UserService userService;
     private final TimerService timerService;
+    private final WebSocketEventListener webSocketEventListener;
 
     public MessageController(LobbyService lobbyService,
-            GameService gameService,
-            WebSocketService webSocketService,
-            UserService userService,
-            TimerService timerService) {
+                             GameService gameService,
+                             WebSocketService webSocketService,
+                             UserService userService,
+                             TimerService timerService, WebSocketEventListener webSocketEventListener) {
         this.lobbyService = lobbyService;
         this.gameService = gameService;
         this.webSocketService = webSocketService;
         this.userService = userService;
         this.timerService = timerService;
+        this.webSocketEventListener = webSocketEventListener;
     }
 
     @MessageMapping("/startGame/{lobbyId}")
@@ -93,7 +96,7 @@ public class MessageController {
 
     @MessageMapping("/updateGame/{gameId}")
     public void receiveUpdateGame(@DestinationVariable Long gameId,
-            StompHeaderAccessor headerAccessor) {
+            StompHeaderAccessor headerAccessor) throws NotFoundException {
         Long userId = (Long) Objects.requireNonNull(
                 headerAccessor.getSessionAttributes()).get(USER_ID_ATTR);
         log.debug("Message at /updateGame/{}", gameId);
@@ -137,6 +140,19 @@ public class MessageController {
             BroadcastNotificationDTO DTO = webSocketService.convertToDTO(msg);
             webSocketService.sentLobbyNotifications(userId, DTO);
             log.debug("Message sent to user {}: {}", userId, e.getMessage());
+
+            // failsafe killswitch to mitigate damages in case of page reload during results
+            msg = String.format("Lobby with id %s has been deleted", gameId);
+            lobbyService.deleteLobby(gameId);
+            log.error("Lobby with id {} has been deleted: results reload safe fail", gameId);
+            BroadcastNotificationDTO broadcastDTO = webSocketService.convertToDTO(msg);
+            webSocketService.broadCastLobbyNotifications(gameId, broadcastDTO);
+            log.debug("Message broadcast to lobby {}: lobby delete", gameId);
+
+            boolean success = true;
+            UserNotificationDTO privateDTO = webSocketService.convertToDTO(msg, success);
+            webSocketService.sentLobbyNotifications(userId, privateDTO);
+            log.debug("Message sent to user {}: quitting game {} success {}", userId, gameId, success);
         }
     }
 
