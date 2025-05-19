@@ -64,7 +64,9 @@ public class AIService {
                         "OUTPUT FORMAT:\n" +
                         "Suggest up to 3 cards to play, separated by semicolons, only when strategically sensible. " +
                         "Return exactly like: 'Play 7 of Denari; Play 4 of Coppe; Play 2 of Spade'." +
-                        "For no reason return another format than 'Play 7 of Denari; Play 4 of Coppe; Play 2 of Spade' or 'Play a card by trying to remember which cards are no longer in game (already been played) and try to play one of them to minimize the risk for the next player to do SCOPA.'",
+                        "For no reason return another format than 'Play 7 of Denari; Play 4 of Coppe; Play 2 of Spade' or 'Play a card by trying to remember which cards are no longer in game (already been played) and try to play one of them to minimize the risk for the next player to do SCOPA.'"
+                        +
+                        "If the table is not empty in any case always suggest to play something",
                 handStr, tableStr);
     }
 }

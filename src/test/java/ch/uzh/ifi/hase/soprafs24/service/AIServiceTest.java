@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
- class AIServiceTest {
+class AIServiceTest {
 
     @Mock
     private OpenAiClient openAiClient;
@@ -32,14 +32,14 @@ import java.util.List;
     private Card cSpade3;
 
     @BeforeEach
-     void setup() {
+    void setup() {
         cDenari7 = CardFactory.getCard(Suit.DENARI, 7);
         cCoppe5 = CardFactory.getCard(Suit.COPPE, 5);
         cSpade3 = CardFactory.getCard(Suit.SPADE, 3);
     }
 
     @Test
-     void testGenerateAISuggestion_CallsClientWithCorrectPrompt() {
+    void testGenerateAISuggestion_CallsClientWithCorrectPrompt() {
         List<Card> hand = List.of(cDenari7);
         List<Card> table = List.of(cCoppe5, cSpade3);
 
@@ -56,11 +56,11 @@ import java.util.List;
         assertTrue(prompt.contains("Your hand: [DENARI-7]"));
         assertTrue(prompt.contains("Cards on table: [COPPE-5, SPADE-3]"));
 
-        assertTrue(prompt.contains("Return suggestions in this exact format"));
+        assertTrue(prompt.contains("Return exactly like: 'Play 7 of Denari; Play 4 of Coppe; Play 2 of Spade'"));
     }
 
     @Test
-     void testGenerateAISuggestion_EmptyHandAndTable() {
+    void testGenerateAISuggestion_EmptyHandAndTable() {
         when(openAiClient.createCompletion(anyString())).thenReturn("No move");
         String suggestion = aiService.generateAISuggestion(List.of(), List.of());
         assertEquals("No move", suggestion);
@@ -74,7 +74,7 @@ import java.util.List;
     }
 
     @Test
-     void testGenerateAISuggestion_PropagatesException() {
+    void testGenerateAISuggestion_PropagatesException() {
         List<Card> hand = List.of(cDenari7);
         List<Card> table = List.of(cCoppe5);
         when(openAiClient.createCompletion(anyString()))
@@ -85,7 +85,7 @@ import java.util.List;
     }
 
     @Test
-     void testAISuggestionDTO_DefaultConstructorAndSetterGetter() {
+    void testAISuggestionDTO_DefaultConstructorAndSetterGetter() {
         AISuggestionDTO dto = new AISuggestionDTO();
         assertNull(dto.getSuggestion());
         dto.setSuggestion("Try this");
@@ -93,7 +93,7 @@ import java.util.List;
     }
 
     @Test
-     void testAISuggestionDTO_ToString() {
+    void testAISuggestionDTO_ToString() {
         AISuggestionDTO dto = new AISuggestionDTO("Example");
         String s = dto.toString();
         assertTrue(s.startsWith("AISuggestionDTO{"));
