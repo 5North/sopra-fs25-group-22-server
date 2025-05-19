@@ -57,7 +57,7 @@ public class AIService {
                         "SPECIAL CASE - EMPTY TABLE:\n" +
                         "- If there are no cards on the table, suggest playing a card of which you hold a duplicate (e.g., if you have two 5s, play one). "
                         +
-                        "- If you have no duplicates in hand you must you must explicitly say 'Play whatever cards by trying to remember which cards are no longer in game.'\n"
+                        "- Only if you have no duplicates in hand you must you must explicitly say 'Play whatever cards by trying to remember which cards are no longer in game.'\n"
                         +
                         "\n" +
                         "OUTPUT FORMAT:\n" +
@@ -65,7 +65,7 @@ public class AIService {
                         "Return exactly like: 'Play 7 of Denari; Play 4 of Coppe; Play 2 of Spade'." +
                         "For no reason return another format than 'Play 7 of Denari; Play 4 of Coppe; Play 2 of Spade' or 'Play a card by trying to remember which cards are no longer in game (already been played) and try to play one of them to minimize the risk for the next player to do SCOPA.'"
                         +
-                        "If the table is not empty in any case always suggest to play something",
+                        "If the table is not empty in any case always suggest to play something, so a card, not play a card triying to remember and so on, this only if the table is empty and if you do not have a card twice or more in hand",
                 handStr, tableStr);
     }
 }
