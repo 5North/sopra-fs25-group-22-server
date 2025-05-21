@@ -772,7 +772,7 @@ Have a look here: https://www.baeldung.com/spring-boot-testing
 New contributions pushed to the main branch are continuously integrated and continuously deployed to Google Engine using 
 GitHub actions.
 
-Code releases are done at the end of each sprint by manually creating a GitHub release with a new tag.
+Releases are done at the end of each sprint by manually creating a GitHub release with a new tag.
 
 <h2 id="roadmap">🚀 Roadmap</h2>
 
