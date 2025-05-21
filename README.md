@@ -786,14 +786,14 @@ Releases are done at the end of each sprint by manually creating a GitHub releas
 
 ### Authors
 
-* [5North](https://github.com/5North)
+* [Nicola Fiori](https://github.com/5North)
 * [Stefano Benzoni](https://github.com/sbenzo99)
 * [Seyda Gündüz](https://github.com/Seydi89)
 * [Shellmy Chakkaith](https://github.com/shellmychakkaith)
 
 ### Acknowledgements
 
-We would like to thank our tutor []() for his support and guidance during this course, as well as all the teaching and 
+We would like to thank our tutor [lukasniedh](https://github.com/lukasniedh) for his support and guidance during this course, as well as all the teaching and 
 tutoring team of the Sopra course.
 
 <h2 id="license">📜 License</h2>
